@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { parseLlmGeneratedPatchV1WithFastXmlParser, parseLlmGeneratedPatchV1WithHandWrittenParser } from '../../diff/llmGeneratedPatchV1';
+import { parseLlmGeneratedPatchV1WithFastXmlParser, parseLlmGeneratedPatchV1WithHandWrittenParser } from './llmGeneratedPatchV1';
 
 const singleChangeSimplePatch = `
 <!-- All edits within this container apply to the same file -->
