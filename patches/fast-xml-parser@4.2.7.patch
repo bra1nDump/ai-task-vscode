@@ -1,0 +1,21 @@
+diff --git a/src/xmlparser/OrderedObjParser.js b/src/xmlparser/OrderedObjParser.js
+index db1268a95dbb1865467bb323a94a231dff539248..d86e1230c44437474679f38d2a4f2f357dee2152 100644
+--- a/src/xmlparser/OrderedObjParser.js
++++ b/src/xmlparser/OrderedObjParser.js
+@@ -554,16 +554,6 @@ function readStopNodeData(xmlData, tagName, i){
+         } else if(xmlData.substr(i + 1, 2) === '![') { 
+           const closeIndex = findClosingIndex(xmlData, "]]>", i, "StopNode is not closed.") - 2;
+           i=closeIndex;
+-        } else {
+-          const tagData = readTagExp(xmlData, i, '>')
+-
+-          if (tagData) {
+-            const openTagName = tagData && tagData.tagName;
+-            if (openTagName === tagName && tagData.tagExp[tagData.tagExp.length-1] !== "/") {
+-              openTagCount++;
+-            }
+-            i=tagData.closeIndex;
+-          }
+         }
+       }
+   }//end for loop

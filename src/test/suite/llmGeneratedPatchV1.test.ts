@@ -1,16 +1,20 @@
 import * as assert from 'assert';
-import { parseLlmGeneratedPatchV1 } from '../../diff/llmGeneratedPatchV1';
+import { parseLlmGeneratedPatchV1WithFastXmlParser, parseLlmGeneratedPatchV1WithHandWrittenParser } from '../../diff/llmGeneratedPatchV1';
 
 const singleChangeSimplePatch = `
-<file-change-output> <!-- All edits within this container apply to the same file -->
-<change description="Parametrising function with a name of the thing to be greeted">
-<old-chunk> <!-- The old chunk of code that is being replaced -->
+<!-- All edits within this container apply to the same file -->
+<file-change-output>
+<change>
+<!-- The old chunk of code that is being replaced -->
+<description>Parametrising function with a name of the thing to be greeted</description>
+<old-chunk>
 function helloWorld() {
     // @typist pass name to be greeted
     console.log('Hello World');
 }
 </old-chunk>
-<new-chunk> <!-- The new content to replace the old content between the prefix and suffix -->
+<!-- The new content to replace the old content between the prefix and suffix -->
+<new-chunk>
 function hello(name: string) {
     console.log(\`Hello \${name}\`);
 }
@@ -19,9 +23,25 @@ function hello(name: string) {
 </file-change-output>
 `;
 
+const singleChangeSimplePatchPartial = `
+<file-change-output>
+<change>
+<description>Parametrising function with a name of the thing to be greeted</description>
+<old-chunk>
+function helloWorld() {
+    // @typist pass name to be greeted
+    console.log('Hello World');
+}
+</old-chunk>
+<new-chunk>
+function hello(name: string) {
+
+`;
+
 const twoChangePatch = `
 <file-change-output>
-<change description="Watching the current document for changes, if the change contains typist, find its position and insert a decoration at that position. Adding in the body of the activate function">
+<change>
+<description>Watching the current document for changes, if the change contains typist, find its position and insert a decoration at that position. Adding in the body of the activate function</description>
 <old-chunk>
 		// Display a message box to the user
 		vscode.window.showInformationMessage('Hello World from typist!');
@@ -76,7 +96,9 @@ const twoChangePatch = `
 
 </new-chunk>
 </change>
-<change desription="Symbols that are not imported were used in the previous change. Adding in the header of the file">  <!-- Changes can be out of order. Changes should never overlap. -->
+<!-- Changes can be out of order. Changes should never overlap. -->
+<change>
+<description>Symbols that are not imported were used in the previous change. Adding in the header of the file</description>
 <old-chunk>
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
@@ -99,38 +121,72 @@ export function activate(context: ExtensionContext) {
 </file-change-output>
 `;
 
-
-suite('Can parse example patches', () => {
+suite('Can parse example patches using hand written parser', () => {
 	test('Simple patch', () => {
-		const patch = parseLlmGeneratedPatchV1(singleChangeSimplePatch);
+		const patch = parseLlmGeneratedPatchV1WithHandWrittenParser(singleChangeSimplePatch);
 
-		console.log(JSON.stringify(patch, null, 2));
+		// console.log(JSON.stringify(patch, null, 2));
 
-		// Parsing succeeded
-		assert.notEqual(patch, undefined);
+		assert.ok(patch);
+		const changes = patch.fileChangeOutput.changes;
 
-		// There is one change that is not empty
-		assert.notEqual(patch?.fileChangeOutput.change.length, 0);
-		assert.equal(patch?.fileChangeOutput.change[0].newChunk.length, 1);
+		assert.equal(changes.length, 1);
+		assert.ok(changes[0].newChunk.length);
 	});
 
 	test('Complex patch', () => {
-		const patch = parseLlmGeneratedPatchV1(twoChangePatch);
+		const patch = parseLlmGeneratedPatchV1WithHandWrittenParser(twoChangePatch);
 
-		console.log(JSON.stringify(patch, null, 2));
+		// console.log(JSON.stringify(patch, null, 2));
 
-		assert.notEqual(patch, undefined);
+		assert.ok(patch);
+		const [change1, change2] = patch.fileChangeOutput.changes;
 
-		// Change is not empty
-		assert.notEqual(patch?.fileChangeOutput.change.length, 0);
+		assert.equal(patch.fileChangeOutput.changes.length, 2);
+		assert.ok(change1.newChunk.length);
+		assert.ok(change2.newChunk.length);
+		assert.ok(change1.oldChunk.length);
+		assert.ok(change2.oldChunk.length);
+	});
 
-		// There are two changes that are not empty
-		assert.equal(patch?.fileChangeOutput.change.length, 2);
-		assert.equal(patch?.fileChangeOutput.change[0].newChunk.text.length, 1);
-		assert.equal(patch?.fileChangeOutput.change[1].newChunk.text.length, 1);
+	test('Partial patch', () => {
+		const patch = parseLlmGeneratedPatchV1WithHandWrittenParser(singleChangeSimplePatchPartial);
 
-		// Old chunks are not empty either
-		assert.equal(patch?.fileChangeOutput.change[0].oldChunk.text.length, 1);
-		assert.equal(patch?.fileChangeOutput.change[1].oldChunk.text.length, 1);
+		// console.log(JSON.stringify(patch, null, 2));
+
+		assert.ok(patch);
+		const changes = patch.fileChangeOutput.changes;
+
+		assert.equal(changes.length, 1);
+		assert.ok(changes[0].newChunk.length);
+	});
+});
+
+suite('Can parse example patches using fast-xml-parser library', () => {
+	test('Simple patch', () => {
+		const patch = parseLlmGeneratedPatchV1WithFastXmlParser(singleChangeSimplePatch);
+
+		// console.log(JSON.stringify(patch, null, 2));
+
+		assert.ok(patch);
+		const changes = patch.fileChangeOutput.changes;
+
+		assert.equal(changes.length, 1);
+		assert.ok(changes[0].newChunk.length);
+	});
+
+	test('Complex patch', () => {
+		const patch = parseLlmGeneratedPatchV1WithFastXmlParser(twoChangePatch);
+
+		// console.log(JSON.stringify(patch, null, 2));
+
+		assert.ok(patch);
+		const [change1, change2] = patch.fileChangeOutput.changes;
+
+		assert.equal(patch.fileChangeOutput.changes.length, 2);
+		assert.ok(change1.newChunk.length);
+		assert.ok(change2.newChunk.length);
+		assert.ok(change1.oldChunk.length);
+		assert.ok(change2.oldChunk.length);
 	});
 });

@@ -4,10 +4,15 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  fast-xml-parser@4.2.7:
+    hash: 7hhuwt3tgtc3ylbibx2ucckppe
+    path: patches/fast-xml-parser@4.2.7.patch
+
 dependencies:
   fast-xml-parser:
-    specifier: ^4.2.7
-    version: 4.2.7
+    specifier: 4.2.7
+    version: 4.2.7(patch_hash=7hhuwt3tgtc3ylbibx2ucckppe)
 
 devDependencies:
   '@types/glob':
@@ -969,12 +974,13 @@ packages:
     resolution: {integrity: sha512-DCXu6Ifhqcks7TZKY3Hxp3y6qphY5SJZmrWMDrKcERSOXWQdMhU9Ig/PYrzyw/ul9jOIyh0N4M0tbC5hodg8dw==}
     dev: true
 
-  /fast-xml-parser@4.2.7:
+  /fast-xml-parser@4.2.7(patch_hash=7hhuwt3tgtc3ylbibx2ucckppe):
     resolution: {integrity: sha512-J8r6BriSLO1uj2miOk1NW0YVm8AGOOu3Si2HQp/cSmo6EA4m3fcwu2WKjJ4RK9wMLBtg69y1kS8baDiQBR41Ig==}
     hasBin: true
     dependencies:
       strnum: 1.0.5
     dev: false
+    patched: true
 
   /fastest-levenshtein@1.0.16:
     resolution: {integrity: sha512-eRnCtTTtGZFpQCwhJiUOuxPQWRXVKYDn0b2PeHfXL6/Zi53SLAzAHfVhVWK2AryC/WH05kGfxhFIPvTF0SXQzg==}
