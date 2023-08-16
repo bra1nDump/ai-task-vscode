@@ -9,7 +9,7 @@ const singleChangeSimplePatch = `
 <description>Parametrising function with a name of the thing to be greeted</description>
 <old-chunk>
 function helloWorld() {
-    // @typist pass name to be greeted
+    // @bread pass name to be greeted
     console.log('Hello World');
 }
 </old-chunk>
@@ -29,7 +29,7 @@ const singleChangeSimplePatchPartial = `
 <description>Parametrising function with a name of the thing to be greeted</description>
 <old-chunk>
 function helloWorld() {
-    // @typist pass name to be greeted
+    // @bread pass name to be greeted
     console.log('Hello World');
 }
 </old-chunk>
@@ -41,13 +41,13 @@ function hello(name: string) {
 const twoChangePatch = `
 <file-change-output>
 <change>
-<description>Watching the current document for changes, if the change contains typist, find its position and insert a decoration at that position. Adding in the body of the activate function</description>
+<description>Watching the current document for changes, if the change contains bread, find its position and insert a decoration at that position. Adding in the body of the activate function</description>
 <old-chunk>
 		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from typist!');
+		vscode.window.showInformationMessage('Hello World from bread!');
 	});
 
-    // @typist When a user adds a magic word @typist in the current file, add a button on top of that line with a play button
+    // @bread When a user adds a magic word @bread in the current file, add a button on top of that line with a play button
 
 	context.subscriptions.push(disposable);
 }
@@ -55,7 +55,7 @@ const twoChangePatch = `
 </old-chunk>
 <new-chunk>
 	// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from typist!');
+		vscode.window.showInformationMessage('Hello World from bread!');
 	});
 
     workspace.onDidChangeTextDocument((event) => {
@@ -64,7 +64,7 @@ const twoChangePatch = `
             const document = editor.document;
             const text = document.getText();
             const lines = text.split('\n');
-            const magicWord = 'typist';
+            const magicWord = 'bread';
             const decorationsArray = [];
 
             // Loop over each line of text in the document

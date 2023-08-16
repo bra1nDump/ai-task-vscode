@@ -28,7 +28,12 @@ Clearly supports steaming https://openai-function-call.onrender.com/multitask/#:
 
 https://github.com/hwchase17/langchainjs/blob/65e59d669889ef07a564c5ec8fd23e21ed1aa68a/examples/src/models/chat/openai_functions_zod.ts
 
+Function calling is used in the agents, but how? I don't think it will structurize the tools as well.
+https://github.com/hwchase17/langchainjs/blob/65e59d669889ef07a564c5ec8fd23e21ed1aa68a/langchain/src/agents/initialize.ts#L177
+
 How would streaming work?
+- Again seems like we need to write a custom parser
+- There is one that looks promising but requires more digging into to acomplish the task compared to having chat gpt write the parser for us https://github.com/uhop/stream-json/tree/master
 
 # Generally useful ideas
 - How do we help it 'plan' what it will do?

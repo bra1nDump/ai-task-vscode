@@ -1,6 +1,6 @@
 {
-  "name": "typist",
-  "displayName": "typist",
+  "name": "bread",
+  "displayName": "bread",
   "description": "Leave breakcrumbs across the codebase and have llm type for you inline",
   "version": "0.0.1",
   "engines": {
@@ -14,7 +14,7 @@
   "contributes": {
     "commands": [
       {
-        "command": "typist.helloWorld",
+        "command": "bread.helloWorld",
         "title": "Hello World"
       }
     ]
