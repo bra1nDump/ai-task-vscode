@@ -9,13 +9,15 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "*" // Activate on startup
+  ],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "bread.helloWorld",
-        "title": "Hello World"
+        "command": "bread.run",
+        "title": "Feed the birds"
       }
     ]
   },
