@@ -24,7 +24,7 @@
 			"request": "launch",
 			"args": [
 				"--extensionDevelopmentPath=${workspaceFolder}",
-				"--extensionTestsPath=${workspaceFolder}/out/test/suite/index"
+				"--extensionTestsPath=${workspaceFolder}/out/test/mochaTestRunner.js"
 			],
 			"outFiles": [
 				"${workspaceFolder}/out/**/*.js",

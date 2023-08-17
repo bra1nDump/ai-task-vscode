@@ -5,7 +5,9 @@
 - Use langchain for all things llm to keep getting free features
 
 # Focus
-- Do what Continue is not doing
+- Multi-file editing
+- Auto-completion
+- Language syntax awareness
 
 # Produce good side effects
 - Publicaly write about accomplishments, for example diff benchmark?
