@@ -1,12 +1,12 @@
 import * as vscode from 'vscode';
 
 export function activate(context: vscode.ExtensionContext) {
-	console.log('activating bread extension')
+	console.log('activating bread extension');
 
 	// Commands also need to be defined in package.json
 	context.subscriptions.unshift(
 		vscode.commands.registerCommand('bread.run', run)
-	)
+	);
 }
 
 // This method is called when your extension is deactivated
@@ -19,7 +19,7 @@ export function deactivate() {}
  * Parse the diffs and apply them to the files (in place for now)
  */
 async function run() {
-	console.log('running bread')
+	console.log('running bread');
 
-	
+
 }
