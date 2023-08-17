@@ -1,5 +1,8 @@
-import * as assert from 'assert';
-import { parseLlmGeneratedPatchV1WithFastXmlParser, parseLlmGeneratedPatchV1WithHandWrittenParser } from './llmGeneratedPatchV1';
+import * as assert from 'assert'
+import {
+  parseLlmGeneratedPatchV1WithFastXmlParser,
+  parseLlmGeneratedPatchV1WithHandWrittenParser,
+} from './llmGeneratedPatchV1'
 
 const singleChangeSimplePatch = `
 <!-- All edits within this container apply to the same file -->
@@ -21,7 +24,7 @@ function hello(name: string) {
 </new-chunk>
 </change>
 </file-change-output>
-`;
+`
 
 const singleChangeSimplePatchPartial = `
 <file-change-output>
@@ -36,7 +39,7 @@ function helloWorld() {
 <new-chunk>
 function hello(name: string) {
 
-`;
+`
 
 const twoChangePatch = `
 <file-change-output>
@@ -119,74 +122,80 @@ export function activate(context: ExtensionContext) {
 </new-chunk>
 </change>
 </file-change-output>
-`;
+`
 
 suite('Can parse example patches using hand written parser', () => {
-	test('Simple patch', () => {
-		const patch = parseLlmGeneratedPatchV1WithHandWrittenParser(singleChangeSimplePatch);
+  test('Simple patch', () => {
+    const patch = parseLlmGeneratedPatchV1WithHandWrittenParser(
+      singleChangeSimplePatch,
+    )
 
-		// console.log(JSON.stringify(patch, null, 2));
+    // console.log(JSON.stringify(patch, null, 2));
 
-		assert.ok(patch);
-		const changes = patch.fileChangeOutput.changes;
+    assert.ok(patch)
+    const changes = patch.fileChangeOutput.changes
 
-		assert.equal(changes.length, 1);
-		assert.ok(changes[0].newChunk.length);
-	});
+    assert.equal(changes.length, 1)
+    assert.ok(changes[0].newChunk.length)
+  })
 
-	test('Complex patch', () => {
-		const patch = parseLlmGeneratedPatchV1WithHandWrittenParser(twoChangePatch);
+  test('Complex patch', () => {
+    const patch = parseLlmGeneratedPatchV1WithHandWrittenParser(twoChangePatch)
 
-		// console.log(JSON.stringify(patch, null, 2));
+    // console.log(JSON.stringify(patch, null, 2));
 
-		assert.ok(patch);
-		const [change1, change2] = patch.fileChangeOutput.changes;
+    assert.ok(patch)
+    const [change1, change2] = patch.fileChangeOutput.changes
 
-		assert.equal(patch.fileChangeOutput.changes.length, 2);
-		assert.ok(change1.newChunk.length);
-		assert.ok(change2.newChunk.length);
-		assert.ok(change1.oldChunk.length);
-		assert.ok(change2.oldChunk.length);
-	});
+    assert.equal(patch.fileChangeOutput.changes.length, 2)
+    assert.ok(change1.newChunk.length)
+    assert.ok(change2.newChunk.length)
+    assert.ok(change1.oldChunk.length)
+    assert.ok(change2.oldChunk.length)
+  })
 
-	test('Partial patch', () => {
-		const patch = parseLlmGeneratedPatchV1WithHandWrittenParser(singleChangeSimplePatchPartial);
+  test('Partial patch', () => {
+    const patch = parseLlmGeneratedPatchV1WithHandWrittenParser(
+      singleChangeSimplePatchPartial,
+    )
 
-		// console.log(JSON.stringify(patch, null, 2));
+    // console.log(JSON.stringify(patch, null, 2));
 
-		assert.ok(patch);
-		const changes = patch.fileChangeOutput.changes;
+    assert.ok(patch)
+    const changes = patch.fileChangeOutput.changes
 
-		assert.equal(changes.length, 1);
-		assert.ok(changes[0].newChunk.length);
-	});
-});
+    assert.equal(changes.length, 1)
+    assert.ok(changes[0].newChunk.length)
+  })
+})
 
 suite('Can parse example patches using fast-xml-parser library', () => {
-	test('Simple patch', () => {
-		const patch = parseLlmGeneratedPatchV1WithFastXmlParser(singleChangeSimplePatch);
+  test('Simple patch', () => {
+    const patch = parseLlmGeneratedPatchV1WithFastXmlParser(
+      singleChangeSimplePatch,
+    )
 
-		// console.log(JSON.stringify(patch, null, 2));
+    // console.log(JSON.stringify(patch, null, 2));
 
-		assert.ok(patch);
-		const changes = patch.fileChangeOutput.changes;
+    assert.ok(patch)
+    const changes = patch.fileChangeOutput.changes
 
-		assert.equal(changes.length, 1);
-		assert.ok(changes[0].newChunk.length);
-	});
+    assert.equal(changes.length, 1)
+    assert.ok(changes[0].newChunk.length)
+  })
 
-	test('Complex patch', () => {
-		const patch = parseLlmGeneratedPatchV1WithFastXmlParser(twoChangePatch);
+  test('Complex patch', () => {
+    const patch = parseLlmGeneratedPatchV1WithFastXmlParser(twoChangePatch)
 
-		// console.log(JSON.stringify(patch, null, 2));
+    // console.log(JSON.stringify(patch, null, 2));
 
-		assert.ok(patch);
-		const [change1, change2] = patch.fileChangeOutput.changes;
+    assert.ok(patch)
+    const [change1, change2] = patch.fileChangeOutput.changes
 
-		assert.equal(patch.fileChangeOutput.changes.length, 2);
-		assert.ok(change1.newChunk.length);
-		assert.ok(change2.newChunk.length);
-		assert.ok(change1.oldChunk.length);
-		assert.ok(change2.oldChunk.length);
-	});
-});
+    assert.equal(patch.fileChangeOutput.changes.length, 2)
+    assert.ok(change1.newChunk.length)
+    assert.ok(change2.newChunk.length)
+    assert.ok(change1.oldChunk.length)
+    assert.ok(change2.oldChunk.length)
+  })
+})
