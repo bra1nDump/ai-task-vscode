@@ -10,7 +10,7 @@
     "Other"
   ],
   "activationEvents": [
-    "*" // Activate on startup
+    "*"
   ],
   "main": "./dist/extension.js",
   "contributes": {
