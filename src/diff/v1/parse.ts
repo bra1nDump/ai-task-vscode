@@ -1,31 +1,4 @@
-/* eslint-disable @typescript-eslint/naming-convention */
-
-type RangeToReplace =
-  | {
-      type: 'fullContentRange'
-      fullContent: string
-    }
-  | {
-      type: 'prefixAndSuffixRange'
-      prefixContent: string
-      suffixContent: string
-    }
-
-type Replacement = string
-
-interface Change {
-  description: string
-  oldChunk: RangeToReplace
-  newChunk: Replacement
-}
-
-interface FileChangeOutput {
-  changes: Change[]
-}
-
-export interface LlmGeneratedPatchXmlV1 {
-  fileChangeOutput: FileChangeOutput
-}
+import { LlmGeneratedPatchXmlV1, RangeToReplace } from './types'
 
 function extractContentForTag(xml: string, tag: string): string[] {
   const tagLength = tag.length

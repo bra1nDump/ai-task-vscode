@@ -1,5 +1,5 @@
 import * as assert from 'assert'
-import { parseLlmGeneratedPatchV1WithHandWrittenParser } from './llmGeneratedPatchV1'
+import { parseLlmGeneratedPatchV1WithHandWrittenParser } from './types'
 import {
   singleChangeSimplePatch,
   twoChangePatch,
