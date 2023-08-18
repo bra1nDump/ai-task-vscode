@@ -70,3 +70,8 @@ We should infer based on the indentation of the file after the context prefix.
 Simply look at last line.
 Adjust each line's indentation to match.
 
+# Demand, Cursor, someone posted:
+First off, cursor has been really great to use so far!
+When trying to write frontend , I love asking cursor to write my css. However, it's slightly annoying since I have to ask it to create the css first (passing in my component file) where it then generates some class names and then i have to do the reverse where I pass in the css and ask it to fill in the class names on my component file. It would be great if this could be done in one go where I just pass in my component file and a css file and ask it to generate some styles.
+
+dynx.

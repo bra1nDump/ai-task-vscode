@@ -16,8 +16,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "bread.run",
-        "title": "Feed the birds"
+        "command": "bread.release",
+        "title": "Release the birds"
       }
     ]
   },
