@@ -20,7 +20,8 @@ import { useMutation } from 'react-query';
   - Lets also get the application of diffs as well
 - Instead of generating diff, just override the code first. Present the diff once the generation is completed
 - Usually there are no repeated file lines in a code file. Unless its tests, or unless its
-
+- Alt+select allows to select multiple ranges in vscode. This is very useful when you want to make multi edits
+  - They can also be parallelized
 
 ## Format v2 - open ai function calling
 Instead of xml encoding, we can use function calling fomat to encode the changes.

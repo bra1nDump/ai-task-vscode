@@ -1,11 +1,11 @@
 import * as assert from 'assert'
-import { parseLlmGeneratedPatchV1WithHandWrittenParser } from './types'
 import {
   singleChangeSimplePatch,
   twoChangePatch,
   singleChangeSimplePatchPartial,
   patchWithTruncatedOldChunk,
 } from './examples'
+import { parseLlmGeneratedPatchV1WithHandWrittenParser } from './parse'
 
 suite('Can parse example patches using hand written parser', () => {
   test('Simple patch', () => {
