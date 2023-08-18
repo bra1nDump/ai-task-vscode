@@ -23,6 +23,18 @@ import { useMutation } from 'react-query';
 - Alt+select allows to select multiple ranges in vscode. This is very useful when you want to make multi edits
   - They can also be parallelized
 
+### Diff application view
+Github copilot has the best UI I would say https://code.visualstudio.com/api/references/vscode-api#TabInputTextDiff
+
+Hmm found one promising https://github.com/billgoo/vscode-tab-group/blob/9c81c47d708f378636927897a74f474bf3c8473e/src/TabTypeHandler.ts#L121
+
+Not bad either. Saves layout https://github.com/eamodio/vscode-restore-editors
+https://github.com/eamodio/vscode-restore-editors/blob/2923aa13d77fe773a77118feaff5d35a65890bd0/src/layoutManager.ts#L224
+
+Interesting, found an extension for idea similar to sticky task https://github.com/marlomgirardi/vscode-keep-context/blob/10a08a76e8b64a210b6712e668bf4960c5054774/README.md?plain=1#L26
+
+
+
 ## Format v2 - open ai function calling
 Instead of xml encoding, we can use function calling fomat to encode the changes.
 Can we use lang chain for this?

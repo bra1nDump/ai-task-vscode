@@ -8,9 +8,45 @@ export async function findRangeInEditor(
   const document = editor.document
   const text = document.getText().split('\n')
 
+  /**
+   * Finds a line in the document that matches the given line, only if it is the only match
+   */
   const searchLine = (lines: string[], line: string) => {
     const trimmedLine = line.trim()
-    return lines.findIndex((l) => l.trim() === trimmedLine)
+
+    // Never match empty lines
+    if (trimmedLine === '') {
+      return -1
+    }
+
+    const firstMatchIndex = lines.findIndex((l) => l.trim() === trimmedLine)
+
+    // Make sure its the only match
+    const secondMatchIndex = lines.findIndex(
+      (l, i) => i !== firstMatchIndex && l.trim() === trimmedLine,
+    )
+    if (secondMatchIndex !== -1) {
+      return -1
+    }
+
+    return firstMatchIndex
+  }
+
+  // Separately handle a case of very simple / empty files
+  // Search for entire content in the document
+  if (oldChunk.type === 'fullContentRange') {
+    const fullContentIndex = document.getText().indexOf(oldChunk.fullContent)
+    if (fullContentIndex !== -1) {
+      const fullContentLines = oldChunk.fullContent.split('\n')
+      const startLine = document.positionAt(fullContentIndex).line
+      const endLine = startLine + fullContentLines.length - 1
+      return new vscode.Range(
+        startLine,
+        0,
+        endLine,
+        document.lineAt(endLine).text.length,
+      )
+    }
   }
 
   // Get both range formats to a common format
@@ -48,30 +84,41 @@ export async function findRangeInEditor(
     return undefined
   }
 
-  start += prefixIndex - 1
-  end -= suffixIndex - 1
+  start -= prefixIndex - 1
+  end += suffixIndex - 1
 
   return new vscode.Range(start, 0, end, document.lineAt(end).text.length)
 }
 
 export async function applyChanges(
   changes: Change[],
-  editor: vscode.TextEditor | undefined = vscode.window.activeTextEditor,
-): Promise<void> {
-  if (!editor) {
-    console.error('No active text editor')
-    return
-  }
+  editor: vscode.TextEditor,
+): Promise<
+  Array<{
+    change: Change
+    result:
+      | 'appliedSuccessfully'
+      | 'failedToFindTargetRange'
+      | 'failedToApplyCanRetry'
+  }>
+> {
+  return Promise.all(
+    changes.map(async (change) => {
+      const range = await findRangeInEditor(change.oldChunk, editor)
+      if (!range) {
+        console.error(`Could not find range for change: ${change.description}`)
+        return { change, result: 'failedToFindTargetRange' }
+      }
 
-  for (const change of changes) {
-    const range = await findRangeInEditor(change.oldChunk, editor)
-    if (!range) {
-      console.error(`Could not find range for change: ${change.description}`)
-      continue
-    }
-
-    await editor.edit((editBuilder) => {
-      editBuilder.replace(range, change.newChunk)
-    })
-  }
+      const successfullyApplied = await editor.edit((editBuilder) => {
+        editBuilder.replace(range, change.newChunk)
+      })
+      return {
+        change,
+        result: successfullyApplied
+          ? 'appliedSuccessfully'
+          : 'failedToApplyCanRetry',
+      }
+    }),
+  )
 }
