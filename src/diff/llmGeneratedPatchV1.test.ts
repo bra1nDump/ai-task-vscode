@@ -1,8 +1,5 @@
 import * as assert from 'assert'
-import {
-  parseLlmGeneratedPatchV1WithFastXmlParser,
-  parseLlmGeneratedPatchV1WithHandWrittenParser,
-} from './llmGeneratedPatchV1'
+import { parseLlmGeneratedPatchV1WithHandWrittenParser } from './llmGeneratedPatchV1'
 
 const singleChangeSimplePatch = `
 <!-- All edits within this container apply to the same file -->
@@ -75,7 +72,7 @@ const twoChangePatch = `
                 const line = lines[i];
                 // If the magic word is found in the line, create a decoration
                 if (line.includes(magicWord)) {
-                    const decoration = { range: new Range(i, 0, i, 0), hoverMessage: 'Play Button' };
+                    const decoration = { range: new Range(i, 0, i, 0), hoverMessage: 'Eat Bread' };
                     decorationsArray.push(decoration);
                 }
             }
@@ -124,6 +121,72 @@ export function activate(context: ExtensionContext) {
 </file-change-output>
 `
 
+const patchWithTruncatedOldChunk = `
+<file-change-output>
+<change>
+<description>Keeping track of </description>
+<!-- When a big part of the old chunk is changed, simply truncate the middle using </truncated> tag, only provide the start and end of the old chunk -->
+<old-chunk>
+    // Display a message box to the user
+		vscode.window.showInformationMessage('Hello World from bread!');
+	});
+
+</truncated>
+
+  context.subscriptions.push(disposable);
+}
+</old-chunk>
+<new-chunk>
+	  // Display a message box to the user
+		vscode.window.showInformationMessage('Hello World from bread!');
+	});
+
+  // Function to handle on change event
+  function generateBreadRunnerDecorationsFor(editor) {
+      const document = editor.document;
+      const text = document.getText();
+      const lines = text.split('\n');
+      const magicWord = 'bread';
+
+      // Loop over each line of text in the document
+      for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          // If the magic word is found in the line, create a decoration
+          if (line.includes(magicWord)) {
+              const decoration = { range: new Range(i, 0, i, 0), hoverMessage: 'Eat Bread' };
+              decorationsArray.push(decoration);
+          }
+      }
+      return decorationsArray;
+  }
+
+  // Display a message box to the user
+  vscode.window.showInformationMessage('Hello World from bread!');
+
+  // Create a decoration type with a button
+  const breadRunnerDecorationType = window.createTextEditorDecorationType({
+      after: {
+          contentText: '▶️',
+          margin: '0 0 0 1em',
+          textDecoration: 'none; cursor: pointer;',
+      },
+  });
+  workspace.onDidChangeTextDocument((event) => {
+      const editor = window.activeTextEditor;
+      if (editor) {
+        // Save the new decorations
+        const breadRunnerDecorations = generateBreadRunnerDecorationsFor(editor);
+        editor.setDecorations(breadRunnerDecorationType, breadRunnerDecorations);
+      }
+  });
+
+  context.subscriptions.push(disposable);
+}
+</new-chunk>
+</change>
+</file-change-output>
+`
+
 suite('Can parse example patches using hand written parser', () => {
   test('Simple patch', () => {
     const patch = parseLlmGeneratedPatchV1WithHandWrittenParser(
@@ -150,8 +213,11 @@ suite('Can parse example patches using hand written parser', () => {
     assert.equal(patch.fileChangeOutput.changes.length, 2)
     assert.ok(change1.newChunk.length)
     assert.ok(change2.newChunk.length)
-    assert.ok(change1.oldChunk.length)
-    assert.ok(change2.oldChunk.length)
+
+    assert.ok(change1.oldChunk.type === 'fullContentRange')
+    assert.ok(change2.oldChunk.type === 'fullContentRange')
+    assert.ok(change1.oldChunk.fullContent.length)
+    assert.ok(change2.oldChunk.fullContent.length)
   })
 
   test('Partial patch', () => {
@@ -167,12 +233,10 @@ suite('Can parse example patches using hand written parser', () => {
     assert.equal(changes.length, 1)
     assert.ok(changes[0].newChunk.length)
   })
-})
 
-suite('Can parse example patches using fast-xml-parser library', () => {
-  test('Simple patch', () => {
-    const patch = parseLlmGeneratedPatchV1WithFastXmlParser(
-      singleChangeSimplePatch,
+  test('Patch with truncated tag in old chunk', () => {
+    const patch = parseLlmGeneratedPatchV1WithHandWrittenParser(
+      patchWithTruncatedOldChunk,
     )
 
     // console.log(JSON.stringify(patch, null, 2));
@@ -181,21 +245,14 @@ suite('Can parse example patches using fast-xml-parser library', () => {
     const changes = patch.fileChangeOutput.changes
 
     assert.equal(changes.length, 1)
-    assert.ok(changes[0].newChunk.length)
-  })
 
-  test('Complex patch', () => {
-    const patch = parseLlmGeneratedPatchV1WithFastXmlParser(twoChangePatch)
+    const { oldChunk, newChunk } = changes[0]
 
-    // console.log(JSON.stringify(patch, null, 2));
+    // Ensure the start and end of the old chunk are present and have reasonable length
+    assert.ok(oldChunk.type === 'prefixAndSuffixRange')
+    assert.ok(oldChunk.prefixContent.length > 10)
+    assert.ok(oldChunk.suffixContent.length > 10)
 
-    assert.ok(patch)
-    const [change1, change2] = patch.fileChangeOutput.changes
-
-    assert.equal(patch.fileChangeOutput.changes.length, 2)
-    assert.ok(change1.newChunk.length)
-    assert.ok(change2.newChunk.length)
-    assert.ok(change1.oldChunk.length)
-    assert.ok(change2.oldChunk.length)
+    assert.ok(newChunk.length)
   })
 })

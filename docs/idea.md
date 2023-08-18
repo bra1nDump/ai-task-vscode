@@ -14,6 +14,7 @@
 - I feel like if it compiles its good to go
 - Maybe generate a plan first with type signatures and developer would approve it?
 - Create copies of the repo and try different approaches and then try to compile
+- Context - see what continue did. @google @url @< some actual symbol from code > are good starts
 
 # Vscode + langchain github seach
 All of these use a webview

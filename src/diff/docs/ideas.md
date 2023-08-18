@@ -14,9 +14,13 @@ import { useMutation } from 'react-query';
 
 ### Improvements / issues
 - When deleting or overriding big portions of the code old-chunk will be large. And it gets printed out before the new-chunk so the perceived delay is large.
-- 
+- With truncation it basically is the same as providing prefix / suffix context.
+- I feel like its better to name the old chunk as range, and the new chunk as replacement.
+- Lets get the functions working before I do more iterations on this
+  - Lets also get the application of diffs as well
+- Instead of generating diff, just override the code first. Present the diff once the generation is completed
+- Usually there are no repeated file lines in a code file. Unless its tests, or unless its
 
-- [Solved with custom parser] Issues happen with < symbols that are common in code. We need to somehow prevent parsing those. 
 
 ## Format v2 - open ai function calling
 Instead of xml encoding, we can use function calling fomat to encode the changes.
