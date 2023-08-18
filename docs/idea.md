@@ -16,6 +16,9 @@
 - Create copies of the repo and try different approaches and then try to compile
 - Context - see what continue did. @google @url @< some actual symbol from code > are good starts
 
+# Cases when its useful 
+Add export to all constants in a file
+
 # Vscode + langchain github seach
 All of these use a webview
 

@@ -1,7 +1,4 @@
-import * as assert from 'assert'
-import { parseLlmGeneratedPatchV1WithHandWrittenParser } from './llmGeneratedPatchV1'
-
-const singleChangeSimplePatch = `
+export const singleChangeSimplePatch = `
 <!-- All edits within this container apply to the same file -->
 <file-change-output>
 <change>
@@ -23,7 +20,7 @@ function hello(name: string) {
 </file-change-output>
 `
 
-const singleChangeSimplePatchPartial = `
+export const singleChangeSimplePatchPartial = `
 <file-change-output>
 <change>
 <description>Parametrising function with a name of the thing to be greeted</description>
@@ -38,7 +35,7 @@ function hello(name: string) {
 
 `
 
-const twoChangePatch = `
+export const twoChangePatch = `
 <file-change-output>
 <change>
 <description>Watching the current document for changes, if the change contains bread, find its position and insert a decoration at that position. Adding in the body of the activate function</description>
@@ -121,7 +118,7 @@ export function activate(context: ExtensionContext) {
 </file-change-output>
 `
 
-const patchWithTruncatedOldChunk = `
+export const patchWithTruncatedOldChunk = `
 <file-change-output>
 <change>
 <description>Keeping track of </description>
@@ -186,73 +183,3 @@ const patchWithTruncatedOldChunk = `
 </change>
 </file-change-output>
 `
-
-suite('Can parse example patches using hand written parser', () => {
-  test('Simple patch', () => {
-    const patch = parseLlmGeneratedPatchV1WithHandWrittenParser(
-      singleChangeSimplePatch,
-    )
-
-    // console.log(JSON.stringify(patch, null, 2));
-
-    assert.ok(patch)
-    const changes = patch.fileChangeOutput.changes
-
-    assert.equal(changes.length, 1)
-    assert.ok(changes[0].newChunk.length)
-  })
-
-  test('Complex patch', () => {
-    const patch = parseLlmGeneratedPatchV1WithHandWrittenParser(twoChangePatch)
-
-    // console.log(JSON.stringify(patch, null, 2));
-
-    assert.ok(patch)
-    const [change1, change2] = patch.fileChangeOutput.changes
-
-    assert.equal(patch.fileChangeOutput.changes.length, 2)
-    assert.ok(change1.newChunk.length)
-    assert.ok(change2.newChunk.length)
-
-    assert.ok(change1.oldChunk.type === 'fullContentRange')
-    assert.ok(change2.oldChunk.type === 'fullContentRange')
-    assert.ok(change1.oldChunk.fullContent.length)
-    assert.ok(change2.oldChunk.fullContent.length)
-  })
-
-  test('Partial patch', () => {
-    const patch = parseLlmGeneratedPatchV1WithHandWrittenParser(
-      singleChangeSimplePatchPartial,
-    )
-
-    // console.log(JSON.stringify(patch, null, 2));
-
-    assert.ok(patch)
-    const changes = patch.fileChangeOutput.changes
-
-    assert.equal(changes.length, 1)
-    assert.ok(changes[0].newChunk.length)
-  })
-
-  test('Patch with truncated tag in old chunk', () => {
-    const patch = parseLlmGeneratedPatchV1WithHandWrittenParser(
-      patchWithTruncatedOldChunk,
-    )
-
-    // console.log(JSON.stringify(patch, null, 2));
-
-    assert.ok(patch)
-    const changes = patch.fileChangeOutput.changes
-
-    assert.equal(changes.length, 1)
-
-    const { oldChunk, newChunk } = changes[0]
-
-    // Ensure the start and end of the old chunk are present and have reasonable length
-    assert.ok(oldChunk.type === 'prefixAndSuffixRange')
-    assert.ok(oldChunk.prefixContent.length > 10)
-    assert.ok(oldChunk.suffixContent.length > 10)
-
-    assert.ok(newChunk.length)
-  })
-})
