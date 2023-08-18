@@ -74,7 +74,7 @@ async function ensurePoetryIsInstalled() {
   console.log(poetryInstallationResult)
 }
 
-export const pythonInstalledPath = `${os.homedir()}/.birds/poetry/venv/bin/python3`
+export const pythonInstalledPath = `${os.homedir()}/.birds/poetry/.venv/bin/python3`
 
 /**
  * Assumes there is some version of python3 installed on the system.

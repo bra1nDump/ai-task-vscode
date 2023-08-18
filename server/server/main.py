@@ -16,7 +16,6 @@ Assistant:"""
 
 prompt = PromptTemplate(input_variables=["history", "human_input"], template=template)
 
-
 chatgpt_chain = LLMChain(
     llm=OpenAI(temperature=0),
     prompt=prompt,
