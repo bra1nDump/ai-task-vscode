@@ -1,8 +1,12 @@
 import { release } from 'birds/release'
 import * as vscode from 'vscode'
 
-export function activate(context: vscode.ExtensionContext) {
+import { bootstrapPythonServer } from './bootstrap-python-server'
+
+export async function activate(context: vscode.ExtensionContext) {
   console.log('activating bread extension')
+
+  bootstrapPythonServer()
 
   // Commands also need to be defined in package.json
   context.subscriptions.unshift(

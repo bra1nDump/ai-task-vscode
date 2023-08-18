@@ -1,11 +1,14 @@
 # Features
-- Making a local change and figuring out the places where the code gets broken and trying to iteratively fix them. For example adding a new parameter to a function should be trivial
-- Planning out a larger change across the components of the codebase by leaving breakcrumbs in the codebase as comments / bookmarks (using bookmarks extension)
+- Multifile edits
+  - Making a local change and figuring out the places where the code gets broken and trying to iteratively fix them. For example adding a new parameter to a function should be trivial
+  - Planning out a larger change across the components of the codebase by leaving breakcrumbs in the codebase as comments / bookmarks (using bookmarks extension)
   - One time
   - Persistent - adding a new UI feature
     - Redux model
     - Initial value
     - Case reducer
+- Workspace changes
+  - Adding a new file
 - Making legal moves
   - Factoring out variables
   - Splitting up functions
@@ -15,6 +18,7 @@
 - Maybe generate a plan first with type signatures and developer would approve it?
 - Create copies of the repo and try different approaches and then try to compile
 - Context - see what continue did. @google @url @< some actual symbol from code > are good starts
+  - ![cursor-learning-documentation](cursor-learning-documentation.png)
 
 # Cases when its useful 
 Add export to all constants in a file
