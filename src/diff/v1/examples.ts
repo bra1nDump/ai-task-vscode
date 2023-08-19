@@ -183,3 +183,10 @@ export const patchWithTruncatedOldChunk = `
 </change>
 </file-change-output>
 `
+
+export const allDiffV1Examples = [
+  singleChangeSimplePatch,
+  patchWithTruncatedOldChunk,
+  singleChangeSimplePatchPartial,
+  twoChangePatch,
+]

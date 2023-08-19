@@ -10,7 +10,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Commands also need to be defined in package.json
   context.subscriptions.unshift(
-    vscode.commands.registerCommand('bread.release', release),
+    vscode.commands.registerCommand('birds.release', release),
   )
 }
 

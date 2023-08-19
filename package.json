@@ -16,7 +16,7 @@
   "contributes": {
     "commands": [
       {
-        "command": "bread.release",
+        "command": "birds.release",
         "title": "Release the birds"
       }
     ]
@@ -53,6 +53,7 @@
   },
   "dependencies": {
     "execa": "^7.2.0",
-    "langchain": "^0.0.130"
+    "langchain": "^0.0.130",
+    "openai": "^4.0.0"
   }
 }

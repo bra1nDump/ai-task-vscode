@@ -10,8 +10,11 @@
 			"type": "extensionHost",
 			"request": "launch",
 			"args": [
+				"${workspaceFolder}/testing-sandbox",
+				"${workspaceFolder}/testing-sandbox/helloWorld.ts",
 				"--extensionDevelopmentPath=${workspaceFolder}"
 			],
+			"envFile": "${workspaceFolder}/.env",
 			"outFiles": [
 				"${workspaceFolder}/dist/**/*.js"
 			],
@@ -23,9 +26,11 @@
 			"type": "extensionHost",
 			"request": "launch",
 			"args": [
+				"${workspaceFolder}/testing-sandbox",
 				"--extensionDevelopmentPath=${workspaceFolder}",
 				"--extensionTestsPath=${workspaceFolder}/out/test/mochaTestRunner.js"
 			],
+			"envFile": "${workspaceFolder}/.env",
 			"outFiles": [
 				"${workspaceFolder}/out/**/*.js",
 				"${workspaceFolder}/dist/**/*.js"
