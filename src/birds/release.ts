@@ -81,16 +81,16 @@ function constructMessagesForLlm(fileContexts: FileContext[]): Message[] {
   const filesContextXmlPrompt = fileContexts
     .map(
       (fileContext) =>
-        '<file>' +
-        `  <path>${fileContext.filePathRelativeTooWorkspace}</path>` +
-        `  <content>${fileContext.content}</content>` +
+        '<file>\n' +
+        `  <path>${fileContext.filePathRelativeTooWorkspace}</path>\n` +
+        `  <content>\n${fileContext.content}\n</content>\n` +
         '</file>',
     )
     .join('\n\n')
   const filesContextXmlPromptSystemMessage: Message = {
     content:
-      'Pay special attention to @bread mentions, they shuold guide the diff generation.' +
-      'Files context:' +
+      'Pay special attention to @bread mentions, they shuold guide the diff generation.\n' +
+      'Files context:\n' +
       filesContextXmlPrompt,
     role: 'system',
   }
@@ -114,7 +114,7 @@ async function* streamLlm<T>(
   // Compare AsyncGenerators / AsyncIterators: https://javascript.info/async-iterators-generators
   // Basically openai decided to not return AsyncGenerator, which is more powerful (compare type definitions) but instead return an AsyncIteratable for stream
   const stream = await openai.chat.completions.create({
-    model: 'gpt-3.5-turbo',
+    model: process.env.OPENAI_DEFAULT_MODEL ?? 'gpt-4',
     temperature: 0.9,
     messages,
     stream: true,

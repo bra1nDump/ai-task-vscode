@@ -7,11 +7,46 @@ export type XmlElement = {
   isClosed: boolean
 }
 
-function extractXmlElementsForTag(xml: string, tag: string): XmlElement[] {
+/**
+ * Extracts all xml elements with the given tag from the given xml string.
+ * If the tag is not closed, the content will be the content up to the end of the string.
+ *
+ * THIS IS NOT A PROPER XML PARSER - it does not parse attributes, comments and many many other things
+ *   Using to overcome the issues with partial xml from llm parsing,
+ *   not to mention annoying fast-xml-parser bugs related to stopNodes
+ *
+ * @param xml The xml to extract elements from
+ * @param tag The tag to extract, for example calling with tag 'change' on the following xml:
+ *    ```xml
+ *    <change>A</change><change>B</change>
+ *    <change>
+ *    C
+ *    </cha
+ *    ```
+ *    will return 3 elements with content `A, B and C`. Notice that the last element is not closed
+ *
+ * @param shouldTrimUpToOneLeadingAndTrailingNewLine If true, will remove leading and trailing new lines from the content
+ *   this is useful when streaming from an llm to make it easier for humans to read.
+ *
+ *   It will also remove empty lines from the end of the content. This happens due to indentation.
+ *   In the following example the content of the change will be `lol` and not `lol\n++`
+ *   ```xml
+ *   <file>
+ *   ++<change>
+ *   lol
+ *   ++</change>
+ *   </file>
+ *   ```
+ */
+function extractXmlElementsForTag(
+  xml: string,
+  tag: string,
+  shouldTrimUpToOneLeadingAndTrailingNewLine: boolean = true,
+): XmlElement[] {
   const tagLength = tag.length
 
   const contents = []
-  let startIndex = xml.indexOf(`<${tag}`)
+  let startIndex = xml.indexOf(`<${tag}>`)
 
   while (startIndex !== -1) {
     // Extract attributes (later)
@@ -21,12 +56,19 @@ function extractXmlElementsForTag(xml: string, tag: string): XmlElement[] {
       const contentStart = startIndex + tagLength + 2 // 2 for < and >
       const contentEnd = endIndex
       const content = xml.substring(contentStart, contentEnd)
+
+      const normalizedContent = shouldTrimUpToOneLeadingAndTrailingNewLine
+        ? trimUpToOneLeadingAndTrailingNewLine(content)
+        : content
+
       contents.push({
         tag,
-        content,
+        content: normalizedContent,
         isClosed: true,
       })
-      startIndex = xml.indexOf(`<${tag}>`, endIndex + tagLength + 3) // 3 for </, > and start next search after this end tag
+      // 3 for </, > and start next search after this end tag
+      const searchStartIndexForNextOpeningTag = endIndex + tagLength + 3
+      startIndex = xml.indexOf(`<${tag}>`, searchStartIndexForNextOpeningTag)
     } else {
       // If end index is not found, assume we are streaming and the end tag is not there yet
       // So just return the content from the start tag to the end of the string
@@ -44,9 +86,15 @@ function extractXmlElementsForTag(xml: string, tag: string): XmlElement[] {
             0,
             partialContent.length - partiallyPrintedEndTag.length,
           )
+
+          // Even tho the new line here might be legit - still lets delay
+          //  adding it to the content until we know for sure
+          const normalizedContent = shouldTrimUpToOneLeadingAndTrailingNewLine
+            ? trimUpToOneLeadingAndTrailingNewLine(content)
+            : content
           contents.push({
             tag,
-            content,
+            content: normalizedContent,
             isClosed: false,
           })
           break
@@ -60,11 +108,43 @@ function extractXmlElementsForTag(xml: string, tag: string): XmlElement[] {
   return contents
 }
 
+function trimUpToOneLeadingNewLine(content: string) {
+  return content.startsWith('\n') ? content.substring(1) : content
+}
+
+/**
+ * Removes the last new line from the content if it exists, including any whitespace on the final line.
+ * Helpful to remove indentation due to xml pretty printing.
+ *
+ * - Given `lol\n` will return `lol`
+ * - Given `lol\n++` will return `lol`
+ */
+function trimUpToOneTrailingNewLine(content: string) {
+  return content.endsWith('\n')
+    ? content.substring(0, content.length - 1)
+    : content
+}
+
+function trimUpToOneLeadingAndTrailingNewLine(content: string) {
+  const contentWithoutLeadingNewLine = trimUpToOneLeadingNewLine(content)
+  const contentWithoutLeadingAndTrailingNewLine = trimUpToOneTrailingNewLine(
+    contentWithoutLeadingNewLine,
+  )
+
+  return contentWithoutLeadingAndTrailingNewLine
+}
+
+/** @see extractXmlElementsForTag */
 function extractSingleXmlElement(
   xml: string,
   tag: string,
+  shouldTrimUpToOneLeadingAndTrailingNewLine = true,
 ): XmlElement | undefined {
-  const elements = extractXmlElementsForTag(xml, tag)
+  const elements = extractXmlElementsForTag(
+    xml,
+    tag,
+    shouldTrimUpToOneLeadingAndTrailingNewLine,
+  )
   return elements.length > 0 ? elements[0] : undefined
 }
 
