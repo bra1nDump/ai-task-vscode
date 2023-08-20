@@ -16,7 +16,11 @@ suite('Can parse example patches using hand written parser', () => {
     // console.log(JSON.stringify(patch, null, 2));
 
     assert.ok(patch)
-    const changes = patch.fileChanges[0].changes
+    const [fileChange] = patch.fileChanges
+    assert.ok(fileChange)
+    assert.ok(fileChange.filePathRelativeToWorkspace?.length ?? 0 > 0)
+
+    const changes = fileChange.changes
 
     assert.equal(changes.length, 1)
     assert.ok(changes[0].newChunk.content.length)
@@ -41,7 +45,7 @@ suite('Can parse example patches using hand written parser', () => {
   })
 
   test('Almost empty patch', () => {
-    const almostEmptyPatch = '<file-change-output><chan'
+    const almostEmptyPatch = '<file><chan'
     const patch =
       parseLlmGeneratedPatchV1WithHandWrittenParser(almostEmptyPatch)
 
@@ -53,8 +57,7 @@ suite('Can parse example patches using hand written parser', () => {
 
   // We don't want the tag to stream in and get shown to the user
   test('Trailing tag that is not done printing yet gets dropped', () => {
-    const patchWithPartialClosingTag =
-      '<file-change-output><change><old-chunk>lol</ol'
+    const patchWithPartialClosingTag = '<file><change><old-chunk>lol</ol'
     const patch = parseLlmGeneratedPatchV1WithHandWrittenParser(
       patchWithPartialClosingTag,
     )
@@ -70,7 +73,7 @@ suite('Can parse example patches using hand written parser', () => {
   })
 
   test('Content is marked as finalized once it has a closing tag', () => {
-    const patchWithPartialClosingTag = `<file-change-output><change><old-chunk>lol</old-chunk><new-chunk></new-chunk></chan`
+    const patchWithPartialClosingTag = `<file><change><old-chunk>lol</old-chunk><new-chunk></new-chunk></chan`
     const patch = parseLlmGeneratedPatchV1WithHandWrittenParser(
       patchWithPartialClosingTag,
     )

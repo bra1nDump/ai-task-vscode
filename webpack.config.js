@@ -6,6 +6,11 @@
 const resolve = require('path').resolve
 const fs = require('fs')
 
+///
+/// Generate the alias object for all the folders in the 'src' folder to use absolute import paths
+/// NOTE: In mocha tests we cannot use the fancy diffs/apply syntax and are keeping paths relative
+///  as it is not using webpack
+///
 const srcDir = resolve(__dirname, 'src')
 
 // Read the directories in the 'src' folder

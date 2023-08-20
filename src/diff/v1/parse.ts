@@ -1,6 +1,6 @@
 import { Change, LlmGeneratedPatchXmlV1, RangeToReplace } from './types'
 
-export type XmlElement = {
+export interface XmlElement {
   tag: string
   content: string
   /** Since this is streaming from an llm we want to allow for partial xml */
@@ -46,17 +46,16 @@ function extractXmlElementsForTag(
   shouldTrimUpToOneLeadingAndTrailingNewLine = true,
   shouldYieldPartialXml = true,
 ): XmlElement[] {
-  const tagLength = tag.length
+  const openTagString = `<${tag}>`
+  const closeTagString = `</${tag}>`
 
   const contents = []
-  let startIndex = xml.indexOf(`<${tag}>`)
+  let lastDiscoveredOpenTag = xml.indexOf(openTagString)
 
-  while (startIndex !== -1) {
-    // Extract attributes (later)
-
-    const endIndex = xml.indexOf(`</${tag}>`, startIndex)
+  while (lastDiscoveredOpenTag !== -1) {
+    const endIndex = xml.indexOf(closeTagString, lastDiscoveredOpenTag)
     if (endIndex !== -1) {
-      const contentStart = startIndex + tagLength + 2 // 2 for < and >
+      const contentStart = lastDiscoveredOpenTag + openTagString.length
       const contentEnd = endIndex
       const content = xml.substring(contentStart, contentEnd)
 
@@ -69,20 +68,27 @@ function extractXmlElementsForTag(
         content: normalizedContent,
         isClosed: true,
       })
-      // 3 for </, > and start next search after this end tag
-      const searchStartIndexForNextOpeningTag = endIndex + tagLength + 3
-      startIndex = xml.indexOf(`<${tag}>`, searchStartIndexForNextOpeningTag)
+      // start next search after this end tag
+      const searchStartIndexForNextOpeningTag = endIndex + closeTagString.length
+
+      // Search for the next opening tag potentially breaking out of the loop
+      lastDiscoveredOpenTag = xml.indexOf(
+        openTagString,
+        searchStartIndexForNextOpeningTag,
+      )
     } else if (shouldYieldPartialXml) {
       // If end index is not found, assume we are streaming and the end tag is not there yet
       // So just return the content from the start tag to the end of the string
-      const partialContent = xml.substring(startIndex + tagLength + 2) // 2 for < and >
+      const partialContent = xml.substring(
+        lastDiscoveredOpenTag + openTagString.length,
+      )
 
       // We might have started printing out the closing tag.
       // Remove any prefix of the tag that appear as a suffix of the content.
       // We need to generate all possible prefixes of the end tag (including an empty string)
       //   and check if they are a suffix of the content
-      for (let i = tagLength + 3; i >= 0; i--) {
-        const partiallyPrintedEndTag = `</${tag}>`.substring(0, i)
+      for (let i = closeTagString.length; i >= 0; i--) {
+        const partiallyPrintedEndTag = closeTagString.substring(0, i)
         if (partialContent.endsWith(partiallyPrintedEndTag)) {
           // Remove the partially printed end tag from the content
           const content = partialContent.substring(
@@ -103,6 +109,9 @@ function extractXmlElementsForTag(
           break
         }
       }
+
+      // If we are in this branch, that means the closing tag was not found, so there is no
+      break
     }
   }
 
@@ -121,8 +130,14 @@ function trimUpToOneLeadingNewLine(content: string) {
  * - Given `lol\n++` will return `lol`
  */
 function trimUpToOneTrailingNewLine(content: string) {
-  return content.endsWith('\n')
-    ? content.substring(0, content.length - 1)
+  const lastLineBreak = content.lastIndexOf('\n')
+  if (lastLineBreak === -1 || lastLineBreak !== content.length - 1) {
+    return content
+  }
+
+  const lineAfterLastLineBreak = content.substring(lastLineBreak)
+  return lineAfterLastLineBreak.trim() === ''
+    ? content.substring(0, lastLineBreak)
     : content
 }
 
@@ -154,7 +169,7 @@ function extractSingleXmlElement(
 export function parseLlmGeneratedPatchV1WithHandWrittenParser(
   xml: string,
 ): LlmGeneratedPatchXmlV1 | undefined {
-  const fileChangeOutputs = extractXmlElementsForTag(xml, 'file-change-output')
+  const fileChangeOutputs = extractXmlElementsForTag(xml, 'file')
 
   // TODO: Drop the new lines right after opening tags old-chunk and new-chunk and right before closing tags
 

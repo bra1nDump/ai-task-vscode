@@ -27,7 +27,7 @@ export type RangeToReplace =
       suffixContent: string
     }
 
-export type Replacement = {
+export interface Replacement {
   isStreamFinalized: boolean
   content: string
 }

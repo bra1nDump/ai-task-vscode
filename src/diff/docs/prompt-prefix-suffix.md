@@ -12,7 +12,7 @@ function helloWorld() {
 </file-input>
 
 Example output:
-<file-change-output> <!-- Top level container -->
+<file> <!-- Top level container -->
 <change> <!-- A single change. A single file change output can contain multiple changes -->
 <change-context-prefix> <!-- The context of the change. This is the code that is before the change. This can be empty if the change starts in the beginning of the file -->
 </change-context-pefix>
@@ -24,7 +24,7 @@ function hello(name: string) {
 <change-contex-suffix> <!-- The context of the change. This is the code that is after the change. This can be empty if the change ends at the end of the file -->
 </change-contex-suffix>
 </change>
-</file-change-output>
+</file>
 
 # Example input:
 <file-input>
@@ -38,7 +38,7 @@ main()
 </file-input>
 
 Example output:
-<file-change-output>
+<file>
 <change>
 <change-context-prefix>
 function helloWorld() {
@@ -56,7 +56,7 @@ function main() {
 main()
 </change-contex-suffix>
 </change>
-</file-change-output>
+</file>
 
 Explanation:
 This is a complete file replace change. The change context is empty. The new content is the entire function with the name parameter added.
@@ -94,7 +94,7 @@ export function deactivate() {}
 </file-input>
 
 Example output:
-<file-change-output>
+<file>
 <change>
 
 <change-context-prefix>
@@ -162,7 +162,7 @@ export function activate(context: ExtensionContext) {
 
 </change>
 
-</file-change-output>
+</file>
 
 Explanation:
 We have replaced the 

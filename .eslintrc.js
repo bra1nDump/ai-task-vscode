@@ -4,11 +4,14 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 6,
     sourceType: 'module',
+    project: './tsconfig.json', // Path to your tsconfig.json
   },
-  plugins: ['@typescript-eslint', 'unused-imports'],
+
+  plugins: ['@typescript-eslint', 'unused-imports', 'prettier'],
   extends: [
     'plugin:@typescript-eslint/eslint-recommended',
-    'plugin:@typescript-eslint/recommended',
+    'plugin:@typescript-eslint/recommended-type-checked',
+    'plugin:@typescript-eslint/stylistic-type-checked',
     'plugin:prettier/recommended',
   ],
   rules: {
@@ -20,5 +23,5 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': 'off',
   },
 
-  ignorePatterns: ['out', 'dist', '**/*.d.ts'],
+  ignorePatterns: ['out', 'dist', '**/*.d.ts', '**/*.js', 'testing-sandbox'],
 }

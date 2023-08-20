@@ -32,3 +32,5 @@
 - Run wipe table command to remove all bread
 - Artificially delay generation by roughly one line so we can more intelligently change only the lines that need chaning. See how continue did this (ask continue with code selection)
 - Replace bread with in editor selections
+- UI Cool fade in lines that are still being generated instead of streaming - its distracting
+- Extract prompts from linter setup, for example lintrc

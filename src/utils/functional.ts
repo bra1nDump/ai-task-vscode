@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable prefer-rest-params */
 /* eslint-disable @typescript-eslint/ban-types */
 
@@ -9,12 +12,6 @@
 // Basically openai decided to not return AsyncGenerator but instead return an AsyncIterator for stream for some reason
 // AsyncIterable is created by adding a Symbol.asyncIterator method to an object or
 // creating a function* and yielding values from it.
-
-async function* numbers() {
-  for (let i = 0; i < 10; i++) {
-    yield i
-  }
-}
 
 /**
  * Example usage:
@@ -35,6 +32,7 @@ export async function* mapAsyncInterable<T, U>(
   iter: AsyncIterable<T>,
 ): AsyncGenerator<U> {
   // Not using for await of because we want to be keep track of the done flag
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const iterator: AsyncIterator<T, undefined> = iter[Symbol.asyncIterator]()
   while (true) {
     const { value, done } = await iterator.next()
@@ -94,7 +92,9 @@ export function curry<T extends AnyFunc, TAgg extends unknown[]>(
   agg?: TAgg,
 ): Curry<T> {
   const aggregatedArgs = agg ?? []
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   if (func.length === aggregatedArgs.length) return func(...aggregatedArgs)
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return ((arg: any) => curry(func, [...aggregatedArgs, arg])) as any
 }
 

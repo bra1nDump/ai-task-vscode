@@ -1,10 +1,10 @@
 import * as vscode from 'vscode'
 import { Change, RangeToReplace } from './types'
 
-export async function findRangeInEditor(
+export function findRangeInEditor(
   oldChunk: RangeToReplace,
   editor: vscode.TextEditor,
-): Promise<vscode.Range | undefined> {
+): vscode.Range | undefined {
   const document = editor.document
   const text = document.getText().split('\n')
 
@@ -94,17 +94,17 @@ export async function applyChanges(
   changes: Change[],
   editor: vscode.TextEditor,
 ): Promise<
-  Array<{
+  {
     change: Change
     result:
       | 'appliedSuccessfully'
       | 'failedToFindTargetRange'
       | 'failedToApplyCanRetry'
-  }>
+  }[]
 > {
   return Promise.all(
     changes.map(async (change) => {
-      const range = await findRangeInEditor(change.oldChunk, editor)
+      const range = findRangeInEditor(change.oldChunk, editor)
       if (!range) {
         console.error(`Could not find range for change: ${change.description}`)
         return { change, result: 'failedToFindTargetRange' }

@@ -15,7 +15,7 @@ const openai = new OpenAI({
 
 type Message = OpenAI.Chat.Completions.CreateChatCompletionRequestMessage
 
-type FileContext = {
+interface FileContext {
   filePathRelativeTooWorkspace: string
   content: string
 }
@@ -114,13 +114,13 @@ export async function feedBirds() {
     )
 
     console.log(
-      `Diff application results: ${fileContentWithDiffApplied.map(
-        (x) => x.result,
-      )}`,
+      `Diff application results: ${fileContentWithDiffApplied
+        .map((x) => x.result)
+        .join('\n')}`,
     )
 
     // Delay so the user has a chance to see the changes and continue to the next file
-    await new Promise((resolve) => setTimeout(resolve, 5000))
+    await new Promise((resolve) => setTimeout(resolve, 5_000))
   }
 
   console.log('Birds released, your bread is gone')
@@ -176,6 +176,11 @@ async function* streamLlm<T>(
     messages,
     stream: true,
   })
+
+  // Debug stream
+  // for await (const part of stream) {
+  //   console.log(`Part: `, JSON.stringify(part, null, 2))
+  // }
 
   let currentContent = ''
   const parsedPatchStream = mapAsyncInterable((part) => {

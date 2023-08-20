@@ -48,8 +48,8 @@ export function parseLlmGeneratedPatchV1WithFastXmlParser(
      * </stop>
      */
     stopNodes: [
-      'file-change-output.change.old-chunk',
-      'file-change-output.change.new-chunk',
+      'file.change.old-chunk',
+      'file.change.new-chunk',
     ],
 
     // Make sure change is always an array, even if there is only one change
