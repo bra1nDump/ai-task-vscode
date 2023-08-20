@@ -1,3 +1,10 @@
+### git-graph extension
+This is promising
+
+https://github.com/mhutchie/vscode-git-graph
+Do interesting things with ![Overlays on top of entire editor](image.png)
+![Pushing text to the side and showing big inline elements](image-1.png)
+
 ### Diff application view
 Github copilot has the best UI I would say https://code.visualstudio.com/api/references/vscode-api#TabInputTextDiff
 

@@ -128,7 +128,7 @@ async function* streamLlm<T>(
       // We should format the message content nicely instead of simple stringify
       console.log(`Messages submitted:`)
       for (const { content, role } of messages) {
-        console.log(`[${role}] ${content}`)
+        console.log(`\n[${role}]\n${content}`)
       }
       console.log(`Final content:\n${currentContent}`)
 

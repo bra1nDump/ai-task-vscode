@@ -1,18 +1,21 @@
 # User flow
-- Leave breadcrumbs in the code - single use [later persistent]
-- You then create a .bread file that contains text instruction of what to do with the temporary breadcrubs
-- You run the llm (release the birbs (government bots)) providing it all files with breadcrumbs and the .bread file contents
+- Leave breadcrumbs in the code
+- Run llm (feed the birds) providing it all files with breadcrumbs and the .bread file contents
 - Generate a diff in a smart way to make the changes to the input files
 - Apply the changes (keep the bread)
-- Copy paste tsc output to the bread file
-- Try again
-- Run wipe table command to remove all bread
 
-?? Maybe?
-Watch for // bread: Refactor this function :hits-enter 2ce?
-Once such a comment is detected - automatically run the llm and apply the changes
+# Next up
+- Stop being dependent on currently opened files
+  - Open them if not opened yet
+- Update prompt to generate multiple changes - aka add file path
+- Streaming changes instead of final application
+  - Find inital target range
+  - Apply changes to the target range
+  - Get the new target range
+  - Keep applying changes until stream is over
 
-# Next @url: @shell
+## Dropped
+- Update diff format prompt generation - We will likely move to function calling, so lets wait for that
 
 # To build
 - Diffs
