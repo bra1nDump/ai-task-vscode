@@ -1,7 +1,9 @@
 import * as assert from 'assert'
 import * as vscode from 'vscode'
 
-suite('VSCode Extension Command Tests', () => {
+suite('VSCode Extension Command Tests', function () {
+  // Increased timeout since these are using LLM an are thus slow
+  this.timeout(10000)
   test('birds.release command', async () => {
     const releaseCommand = vscode.commands
       .getCommands(true)

@@ -17,8 +17,9 @@ suite('Apply Patch Tests', () => {
         oldChunk: {
           type: 'fullContentRange',
           fullContent: 'line1\nline2',
+          isStreamFinalized: true,
         },
-        newChunk: 'Hello World\nline2',
+        newChunk: { content: 'Hello World\nline2', isStreamFinalized: true },
       },
     ]
 
@@ -41,8 +42,12 @@ suite('Apply Patch Tests', () => {
           type: 'prefixAndSuffixRange',
           prefixContent: 'line1',
           suffixContent: 'line4',
+          isStreamFinalized: true,
         },
-        newChunk: 'line1\nHello World\nline4',
+        newChunk: {
+          content: 'line1\nHello World\nline4',
+          isStreamFinalized: true,
+        },
       },
     ]
 
@@ -70,8 +75,9 @@ suite('Apply Patch Tests', () => {
           type: 'prefixAndSuffixRange',
           prefixContent: 'line1',
           suffixContent: '    line2   ', // mismatching spacing in range suffix
+          isStreamFinalized: true,
         },
-        newChunk: 'Hello World\nline2',
+        newChunk: { content: 'Hello World\nline2', isStreamFinalized: true },
       },
     ]
 
@@ -94,8 +100,9 @@ suite('Apply Patch Tests', () => {
           type: 'prefixAndSuffixRange',
           prefixContent: 'non-existent line',
           suffixContent: 'line3',
+          isStreamFinalized: true,
         },
-        newChunk: 'Hello World\nline3',
+        newChunk: { content: 'Hello World\nline3', isStreamFinalized: true },
       },
     ]
 
@@ -116,8 +123,9 @@ suite('Apply Patch Tests', () => {
         oldChunk: {
           type: 'fullContentRange',
           fullContent: '',
+          isStreamFinalized: true,
         },
-        newChunk: 'Hello World',
+        newChunk: { content: 'Hello World', isStreamFinalized: true },
       },
     ]
 
@@ -139,8 +147,9 @@ suite('Apply Patch Tests', () => {
         oldChunk: {
           type: 'fullContentRange',
           fullContent: '\n\n',
+          isStreamFinalized: true,
         },
-        newChunk: 'Hello World',
+        newChunk: { content: 'Hello World', isStreamFinalized: true },
       },
     ]
 
@@ -166,13 +175,16 @@ suite('Apply Patch Tests', () => {
           type: 'prefixAndSuffixRange',
           prefixContent: '\nline2',
           suffixContent: 'line3',
+          isStreamFinalized: true,
         },
-        newChunk: 'line1\nHello World\nline3',
+        newChunk: {
+          content: 'line1\nHello World\nline3',
+          isStreamFinalized: true,
+        },
       },
     ]
 
-    const [applicationResult] = await applyChanges(changes, editor)
-    console.log(JSON.stringify(applicationResult, null, 2))
+    const [_applicationResult] = await applyChanges(changes, editor)
 
     assert.strictEqual(document.getText(), 'line1\nHello World\nline3\n')
   })
@@ -193,8 +205,12 @@ suite('Apply Patch Tests', () => {
           type: 'prefixAndSuffixRange',
           prefixContent: '{\nline1',
           suffixContent: 'line3',
+          isStreamFinalized: true,
         },
-        newChunk: 'removing brace on first line\nHello World\nline3',
+        newChunk: {
+          content: 'removing brace on first line\nHello World\nline3',
+          isStreamFinalized: true,
+        },
       },
     ]
 

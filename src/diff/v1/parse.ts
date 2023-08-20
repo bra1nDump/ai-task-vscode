@@ -1,6 +1,13 @@
 import { LlmGeneratedPatchXmlV1, RangeToReplace } from './types'
 
-function extractContentForTag(xml: string, tag: string): string[] {
+export type XmlElement = {
+  tag: string
+  content: string
+  /** Since this is streaming from an llm we want to allow for partial xml */
+  isClosed: boolean
+}
+
+function extractXmlElementsForTag(xml: string, tag: string): XmlElement[] {
   const tagLength = tag.length
 
   const contents = []
@@ -13,7 +20,12 @@ function extractContentForTag(xml: string, tag: string): string[] {
     if (endIndex !== -1) {
       const contentStart = startIndex + tagLength + 2 // 2 for < and >
       const contentEnd = endIndex
-      contents.push(xml.substring(contentStart, contentEnd))
+      const content = xml.substring(contentStart, contentEnd)
+      contents.push({
+        tag,
+        content,
+        isClosed: true,
+      })
       startIndex = xml.indexOf(`<${tag}>`, endIndex + tagLength + 3) // 3 for </, > and start next search after this end tag
     } else {
       // If end index is not found, assume we are streaming and the end tag is not there yet
@@ -32,7 +44,11 @@ function extractContentForTag(xml: string, tag: string): string[] {
             0,
             partialContent.length - partiallyPrintedEndTag.length,
           )
-          contents.push(content)
+          contents.push({
+            tag,
+            content,
+            isClosed: false,
+          })
           break
         }
       }
@@ -44,25 +60,44 @@ function extractContentForTag(xml: string, tag: string): string[] {
   return contents
 }
 
+function extractSingleXmlElement(
+  xml: string,
+  tag: string,
+): XmlElement | undefined {
+  const elements = extractXmlElementsForTag(xml, tag)
+  return elements.length > 0 ? elements[0] : undefined
+}
+
 export function parseLlmGeneratedPatchV1WithHandWrittenParser(
   xml: string,
 ): LlmGeneratedPatchXmlV1 | undefined {
-  const fileChangeOutputs = extractContentForTag(xml, 'file-change-output')
+  const fileChangeOutputs = extractXmlElementsForTag(xml, 'file-change-output')
 
   if (fileChangeOutputs.length === 0) {
     return undefined
   }
 
   // TODO: Drop the new lines right after opening tags old-chunk and new-chunk and right before closing tags
-  const changes = extractContentForTag(fileChangeOutputs[0], 'change').map(
-    (changeXml) => {
-      const description = extractContentForTag(changeXml, 'description')[0]
-      const oldChunk = extractContentForTag(changeXml, 'old-chunk')[0]
+  const changes = extractXmlElementsForTag(
+    fileChangeOutputs[0].content,
+    'change',
+  ).map((changeXmlElement) => {
+    const changeXml = changeXmlElement.content
 
-      // Handle case where old chunk is truncated
-      const oldChunkParts = oldChunk.split('</truncated>')
-      let oldChunkContent: RangeToReplace
+    const description = extractSingleXmlElement(changeXml, 'description')
+    const oldChunk = extractSingleXmlElement(changeXml, 'old-chunk')
 
+    // Handle case where old chunk is truncated
+    const oldChunkParts = oldChunk?.content.split('</truncated>') ?? []
+    let oldChunkContent: RangeToReplace
+
+    if (!oldChunk) {
+      oldChunkContent = {
+        type: 'fullContentRange',
+        isStreamFinalized: false,
+        fullContent: '',
+      }
+    } else {
       if (oldChunkParts.length === 2) {
         const prefixContent = oldChunkParts[0]
         const suffixContent = oldChunkParts[1]
@@ -70,17 +105,29 @@ export function parseLlmGeneratedPatchV1WithHandWrittenParser(
           type: 'prefixAndSuffixRange',
           prefixContent,
           suffixContent,
+          isStreamFinalized: oldChunk.isClosed,
         }
       } else if (oldChunkParts.length === 1) {
-        oldChunkContent = { type: 'fullContentRange', fullContent: oldChunk }
+        oldChunkContent = {
+          type: 'fullContentRange',
+          fullContent: oldChunk.content,
+          isStreamFinalized: oldChunk.isClosed,
+        }
       } else {
         throw new Error('Unexpected number of old chunk parts')
       }
+    }
 
-      const newChunk = extractContentForTag(changeXml, 'new-chunk')[0]
-      return { description, oldChunk: oldChunkContent, newChunk }
-    },
-  )
+    const newChunk = extractSingleXmlElement(changeXml, 'new-chunk')
+    return {
+      description: description?.content ?? '',
+      oldChunk: oldChunkContent,
+      newChunk: {
+        content: newChunk?.content ?? '',
+        isStreamFinalized: newChunk?.isClosed ?? false,
+      },
+    }
+  })
 
   return { fileChangeOutput: { changes: changes } }
 }

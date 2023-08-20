@@ -19,7 +19,7 @@ suite('Can parse example patches using hand written parser', () => {
     const changes = patch.fileChangeOutput.changes
 
     assert.equal(changes.length, 1)
-    assert.ok(changes[0].newChunk.length)
+    assert.ok(changes[0].newChunk.content.length)
   })
 
   test('Complex patch', () => {
@@ -31,13 +31,57 @@ suite('Can parse example patches using hand written parser', () => {
     const [change1, change2] = patch.fileChangeOutput.changes
 
     assert.equal(patch.fileChangeOutput.changes.length, 2)
-    assert.ok(change1.newChunk.length)
-    assert.ok(change2.newChunk.length)
+    assert.ok(change1.newChunk.content.length)
+    assert.ok(change2.newChunk.content.length)
 
     assert.ok(change1.oldChunk.type === 'fullContentRange')
     assert.ok(change2.oldChunk.type === 'fullContentRange')
     assert.ok(change1.oldChunk.fullContent.length)
     assert.ok(change2.oldChunk.fullContent.length)
+  })
+
+  test('Almost empty patch', () => {
+    const almostEmptyPatch = '<file-change-output><chan'
+    const patch =
+      parseLlmGeneratedPatchV1WithHandWrittenParser(almostEmptyPatch)
+
+    assert.ok(patch)
+    const changes = patch.fileChangeOutput.changes
+
+    assert.equal(changes.length, 0)
+  })
+
+  // We don't want the tag to stream in and get shown to the user
+  test('Trailing tag that is not done printing yet gets dropped', () => {
+    const patchWithPartialClosingTag =
+      '<file-change-output><change><old-chunk>lol</ol'
+    const patch = parseLlmGeneratedPatchV1WithHandWrittenParser(
+      patchWithPartialClosingTag,
+    )
+
+    assert.ok(patch)
+    const changes = patch.fileChangeOutput.changes
+
+    assert.equal(changes.length, 1)
+    const { oldChunk, newChunk } = changes[0]
+    assert.ok(oldChunk.isStreamFinalized === false)
+    assert.ok(oldChunk.type === 'fullContentRange')
+    assert.ok(oldChunk.fullContent === 'lol')
+  })
+
+  test('Content is marked as finalized once it has a closing tag', () => {
+    const patchWithPartialClosingTag = `<file-change-output><change><old-chunk>lol</old-chunk><new-chunk></new-chunk></chan`
+    const patch = parseLlmGeneratedPatchV1WithHandWrittenParser(
+      patchWithPartialClosingTag,
+    )
+
+    assert.ok(patch)
+    const changes = patch.fileChangeOutput.changes
+
+    assert.equal(changes.length, 1)
+    const { oldChunk, newChunk } = changes[0]
+    assert.ok(oldChunk.isStreamFinalized === true)
+    assert.ok(newChunk.isStreamFinalized === true)
   })
 
   test('Partial patch', () => {
@@ -51,7 +95,7 @@ suite('Can parse example patches using hand written parser', () => {
     const changes = patch.fileChangeOutput.changes
 
     assert.equal(changes.length, 1)
-    assert.ok(changes[0].newChunk.length)
+    assert.ok(changes[0].newChunk.content.length)
   })
 
   test('Patch with truncated tag in old chunk', () => {
@@ -73,6 +117,6 @@ suite('Can parse example patches using hand written parser', () => {
     assert.ok(oldChunk.prefixContent.length > 10)
     assert.ok(oldChunk.suffixContent.length > 10)
 
-    assert.ok(newChunk.length)
+    assert.ok(newChunk.content.length)
   })
 })

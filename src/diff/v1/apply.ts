@@ -111,7 +111,7 @@ export async function applyChanges(
       }
 
       const successfullyApplied = await editor.edit((editBuilder) => {
-        editBuilder.replace(range, change.newChunk)
+        editBuilder.replace(range, change.newChunk.content)
       })
       return {
         change,

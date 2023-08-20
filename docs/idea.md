@@ -7,6 +7,10 @@
     - Redux model
     - Initial value
     - Case reducer
+- Run the compiler and generate inline errors
+  - Add comments to all the files (as submitted to the LLM) with the errors inline to avoid messing up the code layout
+  - It would be nice if we can just get the symbol that is causing the issue so the file where the symbol is defined was also included in the context automatically
+- Staging area already provides most of the bread you might need for some modifications, simply submit git diff
 - Workspace changes
   - Adding a new file
 - Making legal moves

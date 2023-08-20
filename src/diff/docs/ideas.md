@@ -22,6 +22,11 @@ import { useMutation } from 'react-query';
 - Usually there are no repeated file lines in a code file. Unless its tests, or unless its
 - Alt+select allows to select multiple ranges in vscode. This is very useful when you want to make multi edits
   - They can also be parallelized
+- Currently applying the defend place will mess up the original file, subsequently messing up the target range location mechanism. Options
+  - Find the initial range in the file, apply the change to it but now update the VSCode range of the target to match the new range
+  - Cash the initial file contents and apply the changes to the cashed version. Incompatible with the current implementation as it operates directly within the vas code editor
+- Current implementation overall sucks because it is fully VSCode dependent, I don't think I necessarily want to change that in the time being though
+  - It will make this running as a commandline tool harder as well as will complicate unit testing
 
 
 ## Format v2 - open ai function calling

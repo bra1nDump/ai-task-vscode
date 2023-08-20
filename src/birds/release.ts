@@ -99,6 +99,8 @@ export async function release() {
     if (delta) {
       currentContent += delta
       process.stdout.write(delta)
+
+      // Try parsing the xml, even if it's complete it should still be able to apply the diffs
     }
   }
 
