@@ -4,23 +4,23 @@ import * as vscode from 'vscode'
 suite('VSCode Extension Command Tests', function () {
   // Increased timeout since these are using LLM an are thus slow
   this.timeout(10000)
-  test('birds.release command', async () => {
+  test('birds.feed command', async () => {
     const releaseCommand = vscode.commands
       .getCommands(true)
       .then((commands) => {
-        if (commands.includes('birds.release')) {
+        if (commands.includes('birds.feed')) {
           return true
         } else {
           return false
         }
       })
 
-    assert.ok(releaseCommand, 'Command "birds.release" is not registered.')
+    assert.ok(releaseCommand, 'Command "birds.feed" is not registered.')
 
     try {
-      await vscode.commands.executeCommand('birds.release')
+      await vscode.commands.executeCommand('birds.feed')
     } catch (error) {
-      assert.fail(`Command "birds.release" could not be run: ${error}`)
+      assert.fail(`Command "birds.feed" could not be run: ${error}`)
     }
   })
 })

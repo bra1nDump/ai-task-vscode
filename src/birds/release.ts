@@ -30,43 +30,100 @@ type FileContext = {
  * Parse the diffs
  * Apply them to the current file in place
  */
-export async function release() {
+export async function feedBirds() {
   console.log('Releasing the birds, your bread stands no chance')
 
-  const fileContexts = await collectContextFiles()
+  const fileContexts = await findAndCollectBreadedFiles()
   const messages = constructMessagesForLlm(fileContexts)
 
-  const patchSteam = streamLlm(
+  const patchSteam = streamLlm<LlmGeneratedPatchXmlV1>(
     messages,
     parseLlmGeneratedPatchV1WithHandWrittenParser,
   )
   let lastPatch: LlmGeneratedPatchXmlV1 | undefined
+
+  // TODO: Keep a map of files that were already opened before so we don't open them again
+  //   if they are closed means the user was not interested in them
   for await (const patch of patchSteam) {
+    //
+    // Show the user the file we will be applying the patch later on so they can start reading
+    for (const fileChange of patch.fileChanges) {
+      if (!fileChange.filePathRelativeToWorkspace) {
+        // Don't know the path yet, skip
+        continue
+      }
+
+      const workspaceFilesWithMatchingNames = await vscode.workspace.findFiles(
+        `**/${fileChange.filePathRelativeToWorkspace}`,
+      )
+      if (workspaceFilesWithMatchingNames.length !== 1) {
+        // Still streaming the path most likely, not enough path was printed to match a single file
+        continue
+      }
+
+      const fileUri = workspaceFilesWithMatchingNames[0]
+      const _document = await vscode.workspace.openTextDocument(fileUri)
+
+      // We might not want to show it
+      // If the file is already open, we don't want to show it as this will disrupt the user
+      // + we would constantly be switching between files as we run through this loop
+
+      // Check if the file is already open, hmm tabs don't actually have editor references. I think these are inactive - which makes sense
+      // vscode.window.tabGroups.all.find((tabGroup) => {
+      //   tabGroup.tabs.find((tab) => {
+      //     if (tab.) {
+      // await vscode.window.showTextDocument(document)
+    }
+
     lastPatch = patch
-    console.log(`Parsed patch: ${JSON.stringify(patch)}`)
   }
 
-  console.log('Birds released, your bread is gone')
-  // Applying the final patch
   if (!lastPatch) {
     console.error('No patch generated, nothing to apply')
     return
   }
 
-  // For now single file
-  const fileChange = lastPatch.fileChangeOutput
-  const fileChanges = fileChange.changes
+  // Actually apply the patch
+  for (const singleFileChange of lastPatch.fileChanges) {
+    if (!singleFileChange.filePathRelativeToWorkspace) {
+      // Don't know the path yet, skip
+      continue
+    }
 
-  const fileContentWithDiffApplied = await applyChanges(
-    fileChanges,
-    vscode.window.activeTextEditor!,
-  )
+    const workspaceFilesWithMatchingNames = await vscode.workspace.findFiles(
+      `**/${singleFileChange.filePathRelativeToWorkspace}`,
+    )
+    if (workspaceFilesWithMatchingNames.length !== 1) {
+      // We should know the path by now, if we don't - something is wrong
+      console.error(
+        `Could not find file with path ${singleFileChange.filePathRelativeToWorkspace}`,
+      )
+      continue
+    }
 
-  console.log(
-    `Diff application results: ${fileContentWithDiffApplied.map(
-      (x) => x.result,
-    )}`,
-  )
+    const fileUri = workspaceFilesWithMatchingNames[0]
+
+    // Actually we do want to show the documents are we are applying changes to them for now
+    // 1. Users can see the changes
+    // 2.
+    const document = await vscode.workspace.openTextDocument(fileUri)
+    const editor = await vscode.window.showTextDocument(document)
+    const fileContentWithDiffApplied = await applyChanges(
+      singleFileChange.changes,
+      editor,
+    )
+
+    console.log(
+      `Diff application results: ${fileContentWithDiffApplied.map(
+        (x) => x.result,
+      )}`,
+    )
+
+    // Delay so the user has a chance to see the changes and continue to the next file
+    await new Promise((resolve) => setTimeout(resolve, 5000))
+  }
+
+  console.log('Birds released, your bread is gone')
 }
 
 function constructMessagesForLlm(fileContexts: FileContext[]): Message[] {
@@ -157,22 +214,26 @@ async function* streamLlm<T>(
 }
 
 /**
- * Find all files in the workspace with @bread mention and create a context for each
- * Optimization: use a watcher to keep track of files with @bread mention
+ * Find all files in the workspace with @bread mention or with .bread sub-extension
  */
-async function collectContextFiles() {
+async function findAndCollectBreadedFiles() {
   const allFilesInWorkspace = await vscode.workspace.findFiles('**/*')
   const fileContexts = await Promise.all(
     allFilesInWorkspace.map(async (fileUri) => {
       const binaryFileContent = await vscode.workspace.fs.readFile(fileUri)
       const fileText = binaryFileContent.toString()
-      if (!fileText.includes('@bread')) {
-        return undefined
-      }
 
-      return {
-        filePathRelativeTooWorkspace: vscode.workspace.asRelativePath(fileUri),
-        content: fileText,
+      const containsBreadMentionOrIsBreadDotfile =
+        fileText.includes('@bread') || fileUri.path.includes('.bread')
+
+      if (containsBreadMentionOrIsBreadDotfile) {
+        return {
+          filePathRelativeTooWorkspace:
+            vscode.workspace.asRelativePath(fileUri),
+          content: fileText,
+        }
+      } else {
+        return undefined
       }
     }),
   ).then((fileContexts) =>

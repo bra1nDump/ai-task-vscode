@@ -38,10 +38,13 @@ export interface Change {
   newChunk: Replacement
 }
 
-export interface FileChangeOutput {
+export interface FileChange {
+  /** If not present - means its streaming.
+   * We will use this field early to show the file targeted with a change */
+  filePathRelativeToWorkspace?: string
   changes: Change[]
 }
 
 export interface LlmGeneratedPatchXmlV1 {
-  fileChangeOutput: FileChangeOutput
+  fileChanges: FileChange[]
 }

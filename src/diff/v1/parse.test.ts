@@ -16,7 +16,7 @@ suite('Can parse example patches using hand written parser', () => {
     // console.log(JSON.stringify(patch, null, 2));
 
     assert.ok(patch)
-    const changes = patch.fileChangeOutput.changes
+    const changes = patch.fileChanges[0].changes
 
     assert.equal(changes.length, 1)
     assert.ok(changes[0].newChunk.content.length)
@@ -28,9 +28,9 @@ suite('Can parse example patches using hand written parser', () => {
     // console.log(JSON.stringify(patch, null, 2));
 
     assert.ok(patch)
-    const [change1, change2] = patch.fileChangeOutput.changes
+    const [change1, change2] = patch.fileChanges[0].changes
 
-    assert.equal(patch.fileChangeOutput.changes.length, 2)
+    assert.equal(patch.fileChanges[0].changes.length, 2)
     assert.ok(change1.newChunk.content.length)
     assert.ok(change2.newChunk.content.length)
 
@@ -46,7 +46,7 @@ suite('Can parse example patches using hand written parser', () => {
       parseLlmGeneratedPatchV1WithHandWrittenParser(almostEmptyPatch)
 
     assert.ok(patch)
-    const changes = patch.fileChangeOutput.changes
+    const changes = patch.fileChanges[0].changes
 
     assert.equal(changes.length, 0)
   })
@@ -60,7 +60,7 @@ suite('Can parse example patches using hand written parser', () => {
     )
 
     assert.ok(patch)
-    const changes = patch.fileChangeOutput.changes
+    const changes = patch.fileChanges[0].changes
 
     assert.equal(changes.length, 1)
     const { oldChunk, newChunk } = changes[0]
@@ -76,7 +76,7 @@ suite('Can parse example patches using hand written parser', () => {
     )
 
     assert.ok(patch)
-    const changes = patch.fileChangeOutput.changes
+    const changes = patch.fileChanges[0].changes
 
     assert.equal(changes.length, 1)
     const { oldChunk, newChunk } = changes[0]
@@ -92,7 +92,7 @@ suite('Can parse example patches using hand written parser', () => {
     // console.log(JSON.stringify(patch, null, 2));
 
     assert.ok(patch)
-    const changes = patch.fileChangeOutput.changes
+    const changes = patch.fileChanges[0].changes
 
     assert.equal(changes.length, 1)
     assert.ok(changes[0].newChunk.content.length)
@@ -106,7 +106,7 @@ suite('Can parse example patches using hand written parser', () => {
     // console.log(JSON.stringify(patch, null, 2));
 
     assert.ok(patch)
-    const changes = patch.fileChangeOutput.changes
+    const changes = patch.fileChanges[0].changes
 
     assert.equal(changes.length, 1)
 

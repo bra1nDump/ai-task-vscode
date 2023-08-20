@@ -1,4 +1,4 @@
-import { release } from 'birds/release'
+import { feedBirds } from 'birds/release'
 import * as vscode from 'vscode'
 
 import { bootstrapPythonServer } from './bootstrap-python-server'
@@ -10,7 +10,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Commands also need to be defined in package.json
   context.subscriptions.unshift(
-    vscode.commands.registerCommand('birds.release', release),
+    vscode.commands.registerCommand('birds.feed', feedBirds),
   )
 }
 

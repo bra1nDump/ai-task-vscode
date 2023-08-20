@@ -1,4 +1,4 @@
-import { LlmGeneratedPatchXmlV1, RangeToReplace } from './types'
+import { Change, LlmGeneratedPatchXmlV1, RangeToReplace } from './types'
 
 export type XmlElement = {
   tag: string
@@ -37,11 +37,14 @@ export type XmlElement = {
  *   ++</change>
  *   </file>
  *   ```
+ *
+ * @param shouldYieldPartialXml If true, will yield partial xml elements. I was going to use this for not allowing to stream partial paths, but realized with search api I can keep trying until only one file matches the path
  */
 function extractXmlElementsForTag(
   xml: string,
   tag: string,
-  shouldTrimUpToOneLeadingAndTrailingNewLine: boolean = true,
+  shouldTrimUpToOneLeadingAndTrailingNewLine = true,
+  shouldYieldPartialXml = true,
 ): XmlElement[] {
   const tagLength = tag.length
 
@@ -69,7 +72,7 @@ function extractXmlElementsForTag(
       // 3 for </, > and start next search after this end tag
       const searchStartIndexForNextOpeningTag = endIndex + tagLength + 3
       startIndex = xml.indexOf(`<${tag}>`, searchStartIndexForNextOpeningTag)
-    } else {
+    } else if (shouldYieldPartialXml) {
       // If end index is not found, assume we are streaming and the end tag is not there yet
       // So just return the content from the start tag to the end of the string
       const partialContent = xml.substring(startIndex + tagLength + 2) // 2 for < and >
@@ -100,8 +103,6 @@ function extractXmlElementsForTag(
           break
         }
       }
-
-      break
     }
   }
 
@@ -139,11 +140,13 @@ function extractSingleXmlElement(
   xml: string,
   tag: string,
   shouldTrimUpToOneLeadingAndTrailingNewLine = true,
+  shouldYieldPartialXml = true,
 ): XmlElement | undefined {
   const elements = extractXmlElementsForTag(
     xml,
     tag,
     shouldTrimUpToOneLeadingAndTrailingNewLine,
+    shouldYieldPartialXml,
   )
   return elements.length > 0 ? elements[0] : undefined
 }
@@ -153,61 +156,72 @@ export function parseLlmGeneratedPatchV1WithHandWrittenParser(
 ): LlmGeneratedPatchXmlV1 | undefined {
   const fileChangeOutputs = extractXmlElementsForTag(xml, 'file-change-output')
 
-  if (fileChangeOutputs.length === 0) {
-    return undefined
-  }
-
   // TODO: Drop the new lines right after opening tags old-chunk and new-chunk and right before closing tags
-  const changes = extractXmlElementsForTag(
-    fileChangeOutputs[0].content,
-    'change',
-  ).map((changeXmlElement) => {
-    const changeXml = changeXmlElement.content
 
-    const description = extractSingleXmlElement(changeXml, 'description')
-    const oldChunk = extractSingleXmlElement(changeXml, 'old-chunk')
+  const changesToMultipleFiles = fileChangeOutputs.map((fileChangeOutput) => {
+    const changeXmlElements = extractXmlElementsForTag(
+      fileChangeOutput.content,
+      'change',
+    )
 
-    // Handle case where old chunk is truncated
-    const oldChunkParts = oldChunk?.content.split('</truncated>') ?? []
-    let oldChunkContent: RangeToReplace
+    const singleFileChanges = changeXmlElements.map(
+      (changeXmlElement): Change => {
+        const changeXml = changeXmlElement.content
 
-    if (!oldChunk) {
-      oldChunkContent = {
-        type: 'fullContentRange',
-        isStreamFinalized: false,
-        fullContent: '',
-      }
-    } else {
-      if (oldChunkParts.length === 2) {
-        const prefixContent = oldChunkParts[0]
-        const suffixContent = oldChunkParts[1]
-        oldChunkContent = {
-          type: 'prefixAndSuffixRange',
-          prefixContent,
-          suffixContent,
-          isStreamFinalized: oldChunk.isClosed,
+        const description = extractSingleXmlElement(changeXml, 'description')
+        const oldChunk = extractSingleXmlElement(changeXml, 'old-chunk')
+
+        // Handle case where old chunk is truncated
+        const oldChunkParts = oldChunk?.content.split('</truncated>') ?? []
+        let oldChunkContent: RangeToReplace
+
+        if (!oldChunk) {
+          oldChunkContent = {
+            type: 'fullContentRange',
+            isStreamFinalized: false,
+            fullContent: '',
+          }
+        } else {
+          if (oldChunkParts.length === 2) {
+            const prefixContent = oldChunkParts[0]
+            const suffixContent = oldChunkParts[1]
+            oldChunkContent = {
+              type: 'prefixAndSuffixRange',
+              prefixContent,
+              suffixContent,
+              isStreamFinalized: oldChunk.isClosed,
+            }
+          } else if (oldChunkParts.length === 1) {
+            oldChunkContent = {
+              type: 'fullContentRange',
+              fullContent: oldChunk.content,
+              isStreamFinalized: oldChunk.isClosed,
+            }
+          } else {
+            throw new Error('Unexpected number of old chunk parts')
+          }
         }
-      } else if (oldChunkParts.length === 1) {
-        oldChunkContent = {
-          type: 'fullContentRange',
-          fullContent: oldChunk.content,
-          isStreamFinalized: oldChunk.isClosed,
-        }
-      } else {
-        throw new Error('Unexpected number of old chunk parts')
-      }
-    }
 
-    const newChunk = extractSingleXmlElement(changeXml, 'new-chunk')
-    return {
-      description: description?.content ?? '',
-      oldChunk: oldChunkContent,
-      newChunk: {
-        content: newChunk?.content ?? '',
-        isStreamFinalized: newChunk?.isClosed ?? false,
+        const newChunk = extractSingleXmlElement(changeXml, 'new-chunk')
+        return {
+          description: description?.content ?? '',
+          oldChunk: oldChunkContent,
+          newChunk: {
+            content: newChunk?.content ?? '',
+            isStreamFinalized: newChunk?.isClosed ?? false,
+          },
+        }
       },
+    )
+
+    return {
+      filePathRelativeToWorkspace: extractSingleXmlElement(
+        fileChangeOutput.content,
+        'path',
+      )?.content,
+      changes: singleFileChanges,
     }
   })
 
-  return { fileChangeOutput: { changes: changes } }
+  return { fileChanges: changesToMultipleFiles }
 }

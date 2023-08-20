@@ -16,10 +16,11 @@
   "contributes": {
     "commands": [
       {
-        "command": "birds.release",
-        "title": "Release the birds"
+        "command": "birds.feed",
+        "title": "Feed birds with bread"
       }
-    ]
+    ],
+    "keybindings": []
   },
   "scripts": {
     "vscode:prepublish": "pnpm run package",
