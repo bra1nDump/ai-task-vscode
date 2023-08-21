@@ -53,7 +53,7 @@ const extensionConfig = {
   module: {
     rules: [
       {
-        test: /\.ts$/,
+        test: /src\/.*\.ts$/,
         exclude: /node_modules/,
         use: [
           {

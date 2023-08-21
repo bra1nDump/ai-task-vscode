@@ -3,6 +3,10 @@
   "displayName": "bread",
   "description": "Leave breakcrumbs across the codebase and have llm type for you inline",
   "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bra1nDump/bread"
+  },
   "engines": {
     "vscode": "^1.81.0"
   },
@@ -23,10 +27,11 @@
     "keybindings": []
   },
   "scripts": {
-    "vscode:prepublish": "pnpm run package",
     "compile": "webpack",
     "watch": "webpack --watch",
-    "package": "webpack --mode production --devtool hidden-source-map",
+    "bundle:prod": "webpack --mode production --devtool false",
+    "__comment__": "Using --no-dependencies otherwise vsce complains about extra things being in node_module https://github.com/microsoft/vscode-vsce/issues/421#issuecomment-1038911725",
+    "package": "pnpm run bundle:prod && ./node_modules/.bin/vsce package --no-dependencies --allow-star-activation",
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",
     "pretest": "pnpm run compile-tests && pnpm run compile && pnpm run lint",
@@ -41,6 +46,7 @@
     "@typescript-eslint/eslint-plugin": "^6.4.0",
     "@typescript-eslint/parser": "^6.4.0",
     "@vscode/test-electron": "^2.3.2",
+    "@vscode/vsce": "^2.20.1",
     "eslint": "^8.41.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",

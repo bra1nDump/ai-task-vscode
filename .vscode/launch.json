@@ -56,7 +56,8 @@
 			"env": {
 				// This is a cheaper model + it's faster
 				"OPENAI_DEFAULT_MODEL": "gpt-3.5-turbo",
-				// "TEST_SUITE_GLOB": "**/*.parse-apply.ts"
+				// Important! The glob needs to match js files, not original ts files
+				// "TEST_SUITE_GLOB": "**/parse.test.js"
 			},
 			"outFiles": [
 				"${workspaceFolder}/out/**/*.js",
