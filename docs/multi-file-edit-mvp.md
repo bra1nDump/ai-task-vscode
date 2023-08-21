@@ -7,6 +7,8 @@
 # Next up
 - Collect logs on tool execution - this is so I know what prompts work and what don't
 - Bread escaping is still broken - prompts still have @bread in them, need to parametrize that
+
+## Overcoming dynamic target range + target replacement issues
 - Split the multi file edit task into two separate tasks
   - Find the target range
     - Give the same file context, but augment each line with the line number
@@ -14,6 +16,17 @@
     - Ask to generate filepath and line range numbers. Can provide multiple
   - Create new content
     - See how continue generates its new content
+- [Alternatively] Don't solve this problem!
+  - Assume a person only performs a single targeted change
+  - Have them select the region they want to change
+    - [Alternatively] simply use an existing tool to make a change or make the changes by hand
+    - Automatically pull git diff of the files with bread, this might be relevant
+  - Finding the target range problem is solved for the initial edit
+  - Finding follow up target ranges can be performed without llm - fast, predictable
+  - Extending the target range using abstract syntax tree spawned from the error location might not work as well, but is easy enough to test. 
+    - At that point we can simply keep extending the context using VSCode select more command until we get enough context to fix the problem
+  - Bread mentions would still be useful because when making a change you still want to reference other documents. Ideally you can just mention it with file ought a complete language server in place of the edit comment
+  - I need to start working with abstract syntax trees either way, so I might as well start now
 
 # Challanges
 - llms are not good with structured data
