@@ -40,7 +40,7 @@ export interface XmlElement {
  *
  * @param shouldYieldPartialXml If true, will yield partial xml elements. I was going to use this for not allowing to stream partial paths, but realized with search api I can keep trying until only one file matches the path
  */
-function extractXmlElementsForTag(
+export function extractXmlElementsForTag(
   xml: string,
   tag: string,
   shouldTrimUpToOneLeadingAndTrailingNewLine = true,
@@ -118,7 +118,7 @@ function extractXmlElementsForTag(
   return contents
 }
 
-function trimUpToOneLeadingNewLine(content: string) {
+export function trimUpToOneLeadingNewLine(content: string) {
   return content.startsWith('\n') ? content.substring(1) : content
 }
 
@@ -129,7 +129,7 @@ function trimUpToOneLeadingNewLine(content: string) {
  * - Given `lol\n` will return `lol`
  * - Given `lol\n++` will return `lol`
  */
-function trimUpToOneTrailingNewLine(content: string) {
+export function trimUpToOneTrailingNewLine(content: string) {
   const lastLineBreak = content.lastIndexOf('\n')
   if (lastLineBreak === -1) {
     return content
@@ -151,7 +151,7 @@ function trimUpToOneLeadingAndTrailingNewLine(content: string) {
 }
 
 /** @see extractXmlElementsForTag */
-function extractSingleXmlElement(
+export function extractSingleXmlElement(
   xml: string,
   tag: string,
   shouldTrimUpToOneLeadingAndTrailingNewLine = true,
@@ -166,7 +166,7 @@ function extractSingleXmlElement(
   return elements.length > 0 ? elements[0] : undefined
 }
 
-export function parseLlmGeneratedPatchV1WithHandWrittenParser(
+export function parsePartialMultiFileEdit(
   xml: string,
 ): LlmGeneratedPatchXmlV1 | undefined {
   const fileChangeOutputs = extractXmlElementsForTag(xml, 'file')

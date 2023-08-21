@@ -5,13 +5,30 @@ import {
   singleChangeSimplePatchPartial,
   patchWithTruncatedOldChunk,
 } from './examples'
-import { parseLlmGeneratedPatchV1WithHandWrittenParser } from './parse'
+import {
+  parsePartialMultiFileEdit,
+  trimUpToOneLeadingNewLine,
+  trimUpToOneTrailingNewLine,
+} from './parse'
+
+suite('Helper trimming functions for xml work as expected', () => {
+  test('trimUpToOneLeadingNewLine function', () => {
+    assert.equal(trimUpToOneLeadingNewLine('\nabc'), 'abc')
+    assert.equal(trimUpToOneLeadingNewLine('\n\nabc'), '\nabc')
+    assert.equal(trimUpToOneLeadingNewLine('abc'), 'abc')
+  })
+
+  test('trimUpToOneTrailingNewLine function', () => {
+    assert.equal(trimUpToOneTrailingNewLine('abc\n'), 'abc')
+    assert.equal(trimUpToOneTrailingNewLine('abc\n   '), 'abc')
+    assert.equal(trimUpToOneTrailingNewLine('abc\n\n   '), 'abc\n')
+    assert.equal(trimUpToOneTrailingNewLine('abc'), 'abc')
+  })
+})
 
 suite('Can parse example patches using hand written parser', () => {
   test('Simple patch', () => {
-    const patch = parseLlmGeneratedPatchV1WithHandWrittenParser(
-      singleChangeSimplePatch,
-    )
+    const patch = parsePartialMultiFileEdit(singleChangeSimplePatch)
 
     // console.log(JSON.stringify(patch, null, 2));
 
@@ -27,7 +44,7 @@ suite('Can parse example patches using hand written parser', () => {
   })
 
   test('Complex patch', () => {
-    const patch = parseLlmGeneratedPatchV1WithHandWrittenParser(twoChangePatch)
+    const patch = parsePartialMultiFileEdit(twoChangePatch)
 
     // console.log(JSON.stringify(patch, null, 2));
 
@@ -46,8 +63,7 @@ suite('Can parse example patches using hand written parser', () => {
 
   test('Almost empty patch', () => {
     const almostEmptyPatch = '<file><chan'
-    const patch =
-      parseLlmGeneratedPatchV1WithHandWrittenParser(almostEmptyPatch)
+    const patch = parsePartialMultiFileEdit(almostEmptyPatch)
 
     assert.ok(patch)
     const changes = patch.fileChanges[0].changes
@@ -58,9 +74,7 @@ suite('Can parse example patches using hand written parser', () => {
   // We don't want the tag to stream in and get shown to the user
   test('Trailing tag that is not done printing yet gets dropped', () => {
     const patchWithPartialClosingTag = '<file><change><old-chunk>lol</ol'
-    const patch = parseLlmGeneratedPatchV1WithHandWrittenParser(
-      patchWithPartialClosingTag,
-    )
+    const patch = parsePartialMultiFileEdit(patchWithPartialClosingTag)
 
     assert.ok(patch)
     const changes = patch.fileChanges[0].changes
@@ -74,9 +88,7 @@ suite('Can parse example patches using hand written parser', () => {
 
   test('Content is marked as finalized once it has a closing tag', () => {
     const patchWithPartialClosingTag = `<file><change><old-chunk>lol</old-chunk><new-chunk></new-chunk></chan`
-    const patch = parseLlmGeneratedPatchV1WithHandWrittenParser(
-      patchWithPartialClosingTag,
-    )
+    const patch = parsePartialMultiFileEdit(patchWithPartialClosingTag)
 
     assert.ok(patch)
     const changes = patch.fileChanges[0].changes
@@ -88,9 +100,7 @@ suite('Can parse example patches using hand written parser', () => {
   })
 
   test('Partial patch', () => {
-    const patch = parseLlmGeneratedPatchV1WithHandWrittenParser(
-      singleChangeSimplePatchPartial,
-    )
+    const patch = parsePartialMultiFileEdit(singleChangeSimplePatchPartial)
 
     // console.log(JSON.stringify(patch, null, 2));
 
@@ -102,9 +112,7 @@ suite('Can parse example patches using hand written parser', () => {
   })
 
   test('Patch with truncated tag in old chunk', () => {
-    const patch = parseLlmGeneratedPatchV1WithHandWrittenParser(
-      patchWithTruncatedOldChunk,
-    )
+    const patch = parsePartialMultiFileEdit(patchWithTruncatedOldChunk)
 
     // console.log(JSON.stringify(patch, null, 2));
 

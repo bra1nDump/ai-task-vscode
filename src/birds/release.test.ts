@@ -3,8 +3,8 @@ import * as vscode from 'vscode'
 
 suite('VSCode Extension Command Tests', function () {
   // Increased timeout since these are using LLM an are thus slow
-  this.timeout(10_000)
-  test('birds.feed command', async (done) => {
+  this.timeout(60_000)
+  test('birds.feed command', async () => {
     const releaseCommand = await vscode.commands
       .getCommands(true)
       .then((commands) => {

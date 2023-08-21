@@ -1,6 +1,6 @@
 import * as asssert from 'assert'
 // NOTE: Since we are running this from mocha, we can't use the fancy diffs/apply syntax and are keeping paths relative
-import { parseLlmGeneratedPatchV1WithHandWrittenParser } from './parse'
+import { parsePartialMultiFileEdit } from './parse'
 import { applyChanges, findRangeInEditor } from './apply'
 import * as vscode from 'vscode'
 
@@ -27,7 +27,7 @@ export function helloWorld(name: string) {
 </file>
     `
 
-    const parsedChange = parseLlmGeneratedPatchV1WithHandWrittenParser(payload)
+    const parsedChange = parsePartialMultiFileEdit(payload)
     asssert.ok(parsedChange)
 
     const initialContent = `// @bread Parametrize this function with a name
