@@ -131,7 +131,7 @@ function trimUpToOneLeadingNewLine(content: string) {
  */
 function trimUpToOneTrailingNewLine(content: string) {
   const lastLineBreak = content.lastIndexOf('\n')
-  if (lastLineBreak === -1 || lastLineBreak !== content.length - 1) {
+  if (lastLineBreak === -1) {
     return content
   }
 
