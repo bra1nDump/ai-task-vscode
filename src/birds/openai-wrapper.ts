@@ -42,8 +42,8 @@ export async function* streamLlm<T>(
   // Compare AsyncGenerators / AsyncIterators: https://javascript.info/async-iterators-generators
   // Basically openai decided to not return AsyncGenerator, which is more powerful (compare type definitions) but instead return an AsyncIteratable for stream
   const stream = await openai.chat.completions.create({
-    model: process.env.OPENAI_DEFAULT_MODEL ?? 'gpt-3.5-turbo',
-    temperature: 0.9,
+    model: process.env.OPENAI_DEFAULT_MODEL ?? 'gpt-4',
+    temperature: 0.2,
     messages,
     stream: true,
   })

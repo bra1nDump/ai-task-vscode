@@ -11,7 +11,7 @@ https://github.com/sourcegraph/cody
 - ![Good logo](cody-logo.png)
 - Backed by sourcegraph, an actual company
 - Roughly 6 months old
-- Commits are growing, 3 core contributors, and counting ![cody contributors](cody-contributor-stats.png)
+- Commits are growing, 3 core contributors, and counting ![cody contributors](cody-contributor-stats.png), used git-quick-stats to get stats
 - uses more of your codebase's APIs, impls, and idioms, with less hallucination.
 
 ## .prompt files

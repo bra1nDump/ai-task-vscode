@@ -5,9 +5,22 @@
 - Apply the changes (keep the bread)
 
 # Next up
-- Stop being dependent on currently opened files
-  - Open them if not opened yet
-- Update prompt to generate multiple changes - aka add file path
+- Collect logs on tool execution - this is so I know what prompts work and what don't
+- Bread escaping is still broken - prompts still have @bread in them, need to parametrize that
+- Split the multi file edit task into two separate tasks
+  - Find the target range
+    - Give the same file context, but augment each line with the line number
+    - Ask to provide a plan for the changes first
+    - Ask to generate filepath and line range numbers. Can provide multiple
+  - Create new content
+    - See how continue generates its new content
+
+# Challanges
+- llms are not good with structured data
+- they are also not good at efficient encoding of a change set - they need linearity to stay on good track
+- this makes targeted patch generation hard
+
+# For later
 - Streaming changes instead of final application
   - Find inital target range
   - Apply changes to the target range
@@ -16,8 +29,12 @@
 
 ## Dropped
 - Update diff format prompt generation - We will likely move to function calling, so lets wait for that
+- Maybe solve a toy problem first? - i think its a good way to stay in lala land, so no
 
-# To build
+## Done
+- Stop being dependent on currently opened files
+  - Open them if not opened yet
+- Update prompt to generate multiple changes - aka add file path
 - Diffs
   - A prompt for generating diffs
   - Code to parse the diff format

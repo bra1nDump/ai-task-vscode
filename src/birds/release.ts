@@ -156,8 +156,9 @@ function buildMultiFileEditingPrompt(fileContexts: FileContext[]): Message[] {
     filesContextXmlPromptSystemMessage,
     {
       content:
-        'Reply only with generated diffs for the files you see fit.' +
-        'As a reminder the output should be a valid xml.',
+        'Reply with a rough plan of the changes and the changes themselves you want to make.\n' +
+        'Your plan should only address the requested changes.\n' +
+        'Next reply with generated file changes for the files you see fit.\n',
       role: 'user',
     },
   ]
@@ -186,11 +187,10 @@ async function findAndCollectBreadedFiles(): Promise<
   if (allFilesInWorkspace.length === 0) {
     throw new Error('No files in workspace')
   } else if (allFilesInWorkspace.length > 200) {
-    throw new Error(
-      `Too many files in workspace: ${allFilesInWorkspace.length}`,
-    )
+    throw new Error(`Too many files matched: ${allFilesInWorkspace.length}`)
   }
 
+  // @crust create intermediate varaibles instead of using .then use await
   const fileContexts = await Promise.all(
     allFilesInWorkspace.map(async (fileUri) => {
       const binaryFileContent = await vscode.workspace.fs.readFile(fileUri)
@@ -218,17 +218,15 @@ async function findAndCollectBreadedFiles(): Promise<
         return undefined
       }
     }),
-  ).then((fileContexts) =>
-    // Filter typeguards get me every time
-    // https://www.benmvp.com/blog/filtering-undefined-elements-from-array-typescript/
-    fileContexts.filter(
-      (fileContext): fileContext is FileContext => fileContext !== undefined,
-    ),
+  )
+
+  const filteredFileContexts = fileContexts.filter(
+    (fileContext): fileContext is FileContext => fileContext !== undefined,
   )
 
   if (fileContexts.length === 0) {
     return undefined
   }
 
-  return fileContexts
+  return filteredFileContexts
 }

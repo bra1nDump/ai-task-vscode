@@ -2,6 +2,7 @@
 - Avoid creating UIs by any means nessesary - vscode is rich enough
 - Avoid creating communication protocols - no server, keep in typescript
 - Focus on a single development ecosystem - vscode, typescript
+- Use vscode apis when possible, for example getting symbol information, ast, etc
 - Avoid sessions - get what you see by keeping state in plain text
 - ~~Use langchain for all things llm to keep getting free features~~
 

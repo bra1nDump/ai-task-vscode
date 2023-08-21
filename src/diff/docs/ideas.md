@@ -27,7 +27,8 @@ import { useMutation } from 'react-query';
   - Cash the initial file contents and apply the changes to the cashed version. Incompatible with the current implementation as it operates directly within the vas code editor
 - Current implementation overall sucks because it is fully VSCode dependent, I don't think I necessarily want to change that in the time being though
   - It will make this running as a commandline tool harder as well as will complicate unit testing
-
+- `async function findAndCollectBreadedFiles(): Promise&lt;FileContext[] | undefined&gt; {` it is smart enough to escape < >
+- Got error: `command failed with error code 2: error parsing glob '**/${': unclosed alternate group; missing '}' (maybe escape '{' with '[{]'?)`
 
 ## Format v2 - open ai function calling
 Instead of xml encoding, we can use function calling fomat to encode the changes.
