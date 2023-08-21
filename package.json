@@ -21,7 +21,7 @@
     "commands": [
       {
         "command": "birds.feed",
-        "title": "Feed birds with bread"
+        "title": "Birds: Feed Scattered Crumbs",
       }
     ],
     "keybindings": []

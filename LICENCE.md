@@ -1,5 +1,5 @@
 Licensor: Kirill Dubovitskiy
-Licensed Work:	The Licensed Work is (c) The code in this repository
+Licensed Work:	The Licensed Work is the code in this repository
 Change Date:	Four years from the date the Licensed Work is published
 Change License:	MPL 2.0
 For information about alternative licensing arrangements for the Licensed Work, please contact kirill2003de@gmail.com
