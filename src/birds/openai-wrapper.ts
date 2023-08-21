@@ -1,20 +1,48 @@
 import OpenAI from 'openai'
 import { mapAsyncInterable, filterAsyncIterable } from 'utils/functional'
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-})
+import * as vscode from 'vscode'
 
 export type Message = OpenAI.Chat.Completions.CreateChatCompletionRequestMessage
+
+/**
+ * To avoid 4000 request per minute limit ... and a big bill ...
+ */
+let isStreamRunning = false
 
 export async function* streamLlm<T>(
   messages: Message[],
   tryParsePartial: (content: string) => T | undefined,
 ): AsyncIterable<T> {
+  let key: string | undefined =
+    process.env.OPENAI_API_KEY ??
+    vscode.workspace.getConfiguration('birds').get('openaiApiKey')
+
+  if (typeof key !== 'string') {
+    // Give the user a chance to enter the key
+    key = await vscode.window.showInputBox({
+      prompt: 'Please enter your OpenAI API key',
+      ignoreFocusOut: true,
+    })
+  }
+
+  if (!key) {
+    throw new Error('No OpenAI API key provided')
+  }
+
+  if (isStreamRunning) {
+    throw new Error('Stream is already running')
+  }
+
+  isStreamRunning = true
+
+  const openai = new OpenAI({
+    apiKey: key,
+  })
+
   // Compare AsyncGenerators / AsyncIterators: https://javascript.info/async-iterators-generators
   // Basically openai decided to not return AsyncGenerator, which is more powerful (compare type definitions) but instead return an AsyncIteratable for stream
   const stream = await openai.chat.completions.create({
-    model: process.env.OPENAI_DEFAULT_MODEL ?? 'gpt-4',
+    model: process.env.OPENAI_DEFAULT_MODEL ?? 'gpt-3.5-turbo',
     temperature: 0.9,
     messages,
     stream: true,
@@ -36,6 +64,8 @@ export async function* streamLlm<T>(
         console.log(`\n[${role}]\n${content}`)
       }
       console.log(`Final content:\n${currentContent}`)
+
+      isStreamRunning = false
 
       return undefined
     }

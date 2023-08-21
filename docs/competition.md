@@ -1,10 +1,25 @@
+
 # Auto GPT like
 Most of these tools lack the ability to be good enouth to not look at the code. Thus I like staying within vscode better.
 https://github.com/AutoPackAI/beebot
 
+# VSCode tools
 
-# Vscode + langchain github seach
-All of these use a webview
+## Cody - open source
+https://github.com/sourcegraph/cody
+- Similar interface simply provide comments and hit enter
+- ![Good logo](cody-logo.png)
+- Backed by sourcegraph, an actual company
+- Roughly 6 months old
+- Commits are growing, 3 core contributors, and counting ![cody contributors](cody-contributor-stats.png)
+- uses more of your codebase's APIs, impls, and idioms, with less hallucination.
+
+## .prompt files
+https://github.com/promptfile/promptfile
+- Language server support
+- Looks deadish? 3 weeks ago last commit https://github.com/promptfile/promptfile/graphs/contributors
+- Stylish docs - https://promptfile.org/blocks#functions
+
 
 ## OpenPilot - similar to Continue, open source copilot
 https://github.com/jallen-dev/openpilot

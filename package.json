@@ -1,6 +1,7 @@
 {
-  "name": "bread",
-  "displayName": "bread",
+  "name": "birds",
+  "displayName": "birds",
+  "publisher": "bra1nDump",
   "description": "Leave breakcrumbs across the codebase and have llm type for you inline",
   "version": "0.0.1",
   "repository": {
@@ -21,20 +22,34 @@
     "commands": [
       {
         "command": "birds.feed",
-        "title": "Birds: Feed Scattered Crumbs",
+        "title": "Birds: Feed Scattered Crumbs"
       }
     ],
+    "configuration": {
+      "properties": {
+        "birds.at-bread-mention": {
+          "type": "string",
+          "default": "bread",
+          "description": "Override the keyword to provide context to the llm. Will affect both mentions in the comments and file extension"
+        },
+        "birds.openaiApiKey": {
+          "type": "string",
+          "description": "OpenAI API key"
+        }
+      }
+    },
     "keybindings": []
   },
   "scripts": {
-    "compile": "webpack",
+    "bundle": "webpack",
     "watch": "webpack --watch",
     "bundle:prod": "webpack --mode production --devtool false",
     "__comment__": "Using --no-dependencies otherwise vsce complains about extra things being in node_module https://github.com/microsoft/vscode-vsce/issues/421#issuecomment-1038911725",
     "package": "pnpm run bundle:prod && ./node_modules/.bin/vsce package --no-dependencies --allow-star-activation",
+    "install-local": "node install-local.mjs 'code-insiders'",
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",
-    "pretest": "pnpm run compile-tests && pnpm run compile && pnpm run lint",
+    "pretest": "pnpm run compile-tests && pnpm run bundle && pnpm run lint",
     "lint": "eslint . --ext ts --fix",
     "test": "node ./out/test/runTest.js"
   },
@@ -52,6 +67,7 @@
     "eslint-plugin-prettier": "^5.0.0",
     "eslint-plugin-unused-imports": "^3.0.0",
     "glob": "^8.1.0",
+    "jsonfile": "^6.1.0",
     "mocha": "^10.2.0",
     "ts-loader": "^9.4.3",
     "typescript": "^5.1.3",

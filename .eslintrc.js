@@ -23,5 +23,12 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': 'off',
   },
 
-  ignorePatterns: ['out', 'dist', '**/*.d.ts', '**/*.js', 'testing-sandbox'],
+  ignorePatterns: [
+    'out',
+    'dist',
+    '**/*.d.ts',
+    '**/*.js',
+    '**/*.mjs',
+    'testing-sandbox',
+  ],
 }

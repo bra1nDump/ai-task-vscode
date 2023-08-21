@@ -35,6 +35,12 @@
 				"npm: watch-tests"
 			],
 			"problemMatcher": []
+		},
+		{
+			"label": "Build and Install Locally",
+			"type": "npm",
+			"script": "install-local",
+			"problemMatcher": []
 		}
 	]
 }

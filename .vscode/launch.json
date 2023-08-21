@@ -37,6 +37,10 @@
 				"--extensionDevelopmentPath=${workspaceFolder}"
 			],
 			"envFile": "${workspaceFolder}/.env",
+			"env": {
+				// Our code has a bunch of @bread mentions, so we need to override the default
+				"AT_BREAD_IDENTIFIER_OVERRIDE": "crust",
+			},
 			"outFiles": [
 				"${workspaceFolder}/dist/**/*.js"
 			],

@@ -3,6 +3,8 @@ declare global {
     interface ProcessEnv extends Dict<string>  {
       DEFAULT_OPENAI_MODEL?: string
       OPENAI_API_KEY?: string
+
+      AT_BREAD_IDENTIFIER_OVERRIDE?: string
     }
   }
 }
