@@ -1,4 +1,14 @@
-export const singleChangeSimplePatch = `
+/**
+ * Diff generation with these proms has been kind of underwhelming, I have attributed thus to the approach itself
+ * I have suggested the alternative of splitting the target code location into a separate task
+ * And only then generating the new codes. I think that is still a more promising, but I can squeeze out more performance from thus with better prompts.
+ *
+ * Provide more smaller examples
+ * Provide more truncated examples
+ * Provide initial file content in a similar format (already doing this?)
+ */
+
+export const singleChangeSimplePatch = (breadIdentifier: string) => `
 <!-- All edits within this container apply to the same file -->
 <file>
     <path>src/hello-world.ts</path>
@@ -7,7 +17,7 @@ export const singleChangeSimplePatch = `
         <description>Parametrising function with a name of the thing to be greeted</description>
         <old-chunk>
 function helloWorld() {
-    // @bread pass name to be greeted
+    // ${breadIdentifier} pass name to be greeted
     console.log('Hello World');
 }
         </old-chunk>
@@ -21,14 +31,14 @@ function hello(name: string) {
 </file>
 `
 
-export const singleChangeSimplePatchPartial = `
+export const singleChangeSimplePatchPartial = (breadIdentifier: string) => `
 <file>
     <path>src/hello-world.ts</path>
     <change>
         <description>Parametrising function with a name of the thing to be greeted</description>
         <old-chunk>
 function helloWorld() {
-    // @bread pass name to be greeted
+    // ${breadIdentifier} pass name to be greeted
     console.log('Hello World');
 }
         </old-chunk>
@@ -37,7 +47,7 @@ function hello(name: string) {
 
 `
 
-export const twoChangePatch = `
+export const twoChangePatch = (breadIdentifier: string) => `
 <file>
     <path>src/extension.ts</path>
     <change>
@@ -47,7 +57,7 @@ export const twoChangePatch = `
 		vscode.window.showInformationMessage('Hello World from bread!');
 	});
 
-    // @bread When a user adds a magic word @bread in the current file, add a button on top of that line with a play button
+    // ${breadIdentifier} When a user adds a magic word ${breadIdentifier} in the current file, add a button on top of that line with a play button
 
 	context.subscriptions.push(disposable);
 }
@@ -121,7 +131,7 @@ export function activate(context: ExtensionContext) {
 </file>
 `
 
-export const patchWithTruncatedOldChunk = `
+export const patchWithTruncatedOldChunk = (breadIdentifier: string) => `
 <file>
     <path>src/extension.ts</path>
     <change>
@@ -188,9 +198,9 @@ export const patchWithTruncatedOldChunk = `
 </file>
 `
 
-export const allDiffV1Examples = [
-  singleChangeSimplePatch,
-  patchWithTruncatedOldChunk,
-  singleChangeSimplePatchPartial,
-  twoChangePatch,
+export const allDiffV1Examples = (breadIdentifier: string) => [
+  singleChangeSimplePatch(breadIdentifier),
+  patchWithTruncatedOldChunk(breadIdentifier),
+  singleChangeSimplePatchPartial(breadIdentifier),
+  twoChangePatch(breadIdentifier),
 ]

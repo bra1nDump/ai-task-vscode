@@ -1,8 +1,9 @@
 import OpenAI from 'openai'
-import { mapAsyncInterable, filterAsyncIterable } from 'utils/functional'
+import { mapAsyncInterable, filterAsyncIterable } from 'helpers/asyncIterable'
 import * as vscode from 'vscode'
 
-export type Message = OpenAI.Chat.Completions.CreateChatCompletionRequestMessage
+export type OpenAiMessage =
+  OpenAI.Chat.Completions.CreateChatCompletionRequestMessage
 
 /**
  * To avoid 4000 request per minute limit like bug ... and a big bill ...
@@ -10,7 +11,7 @@ export type Message = OpenAI.Chat.Completions.CreateChatCompletionRequestMessage
 let isStreamRunning = false
 
 export async function* streamLlm<T>(
-  messages: Message[],
+  messages: OpenAiMessage[],
   tryParsePartial: (content: string) => T | undefined,
 ): AsyncIterable<T> {
   let key: string | undefined =

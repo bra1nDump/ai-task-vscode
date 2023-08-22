@@ -1,0 +1,1 @@
+When doing some VSCode related things you should check if there's helpers in [](./src/helpers/vscode.ts) first.

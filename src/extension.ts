@@ -1,4 +1,5 @@
-import { chaseBread } from 'chase-bread/command'
+import { chaseBreadCommand } from 'chase-bread/command'
+import { chaseBugsCommand } from 'chase-bugs/command'
 import * as vscode from 'vscode'
 
 export function activate(context: vscode.ExtensionContext) {
@@ -6,7 +7,8 @@ export function activate(context: vscode.ExtensionContext) {
 
   // Commands also need to be defined in package.json
   context.subscriptions.unshift(
-    vscode.commands.registerCommand('birds.feed', chaseBread),
+    vscode.commands.registerCommand('birds.chaseBread', chaseBreadCommand),
+    vscode.commands.registerCommand('birds.chaseBugs', chaseBugsCommand),
   )
 }
 

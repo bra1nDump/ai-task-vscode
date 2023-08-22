@@ -34,3 +34,4 @@
 - Replace bread with in editor selections
 - UI Cool fade in lines that are still being generated instead of streaming - its distracting
 - Extract prompts from linter setup, for example lintrc
+- Run on enter, customize the pattern //b or //// do xyz [Enter key] - starts running the llm

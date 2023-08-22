@@ -2,7 +2,7 @@ import * as asssert from 'assert'
 // NOTE: Since we are running this from mocha, we can't use the fancy diffs/apply syntax and are keeping paths relative
 import { parsePartialMultiFileEdit } from './parse'
 import { applyChanges } from './apply'
-import { findTargetRangeInEditor } from './findRangeInEditor'
+import { findTargetRangeInEditor } from './findTargetRangeInEditor'
 import * as vscode from 'vscode'
 
 suite('Combined parse and apply test', () => {

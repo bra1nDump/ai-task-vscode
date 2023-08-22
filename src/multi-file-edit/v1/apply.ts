@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 import { Change } from './types'
-import { findTargetRangeInEditor } from './findRangeInEditor'
+import { findTargetRangeInEditor } from './findTargetRangeInEditor'
 
 export async function applyChanges(
   changes: Change[],

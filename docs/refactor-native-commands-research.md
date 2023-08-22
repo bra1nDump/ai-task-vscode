@@ -2211,7 +2211,7 @@ All commands
   "testExplorerConverter.activate",
   "testExplorerConverter.useNativeTesting",
   "inline-parameters.toggle",
-  "birds.feed",
+  "birds.chaseBread",
   "test-explorer.toggleVisibility",
   "test-explorer.removeView",
   "test-explorer.reload",

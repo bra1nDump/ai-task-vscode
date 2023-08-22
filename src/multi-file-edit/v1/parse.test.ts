@@ -10,6 +10,9 @@ import {
   trimUpToOneLeadingNewLine,
   trimUpToOneTrailingNewLine,
 } from '../../xml/parser'
+import { getBreadIdentifier } from '../../helpers/breadIdentifier'
+
+const breadIdentifier = getBreadIdentifier()
 
 suite('Helper trimming functions for xml work as expected', () => {
   test('trimUpToOneLeadingNewLine function', () => {
@@ -28,7 +31,9 @@ suite('Helper trimming functions for xml work as expected', () => {
 
 suite('Can parse example patches using hand written parser', () => {
   test('Simple patch', () => {
-    const patch = parsePartialMultiFileEdit(singleChangeSimplePatch)
+    const patch = parsePartialMultiFileEdit(
+      singleChangeSimplePatch(breadIdentifier),
+    )
 
     // console.log(JSON.stringify(patch, null, 2));
 
@@ -44,7 +49,7 @@ suite('Can parse example patches using hand written parser', () => {
   })
 
   test('Complex patch', () => {
-    const patch = parsePartialMultiFileEdit(twoChangePatch)
+    const patch = parsePartialMultiFileEdit(twoChangePatch(breadIdentifier))
 
     // console.log(JSON.stringify(patch, null, 2));
 
@@ -100,7 +105,9 @@ suite('Can parse example patches using hand written parser', () => {
   })
 
   test('Partial patch', () => {
-    const patch = parsePartialMultiFileEdit(singleChangeSimplePatchPartial)
+    const patch = parsePartialMultiFileEdit(
+      singleChangeSimplePatchPartial(breadIdentifier),
+    )
 
     // console.log(JSON.stringify(patch, null, 2));
 
@@ -112,7 +119,9 @@ suite('Can parse example patches using hand written parser', () => {
   })
 
   test('Patch with truncated tag in old chunk', () => {
-    const patch = parsePartialMultiFileEdit(patchWithTruncatedOldChunk)
+    const patch = parsePartialMultiFileEdit(
+      patchWithTruncatedOldChunk(breadIdentifier),
+    )
 
     // console.log(JSON.stringify(patch, null, 2));
 
