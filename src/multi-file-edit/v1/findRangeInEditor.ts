@@ -1,8 +1,8 @@
 import * as vscode from 'vscode'
-import { Change, RangeToReplace } from './types'
+import { TargetRange } from './types'
 
-export function findRangeInEditor(
-  oldChunk: RangeToReplace,
+export function findTargetRangeInEditor(
+  oldChunk: TargetRange,
   editor: vscode.TextEditor,
 ): vscode.Range | undefined {
   const document = editor.document
@@ -88,37 +88,4 @@ export function findRangeInEditor(
   end += suffixIndex - 1
 
   return new vscode.Range(start, 0, end, document.lineAt(end).text.length)
-}
-
-export async function applyChanges(
-  changes: Change[],
-  editor: vscode.TextEditor,
-): Promise<
-  {
-    change: Change
-    result:
-      | 'appliedSuccessfully'
-      | 'failedToFindTargetRange'
-      | 'failedToApplyCanRetry'
-  }[]
-> {
-  return Promise.all(
-    changes.map(async (change) => {
-      const range = findRangeInEditor(change.oldChunk, editor)
-      if (!range) {
-        console.error(`Could not find range for change: ${change.description}`)
-        return { change, result: 'failedToFindTargetRange' }
-      }
-
-      const successfullyApplied = await editor.edit((editBuilder) => {
-        editBuilder.replace(range, change.newChunk.content)
-      })
-      return {
-        change,
-        result: successfullyApplied
-          ? 'appliedSuccessfully'
-          : 'failedToApplyCanRetry',
-      }
-    }),
-  )
 }

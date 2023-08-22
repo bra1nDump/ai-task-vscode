@@ -14,7 +14,7 @@
   - I will also make nu chunk optional that will signal that the old chunk is finally complete 
 */
 
-export type RangeToReplace =
+export type TargetRange =
   | {
       type: 'fullContentRange'
       isStreamFinalized: boolean
@@ -34,7 +34,7 @@ export interface Replacement {
 
 export interface Change {
   description: string
-  oldChunk: RangeToReplace
+  oldChunk: TargetRange
   newChunk: Replacement
 }
 

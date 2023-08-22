@@ -1,11 +1,11 @@
-import { allDiffV1Examples } from 'diff/v1/examples'
-import { diffGeneratorPromptPrefix } from 'diff/v1/prompt'
+import { allDiffV1Examples } from 'multi-file-edit/v1/examples'
+import { diffGeneratorPromptPrefix } from 'multi-file-edit/v1/prompt'
 
 import * as vscode from 'vscode'
-import { parsePartialMultiFileEdit } from 'diff/v1/parse'
-import { LlmGeneratedPatchXmlV1 } from 'diff/v1/types'
-import { applyChanges } from 'diff/v1/apply'
-import { Message, streamLlm } from 'birds/openai-wrapper'
+import { parsePartialMultiFileEdit } from 'multi-file-edit/v1/parse'
+import { LlmGeneratedPatchXmlV1 } from 'multi-file-edit/v1/types'
+import { applyChanges } from 'multi-file-edit/v1/apply'
+import { Message, streamLlm } from 'utils/openai-wrapper'
 
 interface FileContext {
   filePathRelativeTooWorkspace: string
@@ -22,7 +22,7 @@ interface FileContext {
  * Parse the diffs
  * Apply them to the current file in place
  */
-export async function feedBirds() {
+export async function chaseBread() {
   console.log('Releasing the birds, your bread stands no chance')
 
   const fileContexts = await findAndCollectBreadedFiles()

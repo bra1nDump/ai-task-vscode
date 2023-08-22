@@ -1,7 +1,8 @@
 import * as asssert from 'assert'
 // NOTE: Since we are running this from mocha, we can't use the fancy diffs/apply syntax and are keeping paths relative
 import { parsePartialMultiFileEdit } from './parse'
-import { applyChanges, findRangeInEditor } from './apply'
+import { applyChanges } from './apply'
+import { findTargetRangeInEditor } from './findRangeInEditor'
 import * as vscode from 'vscode'
 
 suite('Combined parse and apply test', () => {
@@ -42,7 +43,7 @@ export function helloWorld() {
     const editor = await vscode.window.showTextDocument(doc)
 
     const changes = parsedChange.fileChanges[0].changes
-    const rangeInEditor = findRangeInEditor(changes[0].oldChunk, editor)
+    const rangeInEditor = findTargetRangeInEditor(changes[0].oldChunk, editor)
     asssert.ok(rangeInEditor)
     asssert.ok(rangeInEditor.start)
     asssert.ok(rangeInEditor.end)

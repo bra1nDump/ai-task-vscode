@@ -53,11 +53,13 @@ Open the project in VSCode and open debug view (Ctrl+Shift+D).
 To run the extension: Then select `Extension` and press `F5` or hit play.
 To run tests: Then select `Tests` and press `F5` or hit play.
 
-# Linting
+**NOTE** Sometimes currently the watch tasks seemed to fail, but I'm pretty sure I'm just overriding the out folder ..., anyways it sometimes causes the tests to not be found in out folder
+
+## Linting
 Using ESLint
 And prettier as an ESLint plugin https://github.com/prettier/eslint-plugin-prettier
 
-# Ideas
+## Ideas
 
 See [docs](docs/) for idea documentation.
 See [diff](src/diff/docs/) for ideas on how to create patches using llm.

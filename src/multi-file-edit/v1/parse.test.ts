@@ -5,11 +5,11 @@ import {
   singleChangeSimplePatchPartial,
   patchWithTruncatedOldChunk,
 } from './examples'
+import { parsePartialMultiFileEdit } from './parse'
 import {
-  parsePartialMultiFileEdit,
   trimUpToOneLeadingNewLine,
   trimUpToOneTrailingNewLine,
-} from './parse'
+} from '../../xml/parser'
 
 suite('Helper trimming functions for xml work as expected', () => {
   test('trimUpToOneLeadingNewLine function', () => {

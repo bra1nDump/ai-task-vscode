@@ -1,12 +1,9 @@
-import { Change, LlmGeneratedPatchXmlV1, RangeToReplace } from './types'
-
 export interface XmlElement {
   tag: string
   content: string
   /** Since this is streaming from an llm we want to allow for partial xml */
   isClosed: boolean
 }
-
 /**
  * Extracts all xml elements with the given tag from the given xml string.
  * If the tag is not closed, the content will be the content up to the end of the string.
@@ -40,6 +37,7 @@ export interface XmlElement {
  *
  * @param shouldYieldPartialXml If true, will yield partial xml elements. I was going to use this for not allowing to stream partial paths, but realized with search api I can keep trying until only one file matches the path
  */
+
 export function extractXmlElementsForTag(
   xml: string,
   tag: string,
@@ -121,7 +119,6 @@ export function extractXmlElementsForTag(
 export function trimUpToOneLeadingNewLine(content: string) {
   return content.startsWith('\n') ? content.substring(1) : content
 }
-
 /**
  * Removes the last new line from the content if it exists, including any whitespace on the final line.
  * Helpful to remove indentation due to xml pretty printing.
@@ -129,6 +126,7 @@ export function trimUpToOneLeadingNewLine(content: string) {
  * - Given `lol\n` will return `lol`
  * - Given `lol\n++` will return `lol`
  */
+
 export function trimUpToOneTrailingNewLine(content: string) {
   const lastLineBreak = content.lastIndexOf('\n')
   if (lastLineBreak === -1) {
@@ -140,7 +138,6 @@ export function trimUpToOneTrailingNewLine(content: string) {
     ? content.substring(0, lastLineBreak)
     : content
 }
-
 function trimUpToOneLeadingAndTrailingNewLine(content: string) {
   const contentWithoutLeadingNewLine = trimUpToOneLeadingNewLine(content)
   const contentWithoutLeadingAndTrailingNewLine = trimUpToOneTrailingNewLine(
@@ -149,8 +146,8 @@ function trimUpToOneLeadingAndTrailingNewLine(content: string) {
 
   return contentWithoutLeadingAndTrailingNewLine
 }
-
 /** @see extractXmlElementsForTag */
+
 export function extractSingleXmlElement(
   xml: string,
   tag: string,
@@ -164,79 +161,4 @@ export function extractSingleXmlElement(
     shouldYieldPartialXml,
   )
   return elements.length > 0 ? elements[0] : undefined
-}
-
-export function parsePartialMultiFileEdit(
-  xml: string,
-): LlmGeneratedPatchXmlV1 | undefined {
-  const fileChangeOutputs = extractXmlElementsForTag(xml, 'file')
-
-  // TODO: Drop the new lines right after opening tags old-chunk and new-chunk and right before closing tags
-
-  const changesToMultipleFiles = fileChangeOutputs.map((fileChangeOutput) => {
-    const changeXmlElements = extractXmlElementsForTag(
-      fileChangeOutput.content,
-      'change',
-    )
-
-    const singleFileChanges = changeXmlElements.map(
-      (changeXmlElement): Change => {
-        const changeXml = changeXmlElement.content
-
-        const description = extractSingleXmlElement(changeXml, 'description')
-        const oldChunk = extractSingleXmlElement(changeXml, 'old-chunk')
-
-        // Handle case where old chunk is truncated
-        const oldChunkParts = oldChunk?.content.split('</truncated>') ?? []
-        let oldChunkContent: RangeToReplace
-
-        if (!oldChunk) {
-          oldChunkContent = {
-            type: 'fullContentRange',
-            isStreamFinalized: false,
-            fullContent: '',
-          }
-        } else {
-          if (oldChunkParts.length === 2) {
-            const prefixContent = oldChunkParts[0]
-            const suffixContent = oldChunkParts[1]
-            oldChunkContent = {
-              type: 'prefixAndSuffixRange',
-              prefixContent,
-              suffixContent,
-              isStreamFinalized: oldChunk.isClosed,
-            }
-          } else if (oldChunkParts.length === 1) {
-            oldChunkContent = {
-              type: 'fullContentRange',
-              fullContent: oldChunk.content,
-              isStreamFinalized: oldChunk.isClosed,
-            }
-          } else {
-            throw new Error('Unexpected number of old chunk parts')
-          }
-        }
-
-        const newChunk = extractSingleXmlElement(changeXml, 'new-chunk')
-        return {
-          description: description?.content ?? '',
-          oldChunk: oldChunkContent,
-          newChunk: {
-            content: newChunk?.content ?? '',
-            isStreamFinalized: newChunk?.isClosed ?? false,
-          },
-        }
-      },
-    )
-
-    return {
-      filePathRelativeToWorkspace: extractSingleXmlElement(
-        fileChangeOutput.content,
-        'path',
-      )?.content,
-      changes: singleFileChanges,
-    }
-  })
-
-  return { fileChanges: changesToMultipleFiles }
 }

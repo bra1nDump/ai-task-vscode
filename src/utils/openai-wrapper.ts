@@ -5,7 +5,7 @@ import * as vscode from 'vscode'
 export type Message = OpenAI.Chat.Completions.CreateChatCompletionRequestMessage
 
 /**
- * To avoid 4000 request per minute limit ... and a big bill ...
+ * To avoid 4000 request per minute limit like bug ... and a big bill ...
  */
 let isStreamRunning = false
 
