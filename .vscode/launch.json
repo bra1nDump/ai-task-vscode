@@ -59,15 +59,20 @@
 			"envFile": "${workspaceFolder}/.env",
 			"env": {
 				// This is a cheaper model + it's faster
-				"OPENAI_DEFAULT_MODEL": "gpt-3.5-turbo",
+				// "OPENAI_DEFAULT_MODEL": "gpt-3.5-turbo",
 				// Important! The glob needs to match js files, not original ts files
-				// "TEST_SUITE_GLOB": "**/parse.test.js"
+				// Use test.only instead of test in the code to run only one test
+				// Use this glob if you want to run only one test suite
+				// "TEST_SUITE_GLOB": "**/apply.test.js"
 			},
 			"outFiles": [
 				"${workspaceFolder}/out/**/*.js",
 				"${workspaceFolder}/dist/**/*.js"
 			],
-			"preLaunchTask": "tasks: watch-tests"
+			"preLaunchTask": "tasks: watch-tests",
+			// Because the test compilation tasks or watch tasks they will not rebuild unless content changes
+			// So if we just clean the out directory it will not trigger a re-run
+			// "postDebugTask": "clean: out-directory"
 		}
 	]
 }

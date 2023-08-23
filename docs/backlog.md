@@ -35,3 +35,7 @@
 - UI Cool fade in lines that are still being generated instead of streaming - its distracting
 - Extract prompts from linter setup, for example lintrc
 - Run on enter, customize the pattern //b or //// do xyz [Enter key] - starts running the llm
+- Will cause bugs later - you cannot edit while llm is working on it, otherwise when time comes to modify it it will be outdated. 
+  - This sucks, the editor contents also need to be saved ... otherwise fs read will not be accurate. Hmm. Maybe I should just check if there is an editor opened for a given uri and if yes
+  - Well this is a big problem, you cannot access editors that are not in focus. Task output is also considered an editor
+  - The rough idea is to watch editors and when they change cache their content, store in a map. When we try reading a file - first try reading from the map, only after from fs

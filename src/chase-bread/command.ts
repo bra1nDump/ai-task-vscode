@@ -1,11 +1,13 @@
 import * as vscode from 'vscode'
 import { parsePartialMultiFileEdit } from 'multi-file-edit/v1/parse'
 import { LlmGeneratedPatchXmlV1 } from 'multi-file-edit/v1/types'
-import { applyChanges } from 'multi-file-edit/v1/apply'
 import { streamLlm } from 'helpers/openai'
 import { findAndCollectBreadedFiles } from './context'
 import { buildMultiFileEditingPrompt } from '../multi-file-edit/v1/prompt'
-import { getBreadIdentifier } from 'helpers/breadIdentifier'
+import { getBreadIdentifier } from 'helpers/bread-identifier'
+import { continuoulyApplyPatchStream } from 'multi-file-edit/applyResolvedChange'
+import { from } from 'ix/asynciterable'
+import { mapToResolvedChanges } from 'multi-file-edit/v1/resolveTargetRange'
 
 export interface FileContext {
   filePathRelativeTooWorkspace: string
@@ -25,6 +27,18 @@ export interface FileContext {
 export async function chaseBreadCommand() {
   console.log('Releasing the birds, your bread stands no chance')
 
+  // We don't want the content on disk to be stale for the currently opened editors
+  // because this is where we're reading the context from
+  // Hack :( first of the day lol
+  // More details in @mapToResolvedChanges
+  // Does not actually save all the editors.
+  // See extension.ts for beginning of work towards fixing this
+  for (const editor of vscode.window.visibleTextEditors) {
+    // This will prompt the user if the editor is not currently backed by a file
+    const success = await editor.document.save()
+    console.log(success)
+  }
+
   const breadIdentifier = getBreadIdentifier()
 
   const fileContexts = await findAndCollectBreadedFiles(breadIdentifier)
@@ -37,88 +51,12 @@ export async function chaseBreadCommand() {
 
   const messages = buildMultiFileEditingPrompt(fileContexts, breadIdentifier)
 
-  const patchSteam = streamLlm<LlmGeneratedPatchXmlV1>(
-    messages,
-    parsePartialMultiFileEdit,
+  const patchSteam = from(
+    streamLlm<LlmGeneratedPatchXmlV1>(messages, parsePartialMultiFileEdit),
+    mapToResolvedChanges,
   )
-  let lastPatch: LlmGeneratedPatchXmlV1 | undefined
 
-  // TODO: Keep a map of files that were already opened before so we don't open them again
-  //   if they are closed means the user was not interested in them
-  for await (const patch of patchSteam) {
-    //
-    // Show the user the file we will be applying the patch later on so they can start reading
-    for (const fileChange of patch.fileChanges) {
-      if (!fileChange.filePathRelativeToWorkspace) {
-        // Don't know the path yet, skip
-        continue
-      }
-
-      const workspaceFilesWithMatchingNames = await vscode.workspace.findFiles(
-        `**/${fileChange.filePathRelativeToWorkspace}`,
-      )
-      if (workspaceFilesWithMatchingNames.length !== 1) {
-        // Still streaming the path most likely, not enough path was printed to match a single file
-        continue
-      }
-
-      const fileUri = workspaceFilesWithMatchingNames[0]
-      const _document = await vscode.workspace.openTextDocument(fileUri)
-
-      // We might not want to show it
-      // If the file is already open, we don't want to show it as this will disrupt the user
-      // + we would constantly be switching between files as we run through this loop
-
-      // Check if the file is already open, hmm tabs don't actually have editor references. I think these are inactive - which makes sense
-      // vscode.window.tabGroups.all.find((tabGroup) => {
-      //   tabGroup.tabs.find((tab) => {
-      //     if (tab.) {
-      // await vscode.window.showTextDocument(document)
-    }
-
-    lastPatch = patch
-  }
-
-  if (!lastPatch) {
-    console.error('No patch generated, nothing to apply')
-    return
-  }
-
-  // Actually apply the patch
-  for (const singleFileChange of lastPatch.fileChanges) {
-    if (!singleFileChange.filePathRelativeToWorkspace) {
-      // Don't know the path yet, skip
-      continue
-    }
-
-    const workspaceFilesWithMatchingNames = await vscode.workspace.findFiles(
-      `**/${singleFileChange.filePathRelativeToWorkspace}`,
-    )
-    if (workspaceFilesWithMatchingNames.length !== 1) {
-      // We should know the path by now, if we don't - something is wrong
-      console.error(
-        `Could not find file with path ${singleFileChange.filePathRelativeToWorkspace}`,
-      )
-      continue
-    }
-
-    const fileUri = workspaceFilesWithMatchingNames[0]
-    const document = await vscode.workspace.openTextDocument(fileUri)
-    const editor = await vscode.window.showTextDocument(document)
-    const fileContentWithDiffApplied = await applyChanges(
-      singleFileChange.changes,
-      editor,
-    )
-
-    console.log(
-      `Diff application results: ${fileContentWithDiffApplied
-        .map((x) => x.result)
-        .join('\n')}`,
-    )
-
-    // Delay so the user has a chance to see the changes and continue to the next file
-    await new Promise((resolve) => setTimeout(resolve, 1_000))
-  }
+  await continuoulyApplyPatchStream(patchSteam)
 
   console.log('Birds released, your bread is gone')
 }

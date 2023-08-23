@@ -43,8 +43,14 @@ export interface FileChange {
    * We will use this field early to show the file targeted with a change */
   filePathRelativeToWorkspace?: string
   changes: Change[]
+  isStreamFinilized: boolean
 }
 
 export interface LlmGeneratedPatchXmlV1 {
-  fileChanges: FileChange[]
+  changes: FileChange[]
+  /** Not used now, but it's much easier to add a new field to an object type versus an array */
+  isStreamFinalizedUnused: boolean
 }
+
+export const isChangeFinalized = (change: Change) =>
+  change.newChunk.isStreamFinalized && change.oldChunk.isStreamFinalized

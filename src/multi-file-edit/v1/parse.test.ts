@@ -10,7 +10,7 @@ import {
   trimUpToOneLeadingNewLine,
   trimUpToOneTrailingNewLine,
 } from '../../xml/parser'
-import { getBreadIdentifier } from '../../helpers/breadIdentifier'
+import { getBreadIdentifier } from '../../helpers/bread-identifier'
 
 const breadIdentifier = getBreadIdentifier()
 
@@ -31,14 +31,14 @@ suite('Helper trimming functions for xml work as expected', () => {
 
 suite('Can parse example patches using hand written parser', () => {
   test('Simple patch', () => {
-    const patch = parsePartialMultiFileEdit(
+    const fileChanges = parsePartialMultiFileEdit(
       singleChangeSimplePatch(breadIdentifier),
     )
 
     // console.log(JSON.stringify(patch, null, 2));
 
-    assert.ok(patch)
-    const [fileChange] = patch.fileChanges
+    assert.ok(fileChanges)
+    const [fileChange] = fileChanges.changes
     assert.ok(fileChange)
     assert.ok(fileChange.filePathRelativeToWorkspace?.length ?? 0 > 0)
 
@@ -54,9 +54,9 @@ suite('Can parse example patches using hand written parser', () => {
     // console.log(JSON.stringify(patch, null, 2));
 
     assert.ok(patch)
-    const [change1, change2] = patch.fileChanges[0].changes
+    const [change1, change2] = patch.changes[0].changes
 
-    assert.equal(patch.fileChanges[0].changes.length, 2)
+    assert.equal(patch.changes[0].changes.length, 2)
     assert.ok(change1.newChunk.content.length)
     assert.ok(change2.newChunk.content.length)
 
@@ -71,7 +71,7 @@ suite('Can parse example patches using hand written parser', () => {
     const patch = parsePartialMultiFileEdit(almostEmptyPatch)
 
     assert.ok(patch)
-    const changes = patch.fileChanges[0].changes
+    const changes = patch.changes[0].changes
 
     assert.equal(changes.length, 0)
   })
@@ -82,7 +82,7 @@ suite('Can parse example patches using hand written parser', () => {
     const patch = parsePartialMultiFileEdit(patchWithPartialClosingTag)
 
     assert.ok(patch)
-    const changes = patch.fileChanges[0].changes
+    const changes = patch.changes[0].changes
 
     assert.equal(changes.length, 1)
     const { oldChunk, newChunk } = changes[0]
@@ -96,7 +96,7 @@ suite('Can parse example patches using hand written parser', () => {
     const patch = parsePartialMultiFileEdit(patchWithPartialClosingTag)
 
     assert.ok(patch)
-    const changes = patch.fileChanges[0].changes
+    const changes = patch.changes[0].changes
 
     assert.equal(changes.length, 1)
     const { oldChunk, newChunk } = changes[0]
@@ -112,7 +112,7 @@ suite('Can parse example patches using hand written parser', () => {
     // console.log(JSON.stringify(patch, null, 2));
 
     assert.ok(patch)
-    const changes = patch.fileChanges[0].changes
+    const changes = patch.changes[0].changes
 
     assert.equal(changes.length, 1)
     assert.ok(changes[0].newChunk.content.length)
@@ -126,7 +126,7 @@ suite('Can parse example patches using hand written parser', () => {
     // console.log(JSON.stringify(patch, null, 2));
 
     assert.ok(patch)
-    const changes = patch.fileChanges[0].changes
+    const changes = patch.changes[0].changes
 
     assert.equal(changes.length, 1)
 

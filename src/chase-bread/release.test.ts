@@ -7,13 +7,7 @@ suite('VSCode Extension Command Tests', function () {
   test('birds.chaseBread command', async () => {
     const releaseCommand = await vscode.commands
       .getCommands(true)
-      .then((commands) => {
-        if (commands.includes('birds.chaseBread')) {
-          return true
-        } else {
-          return false
-        }
-      })
+      .then((commands) => commands.includes('birds.chaseBread'))
 
     assert.ok(releaseCommand, 'Command "birds.chaseBread" is not registered.')
 

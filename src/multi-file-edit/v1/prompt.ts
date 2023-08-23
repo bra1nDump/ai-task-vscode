@@ -32,15 +32,13 @@ export function buildMultiFileEditingPrompt(
       (fileContext) =>
         '<file>\n' +
         `  <path>${fileContext.filePathRelativeTooWorkspace}</path>\n` +
-        `  <content>\n${fileContext.content}\n</content>\n` +
+        `  <content>\n${fileContext.content}\n  </content>\n` +
         '</file>',
     )
     .join('\n\n')
+
   const filesContextXmlPromptSystemMessage: OpenAiMessage = {
-    content:
-      `Pay special attention to ${breadIdentifier} mentions, they shuold guide the diff generation.\n` +
-      'Files context:\n' +
-      filesContextXmlPrompt,
+    content: 'Files you might want to edit:\n' + filesContextXmlPrompt,
     role: 'system',
   }
 
@@ -49,9 +47,11 @@ export function buildMultiFileEditingPrompt(
     filesContextXmlPromptSystemMessage,
     {
       content:
-        'Reply with a rough plan of the changes and the changes themselves you want to make.\n' +
+        `Pay special attention to ${breadIdentifier} mentions, they shuold guide the diff generation.\n` +
+        'Output a rough plan of the changes and the changes themselves you want to make.\n' +
         'Your plan should only address the requested changes.\n' +
-        'Next reply with generated file changes for the files you see fit.\n',
+        'Do not forget to truncate long old-chunks.\n' +
+        'Next output with generated file changes for the files you see fit. Remember to follow the \n',
       role: 'user',
     },
   ]

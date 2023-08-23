@@ -36,6 +36,14 @@
 			],
 			"problemMatcher": []
 		},
+		// Having trouble setting those one up, ignoring for now
+		// {
+		// 	"label": "clean: out-directory",
+		// 	"type": "shell",
+		// 	"command": [
+		// 		"rm -rfd out"
+		// 	]
+		// },
 		{
 			"label": "Build and Install Locally",
 			"type": "npm",

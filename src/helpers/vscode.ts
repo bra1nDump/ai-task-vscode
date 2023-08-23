@@ -13,3 +13,23 @@ export function getFullFileRange(fileText: string): vscode.Range {
     fileText.length,
   )
 }
+
+/// Workspace helper
+export async function findFilesMatchingPartialPath(
+  path: string,
+): Promise<vscode.Uri[]> {
+  const workspaceFilesWithMatchingNames = await vscode.workspace.findFiles(
+    `**/${path}`,
+  )
+
+  return workspaceFilesWithMatchingNames
+}
+
+export async function findSingleFileMatchingPartialPath(
+  path: string,
+): Promise<vscode.Uri | undefined> {
+  const matchingFiles = await findFilesMatchingPartialPath(path)
+  if (matchingFiles.length > 1) return undefined
+
+  return matchingFiles[0]
+}

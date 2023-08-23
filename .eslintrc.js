@@ -21,6 +21,9 @@ module.exports = {
 
     // Currently annoying as we have a lot of bootstraping code, lets fix later
     '@typescript-eslint/no-unused-vars': 'off',
+
+    // Allow single line if statemtns without curly
+    curly: ['error', 'multi'],
   },
 
   ignorePatterns: [

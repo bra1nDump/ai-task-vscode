@@ -17,10 +17,11 @@ export async function getDiagnosticEntriesWithFileContext() {
 
     for (const fileDiagnostic of fileDiagnostics) {
       diagnosticEntries.push({
-        diagnostic: fileDiagnostic,
-        location: fileDiagnostic.range,
-        suggestedEditTargetRange: getFullFileRange(fileContent),
+        fileUri: uri,
         fileContent: fileContent,
+        diagnostic: fileDiagnostic,
+        diagnosticLocation: fileDiagnostic.range,
+        suggestedEditTargetRange: getFullFileRange(fileContent),
       })
     }
   }

@@ -1,6 +1,11 @@
 import OpenAI from 'openai'
-import { mapAsyncInterable, filterAsyncIterable } from 'helpers/asyncIterable'
 import * as vscode from 'vscode'
+
+import { from } from 'ix/asynciterable'
+import {
+  filter as filterAsync,
+  map as mapAsync,
+} from 'ix/asynciterable/operators'
 
 export type OpenAiMessage =
   OpenAI.Chat.Completions.CreateChatCompletionRequestMessage
@@ -10,6 +15,9 @@ export type OpenAiMessage =
  */
 let isStreamRunning = false
 
+/**
+ * Parsing has no business in this function, but heh, its fine
+ */
 export async function* streamLlm<T>(
   messages: OpenAiMessage[],
   tryParsePartial: (content: string) => T | undefined,
@@ -18,21 +26,16 @@ export async function* streamLlm<T>(
     process.env.OPENAI_API_KEY ??
     vscode.workspace.getConfiguration('birds').get('openaiApiKey')
 
-  if (typeof key !== 'string') {
+  if (typeof key !== 'string')
     // Give the user a chance to enter the key
     key = await vscode.window.showInputBox({
       prompt: 'Please enter your OpenAI API key',
       ignoreFocusOut: true,
     })
-  }
 
-  if (!key) {
-    throw new Error('No OpenAI API key provided')
-  }
+  if (!key) throw new Error('No OpenAI API key provided')
 
-  if (isStreamRunning) {
-    throw new Error('Stream is already running')
-  }
+  if (isStreamRunning) throw new Error('Stream is already running')
 
   isStreamRunning = true
 
@@ -55,39 +58,36 @@ export async function* streamLlm<T>(
   // }
 
   let currentContent = ''
-  const parsedPatchStream = mapAsyncInterable((part) => {
-    // If the part is undefined, it means the stream is done
-    if (!part) {
-      // console.log(`Part is undefined, isLast: `, isLast)
-      // We should format the message content nicely instead of simple stringify
-      console.log(`Messages submitted:`)
-      for (const { content, role } of messages) {
-        console.log(`\n[${role}]\n${content}`)
+  const parsedPatchStream = from(stream).pipe(
+    mapAsync((part) => {
+      // If the part is undefined, it means the stream is done
+      if (!part) {
+        // console.log(`Part is undefined, isLast: `, isLast)
+        // We should format the message content nicely instead of simple stringify
+        console.log(`Messages submitted:`)
+        for (const { content, role } of messages)
+          console.log(`\n[${role}]\n${content}`)
+
+        console.log(`Final content:\n${currentContent}`)
+
+        isStreamRunning = false
+
+        return undefined
       }
-      console.log(`Final content:\n${currentContent}`)
 
-      isStreamRunning = false
+      const delta = part.choices[0]?.delta?.content
+      if (!delta) {
+        console.log(`No delta found in part: ${JSON.stringify(part)}`)
+        return undefined
+      }
 
-      return undefined
-    }
+      currentContent += delta
+      process.stdout.write(delta)
 
-    const delta = part.choices[0]?.delta?.content
-    if (!delta) {
-      console.log(`No delta found in part: ${JSON.stringify(part)}`)
-      return undefined
-    }
-
-    currentContent += delta
-    process.stdout.write(delta)
-
-    // Try parsing the xml, even if it's complete it should still be able to apply the diffs
-    return tryParsePartial(currentContent)
-  }, stream)
-
-  const onlyValidPatchesStream = filterAsyncIterable(
-    (x): x is T => x !== undefined,
-    parsedPatchStream,
+      // Try parsing the xml, even if it's complete it should still be able to apply the diffs
+      return tryParsePartial(currentContent)
+    }),
+    filterAsync((x): x is T => x !== undefined),
   )
-
-  yield* onlyValidPatchesStream
+  yield* parsedPatchStream
 }
