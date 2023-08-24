@@ -1,4 +1,19 @@
+# August 24, Wednesday line count statistics
+===============================================================================
+ Language            Files        Lines         Code     Comments       Blanks
+===============================================================================
+ JavaScript              2          129           85           25           19
+ JSON                    2          108          108            0            0
+ Markdown               20         3928            0         3747          181
+ Plain Text              1            4            0            4            0
+ TypeScript             28         2327         1663          366          298
+===============================================================================
+ Total                  53         6496         1856         4142          498
+===============================================================================
+
 # Multiplexing a async iterable
+Will this was a fucking pain in the ass. Change pity was of great help but not enough and I still had to debug it manually.
+
 I think there's currently a bug in this code as multiplexing is not handled
 Just does something similar but not quiet I think
 https://github.com/ReactiveX/IxJS/blob/f07b7ef4095120f1ef21a4023030c75b36335cd1/src/asynciterable/operators/memoize.ts
