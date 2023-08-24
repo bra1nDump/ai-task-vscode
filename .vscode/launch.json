@@ -12,7 +12,7 @@
 			"args": [
 				"${workspaceFolder}/testing-sandbox",
 				"${workspaceFolder}/testing-sandbox/helloWorld.ts",
-				"--extensionDevelopmentPath=${workspaceFolder}"
+				"--extensionDevelopmentPath=${workspaceFolder}",
 			],
 			"envFile": "${workspaceFolder}/.env",
 			"outFiles": [
@@ -48,6 +48,21 @@
 			"preLaunchTask": "${defaultBuildTask}"
 		},
 		{
+			"name": "Show Me",
+			"type": "extensionHost",
+			"request": "launch",
+			"args": [
+				"${workspaceFolder}/../show-me-chatgpt-plugin",
+				"--extensionDevelopmentPath=${workspaceFolder}"
+			],
+			"envFile": "${workspaceFolder}/.env",
+			"outFiles": [
+				"${workspaceFolder}/dist/**/*.js"
+			],
+			"sourceMaps": true,
+			"preLaunchTask": "${defaultBuildTask}"
+		},
+		{
 			"name": "Tests",
 			"type": "extensionHost",
 			"request": "launch",
@@ -63,7 +78,7 @@
 				// Important! The glob needs to match js files, not original ts files
 				// Use test.only instead of test in the code to run only one test
 				// Use this glob if you want to run only one test suite
-				// "TEST_SUITE_GLOB": "**/apply.test.js"
+				// "TEST_SUITE_GLOB": "**/parse.test.js"
 			},
 			"outFiles": [
 				"${workspaceFolder}/out/**/*.js",

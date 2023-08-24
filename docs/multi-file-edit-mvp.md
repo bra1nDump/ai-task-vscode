@@ -4,11 +4,21 @@
 - Generate a diff in a smart way to make the changes to the input files
 - Apply the changes (keep the bread)
 
-# Next up
-- Collect logs on tool execution - this is so I know what prompts work and what don't
-- Bread escaping is still broken - prompts still have @bread in them, need to parametrize that
+# Next milestones
+- Try to replace continue on the current project
+- Automatically fix compilation errors
 
-## Overcoming dynamic target range + target replacement issues
+# Next up
+- Do streaming of the response
+  - Start with at least applying to one file at a time
+  - Fixed issue where multiple edits to the same file will shift the content. I think a simple fix would be to perform a batch edit for all changes. This way VSCode will already shift the ranges accordingly.
+- Instead of reading from the file system read from opening a document
+- Run on double enter
+
+# Done
+
+
+# Overcoming dynamic target range + target replacement issues
 - Split the multi file edit task into two separate tasks
   - Find the target range
     - Give the same file context, but augment each line with the line number
@@ -34,26 +44,14 @@
 - this makes targeted patch generation hard
 
 # For later
-- Streaming changes instead of final application
-  - Find inital target range
-  - Apply changes to the target range
-  - Get the new target range
-  - Keep applying changes until stream is over
+- Collect logs on tool execution - this is so I know what prompts work and what don't
+  - This does not help the race with cursor or continue
+  - I don't actually spend much time on developing the prompts and this could be probably still done within the playground just as well without setting up infrastructure
+
 
 ## Dropped
 - Update diff format prompt generation - We will likely move to function calling, so lets wait for that
 - Maybe solve a toy problem first? - i think its a good way to stay in lala land, so no
-
-## Done
-- Stop being dependent on currently opened files
-  - Open them if not opened yet
-- Update prompt to generate multiple changes - aka add file path
-- Diffs
-  - A prompt for generating diffs
-  - Code to parse the diff format
-  - VScode command to apply the diff
-- Code to assemble the prompt from the breadcrumbs, .bread file and diff generation prompt
-- VSCode birb command to release the bots
 
 # Why this is a good first step
 - Close to how I write code currently
@@ -79,3 +77,14 @@ I’ve played around with this a bit while building my DesktopGPT plugin 4 that 
 DesktopGPT
 The most reliable (but still finicky) way that I found is with simple find and replace. 
 
+# Done old
+- Bread escaping is still broken - prompts still have @bread in them, need to parametrize that
+- Stop being dependent on currently opened files
+  - Open them if not opened yet
+- Update prompt to generate multiple changes - aka add file path
+- Diffs
+  - A prompt for generating diffs
+  - Code to parse the diff format
+  - VScode command to apply the diff
+- Code to assemble the prompt from the breadcrumbs, .bread file and diff generation prompt
+- VSCode birb command to release the bots

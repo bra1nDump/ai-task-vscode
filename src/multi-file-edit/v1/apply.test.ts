@@ -236,25 +236,23 @@ suite('Apply Patch Tests', () => {
 
   test('should correctly parse and apply a change', async () => {
     const payload = `
-<file>
+<change>
   <path>tmp/environment.ts</path>
-  <change>
-    <description>Adding a 'name' parameter to the helloWorld function</description>
-    <old-chunk>
+  <description>Adding a 'name' parameter to the helloWorld function</description>
+  <range-to-replace>
 // @bread Parametrize this function with a name
 export function helloWorld() {
   console.log('Hello world')
 }
-    </old-chunk>
-    <new-chunk>
+  </range-to-replace>
+  <replacement>
 // Parametrized function with a name
 export function helloWorld(name: string) {
   console.log('Hello, ' + name);
 }
-    </new-chunk>
-  </change>
-</file>
-    `
+  </replacement>
+</change>
+  `
 
     const parsedChange = parsePartialMultiFileEdit(payload)
     assert.ok(parsedChange)
@@ -316,40 +314,36 @@ Plan:
 3. In the main.ts file, we need to implement a function that will print out the current user's name using helper functions. This means we need to import the getCurrentUserName() function from the environment.ts file and the helloWorld() function from the helloWorld.ts file, and then call these functions.
 
 Changes:
-<file>
-    <path>tmp/helloWorld.ts</path>
-    <change>
-        <description>Parametrising function with a name of the thing to be greeted</description>
-        <old-chunk>
+<change>
+  <path>tmp/helloWorld.ts</path>
+  <description>Parametrising function with a name of the thing to be greeted</description>
+  <range-to-replace>
 export function helloWorld() {
   console.log(\`Hello world!\`)
 }
-        </old-chunk>
-        <new-chunk>
+  </range-to-replace>
+  <replacement>
 export function helloWorld(name: string) {
   console.log(\`Hello \${name}!\`)
 }
-        </new-chunk>
-    </change>
-</file>
+  </replacement>
+</change>
 
-<file>
-    <path>tmp/main.ts</path>
-    <change>
-        <description>Implementing function to print out current user's name using helper functions</description>
-        <old-chunk>
+<change>
+  <path>tmp/main.ts</path>
+  <description>Implementing function to print out current user's name using helper functions</description>
+  <range-to-replace>
 // @bread implement so it will print out current user's name using helper functions
-        </old-chunk>
-        <new-chunk>
+  </range-to-replace>
+  <replacement>
 import { getCurrentUserName } from './environment';
 import { helloWorld } from './helloWorld';
 
 // @bread implement so it will print out current user's name using helper functions
 const userName = getCurrentUserName();
 helloWorld(userName);
-        </new-chunk>
-    </change>
-</file>
+  </replacement>
+</change>
 `
 
     const parsedChange = parsePartialMultiFileEdit(llmFinalResponse)

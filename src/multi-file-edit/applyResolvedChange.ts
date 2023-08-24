@@ -35,16 +35,14 @@ export interface ResolvedChangesForASingleFile {
 export async function continuoulyApplyPatchStream(
   growingSetOfFileChanges: AsyncIterableX<ResolvedChangesForASingleFile[]>,
 ) {
-  // I think there's currently a bug in this code as multiplexing is not handled
-  // Just does something similar but not quiet I think
-  // https://github.com/ReactiveX/IxJS/blob/f07b7ef4095120f1ef21a4023030c75b36335cd1/src/asynciterable/operators/memoize.ts
-  //
-  //
-  // Noop for files already opened
-  // Can use distinctUntilChanged for the fun of it :D - micro optimization
+  // @crust Update the following for loop so it keeps track of the files that we have already shown the document for and doesn't show them again
   for await (const changesForMultipleFiles of growingSetOfFileChanges)
-    for (const changesForASingleFile of changesForMultipleFiles)
-      await vscode.workspace.openTextDocument(changesForASingleFile.fileUri)
+    for (const changesForASingleFile of changesForMultipleFiles) {
+      const document = await vscode.workspace.openTextDocument(
+        changesForASingleFile.fileUri,
+      )
+      await vscode.window.showTextDocument(document)
+    }
 
   // Cop out - only apply once the stream is finished
   const finalSetOfChangesToMultipleFiles =

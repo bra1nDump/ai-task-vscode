@@ -3,25 +3,30 @@
 ## Format v1 - old chunk / new chunk
 <file path="">
 <change summary="Updating imports to account for previous change">
-<old-chunk>
+<range-to-replace>
 import { useQuery } from 'react-query';
-</old-chunk>
-<new-chunk>
+</range-to-replace>
+<replacement>
 import { useQuery } from 'react-query';
 import { useMutation } from 'react-query';
-</new-chunk>
+</replacement>
 </change>
 
-### Improvements / issues
-- When deleting or overriding big portions of the code old-chunk will be large. And it gets printed out before the new-chunk so the perceived delay is large.
+## Improvements / issues
+- I should not have nested another element which is changes in the file. Much better to just generate a separate file change is another element. Sure this is one more step but this is one less thing to pay attention to when generating the results for the LLM. Let's stick to this for now but I need to reward thus soon.
+  - It will be a pain to rework all the data structures. Maybe I should wait until I have compilation errors in place
+- Alt+select allows to select multiple ranges in vscode. This is very useful when you want to make multi edits
+  - They can also be parallelized
+- Indentation should ideally be taken into account when generating diffs to match the indentation preferred by the user. This is low priority since type script does not care about it
+
+## Old improvements
+- When deleting or overriding big portions of the code range-to-replace will be large. And it gets printed out before the replacement so the perceived delay is large.
 - With truncation it basically is the same as providing prefix / suffix context.
 - I feel like its better to name the old chunk as range, and the new chunk as replacement.
 - Lets get the functions working before I do more iterations on this
   - Lets also get the application of diffs as well
 - Instead of generating diff, just override the code first. Present the diff once the generation is completed
 - Usually there are no repeated file lines in a code file. Unless its tests, or unless its
-- Alt+select allows to select multiple ranges in vscode. This is very useful when you want to make multi edits
-  - They can also be parallelized
 - Currently applying the defend place will mess up the original file, subsequently messing up the target range location mechanism. Options
   - Find the initial range in the file, apply the change to it but now update the VSCode range of the target to match the new range
   - Cash the initial file contents and apply the changes to the cashed version. Incompatible with the current implementation as it operates directly within the vas code editor

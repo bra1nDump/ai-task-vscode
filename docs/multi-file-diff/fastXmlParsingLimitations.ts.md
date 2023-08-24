@@ -20,7 +20,7 @@ export function parseLlmGeneratedPatchV1WithFastXmlParser(
     ignoreAttributes: false,
     attributeNamePrefix: '',
 
-    // Convert old-chunk to oldChunk
+    // Convert range-to-replace to oldChunk
     // IMPORTANT: This will change the tag names before the stopNodes are applied
     // but it still looks for the old name in the text tho ...
     // so these 2 options are incompatible unfortunately :(
@@ -32,9 +32,9 @@ export function parseLlmGeneratedPatchV1WithFastXmlParser(
      * From documentation
      * https://github.com/NaturalIntelligence/fast-xml-parser/blob/master/docs/v4/2.XMLparseOptions.md#stopnodes
      *
-     * Downside of using dynamic path like *.old-chunk:
+     * Downside of using dynamic path like *.range-to-replace:
      * Note that in practice this didn't even work at all giving error of:
-     * unexpected end of new-chunk where < is used in the new-chunk
+     * unexpected end of replacement where < is used in the replacement
      *
      * Note that a stop node should not have same closing node in contents. Eg
      * <stop>
@@ -48,8 +48,8 @@ export function parseLlmGeneratedPatchV1WithFastXmlParser(
      * </stop>
      */
     stopNodes: [
-      'file.change.old-chunk',
-      'file.change.new-chunk',
+      'file.change.range-to-replace',
+      'file.change.replacement',
     ],
 
     // Make sure change is always an array, even if there is only one change

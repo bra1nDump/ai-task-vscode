@@ -1,10 +1,4 @@
 import * as assert from 'assert'
-import {
-  singleChangeSimplePatch,
-  twoChangePatch,
-  singleChangeSimplePatchPartial,
-  patchWithTruncatedOldChunk,
-} from './examples'
 import { parsePartialMultiFileEdit } from './parse'
 import {
   trimUpToOneLeadingNewLine,
@@ -31,14 +25,29 @@ suite('Helper trimming functions for xml work as expected', () => {
 
 suite('Can parse example patches using hand written parser', () => {
   test('Simple patch', () => {
-    const fileChanges = parsePartialMultiFileEdit(
-      singleChangeSimplePatch(breadIdentifier),
-    )
+    const fileChanges = `
+<change>
+  <path>src/hello-world.ts</path>
+  <description>Parametrising function with a name of the thing to be greeted</description>
+  <range-to-replace>
+function helloWorld() {
+    // ${breadIdentifier} pass name to be greeted
+    console.log('Hello World');
+}
+</range-to-replace>
+  <!-- The new content to replace the old content between the prefix and suffix -->
+  <replacement>
+function hello(name: string) {
+    console.log(\`Hello \${name}\`);
+}
+  </replacement>
+</change>
+`
+    const patch = parsePartialMultiFileEdit(fileChanges)
 
     // console.log(JSON.stringify(patch, null, 2));
 
-    assert.ok(fileChanges)
-    const [fileChange] = fileChanges.changes
+    const [fileChange] = patch.changes
     assert.ok(fileChange)
     assert.ok(fileChange.filePathRelativeToWorkspace?.length ?? 0 > 0)
 
@@ -49,14 +58,51 @@ suite('Can parse example patches using hand written parser', () => {
   })
 
   test('Complex patch', () => {
-    const patch = parsePartialMultiFileEdit(twoChangePatch(breadIdentifier))
+    const fileChanges = `
+<change>
+  <path>src/hello-world.ts</path>
+  <description>Parametrising function with a name of the thing to be greeted</description>
+  <range-to-replace>
+function helloWorld() {
+    // ${breadIdentifier} pass name to be greeted
+    console.log('Hello World');
+}
+</range-to-replace>
+  <!-- The new content to replace the old content between the prefix and suffix -->
+  <replacement>
+function hello(name: string) {
+    console.log(\`Hello \${name}\`);
+}
+  </replacement>
+</change>
+<change>
+  <path>src/main.ts</path>
+  <description>Use hello world from a helper module and use environment variable to get the user name</description>
+  <range-to-replace>
+// ${breadIdentifier} use hello world from a helper module and use environment variable to get the user name
+  </range-to-replace>
+  <replacement>
+import { hello } from './helper';
+const name = process.env.USER_NAME || 'World';
+hello(name);
+  </replacement>
+</change>
+`
+    const patch = parsePartialMultiFileEdit(fileChanges)
 
     // console.log(JSON.stringify(patch, null, 2));
 
     assert.ok(patch)
-    const [change1, change2] = patch.changes[0].changes
+    const [
+      {
+        changes: [change1],
+      },
+      {
+        changes: [change2],
+      },
+    ] = patch.changes
 
-    assert.equal(patch.changes[0].changes.length, 2)
+    assert.equal(patch.changes.length, 2)
     assert.ok(change1.newChunk.content.length)
     assert.ok(change2.newChunk.content.length)
 
@@ -67,18 +113,18 @@ suite('Can parse example patches using hand written parser', () => {
   })
 
   test('Almost empty patch', () => {
-    const almostEmptyPatch = '<file><chan'
+    const almostEmptyPatch = '<change><r'
     const patch = parsePartialMultiFileEdit(almostEmptyPatch)
 
     assert.ok(patch)
     const changes = patch.changes[0].changes
 
-    assert.equal(changes.length, 0)
+    assert.equal(changes[0].description.length, 0)
   })
 
   // We don't want the tag to stream in and get shown to the user
   test('Trailing tag that is not done printing yet gets dropped', () => {
-    const patchWithPartialClosingTag = '<file><change><old-chunk>lol</ol'
+    const patchWithPartialClosingTag = '<change><range-to-replace>lol</ra'
     const patch = parsePartialMultiFileEdit(patchWithPartialClosingTag)
 
     assert.ok(patch)
@@ -92,7 +138,7 @@ suite('Can parse example patches using hand written parser', () => {
   })
 
   test('Content is marked as finalized once it has a closing tag', () => {
-    const patchWithPartialClosingTag = `<file><change><old-chunk>lol</old-chunk><new-chunk></new-chunk></chan`
+    const patchWithPartialClosingTag = `<file><change><range-to-replace>lol</range-to-replace><replacement></replacement></chan`
     const patch = parsePartialMultiFileEdit(patchWithPartialClosingTag)
 
     assert.ok(patch)
@@ -104,10 +150,22 @@ suite('Can parse example patches using hand written parser', () => {
     assert.ok(newChunk.isStreamFinalized === true)
   })
 
-  test('Partial patch', () => {
-    const patch = parsePartialMultiFileEdit(
-      singleChangeSimplePatchPartial(breadIdentifier),
-    )
+  test('Partial replacement is parsed correctly', () => {
+    const patch = parsePartialMultiFileEdit(`
+<change>
+  <path>src/hello-world.ts</path>
+  <description>Parametrising function with a name of the thing to be greeted</description>
+  <range-to-replace>
+function helloWorld() {
+    // ${breadIdentifier} pass name to be greeted
+    console.log('Hello World');
+}
+</range-to-replace>
+  <!-- The new content to replace the old content between the prefix and suffix -->
+  <replacement>
+function hello(name: string) {
+    console.
+`)
 
     // console.log(JSON.stringify(patch, null, 2));
 
@@ -118,10 +176,16 @@ suite('Can parse example patches using hand written parser', () => {
     assert.ok(changes[0].newChunk.content.length)
   })
 
-  test('Patch with truncated tag in old chunk', () => {
-    const patch = parsePartialMultiFileEdit(
-      patchWithTruncatedOldChunk(breadIdentifier),
-    )
+  test('Patch with truncated content gets parsed as having a prefix and the suffix', () => {
+    const patch = parsePartialMultiFileEdit(`
+<change>
+  <path>src/hello-world.ts</path>
+  <description>Parametrising function with a name of the thing to be greeted</description>
+  <range-to-replace>
+function helloWorld() {
+    </truncated>
+    console.log
+`)
 
     // console.log(JSON.stringify(patch, null, 2));
 
@@ -134,9 +198,7 @@ suite('Can parse example patches using hand written parser', () => {
 
     // Ensure the start and end of the old chunk are present and have reasonable length
     assert.ok(oldChunk.type === 'prefixAndSuffixRange')
-    assert.ok(oldChunk.prefixContent.length > 10)
-    assert.ok(oldChunk.suffixContent.length > 10)
-
-    assert.ok(newChunk.content.length)
+    assert.equal(oldChunk.prefixContent, 'function helloWorld() {')
+    assert.equal(oldChunk.suffixContent, '    console.log')
   })
 })
