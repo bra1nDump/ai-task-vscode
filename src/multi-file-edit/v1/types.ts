@@ -1,4 +1,4 @@
-/* 
+/*
   Created a new interface
   interface Streamed {
     isStreamFinalized: boolean

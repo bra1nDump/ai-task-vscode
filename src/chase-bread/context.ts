@@ -10,24 +10,20 @@ export async function findAndCollectBreadedFiles(
 ): Promise<FileContext[] | undefined> {
   const allFilesInWorkspace = await safeWorkspaceQueryAllFiles()
 
-  // @crust create intermediate varaibles instead of using .then use await
   const fileContexts = await Promise.all(
     allFilesInWorkspace.map(async (fileUri) => {
       const fileText = await getFileText(fileUri)
-
       const containsBreadMentionOrIsBreadDotfile =
         fileText.includes(`@${breadIdentifier}`) ||
         fileUri.path.includes(`.${breadIdentifier}`)
 
-      if (containsBreadMentionOrIsBreadDotfile) {
+      if (containsBreadMentionOrIsBreadDotfile)
         return {
           filePathRelativeTooWorkspace:
             vscode.workspace.asRelativePath(fileUri),
           content: fileText,
         }
-      } else {
-        return undefined
-      }
+      else return undefined
     }),
   )
 
@@ -35,9 +31,7 @@ export async function findAndCollectBreadedFiles(
     (fileContext): fileContext is FileContext => fileContext !== undefined,
   )
 
-  if (fileContexts.length === 0) {
-    return undefined
-  }
+  if (fileContexts.length === 0) return undefined
 
   return filteredFileContexts
 }
@@ -66,10 +60,9 @@ async function safeWorkspaceQueryAllFiles(): Promise<vscode.Uri[]> {
     1000, // Give more then the limit below so we can throw an error if it exceeds to signal that the glob is bad
   )
 
-  if (allFilesInWorkspace.length === 0) {
-    throw new Error('No files in workspace')
-  } else if (allFilesInWorkspace.length > 200) {
+  if (allFilesInWorkspace.length === 0) throw new Error('No files in workspace')
+  else if (allFilesInWorkspace.length > 200)
     throw new Error(`Too many files matched: ${allFilesInWorkspace.length}`)
-  }
+
   return allFilesInWorkspace
 }

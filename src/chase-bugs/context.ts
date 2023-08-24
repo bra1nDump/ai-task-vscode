@@ -15,7 +15,7 @@ export async function getDiagnosticEntriesWithFileContext() {
   for (const [uri, fileDiagnostics] of diagnostics) {
     const fileContent = await getFileText(uri)
 
-    for (const fileDiagnostic of fileDiagnostics) {
+    for (const fileDiagnostic of fileDiagnostics)
       diagnosticEntries.push({
         fileUri: uri,
         fileContent: fileContent,
@@ -23,7 +23,6 @@ export async function getDiagnosticEntriesWithFileContext() {
         diagnosticLocation: fileDiagnostic.range,
         suggestedEditTargetRange: getFullFileRange(fileContent),
       })
-    }
   }
 
   return diagnosticEntries

@@ -1,6 +1,5 @@
 import * as vscode from 'vscode'
 import { AsyncIterableX } from 'ix/asynciterable'
-import { last as lastAsync } from 'ix/asynciterable'
 
 /**
  * Various patch application implementations should map their changes to a common
@@ -12,7 +11,10 @@ export interface ResolvedChange {
   descriptionForHuman: string
 }
 
-/** Add info if the file edits are complete */
+/** Add info if the file edits are complete
+ * Refactor: Similarly flattened this data structure, there's no point in grouping by file really
+ * Since we will be showing each change separately even if there's multiple for a single file which already happens rarely.
+ */
 export interface ResolvedChangesForASingleFile {
   fileUri: vscode.Uri
   fileChanges: ResolvedChange[]
@@ -35,26 +37,39 @@ export interface ResolvedChangesForASingleFile {
 export async function continuoulyApplyPatchStream(
   growingSetOfFileChanges: AsyncIterableX<ResolvedChangesForASingleFile[]>,
 ) {
-  // @crust Update the following for loop so it keeps track of the files that we have already shown the document for and doesn't show them again
+  // Show the files we intend to modify early so the user gets an idea of the changes to come
+  const shownFiles = new Set<string>()
   for await (const changesForMultipleFiles of growingSetOfFileChanges)
-    for (const changesForASingleFile of changesForMultipleFiles) {
-      const document = await vscode.workspace.openTextDocument(
-        changesForASingleFile.fileUri,
-      )
-      await vscode.window.showTextDocument(document)
-    }
+    for (const changesForASingleFile of changesForMultipleFiles)
+      if (!shownFiles.has(changesForASingleFile.fileUri.fsPath)) {
+        const document = await vscode.workspace.openTextDocument(
+          changesForASingleFile.fileUri,
+        )
+        await vscode.window.showTextDocument(document)
+        shownFiles.add(changesForASingleFile.fileUri.fsPath)
+      }
 
-  // Cop out - only apply once the stream is finished
-  const finalSetOfChangesToMultipleFiles =
-    await growingSetOfFileChanges.pipe(lastAsync)
-  if (!finalSetOfChangesToMultipleFiles) {
-    console.error('No files got changed, thats strange')
-    return
+  // Initialize a set to keep track of applied changes
+  const appliedChanges = new Set<string>()
+  let finalSetOfChangesToMultipleFiles: ResolvedChangesForASingleFile[] = []
+  for await (const changesForMultipleFiles of growingSetOfFileChanges) {
+    finalSetOfChangesToMultipleFiles = changesForMultipleFiles
+    for (const changesForASingleFile of changesForMultipleFiles) {
+      // Convert the changes to a string to be able to store them in a set
+      const changesString = JSON.stringify(changesForASingleFile)
+
+      // If the changes have not been applied yet
+      if (!appliedChanges.has(changesString) && changesForASingleFile.isFinal) {
+        await applyResolvedChangesWhileShowingTheEditor([changesForASingleFile])
+
+        // Add the changes to the set of applied changes
+        appliedChanges.add(changesString)
+      }
+    }
   }
 
-  await applyResolvedChangesWhileShowingTheEditor(
-    finalSetOfChangesToMultipleFiles,
-  )
+  if (finalSetOfChangesToMultipleFiles.length === 0)
+    console.error('No files got changed, thats strange')
 }
 
 export type ChangeApplicationResult =

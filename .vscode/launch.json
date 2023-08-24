@@ -62,12 +62,14 @@
 			"sourceMaps": true,
 			"preLaunchTask": "${defaultBuildTask}"
 		},
+		// Docs: https://code.visualstudio.com/api/working-with-extensions/testing-extension
 		{
 			"name": "Tests",
 			"type": "extensionHost",
 			"request": "launch",
 			"args": [
 				"${workspaceFolder}/testing-sandbox",
+				"--disable-extensions", // Disables other extensions
 				"--extensionDevelopmentPath=${workspaceFolder}",
 				"--extensionTestsPath=${workspaceFolder}/out/test/mochaTestRunner.js"
 			],

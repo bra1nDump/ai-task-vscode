@@ -1,25 +1,30 @@
 import { OpenAiMessage } from 'helpers/openai'
 import { FileContext } from '../../chase-bread/command'
 
-const diffGeneratorPromptPrefix = (breadIdentifier: string) => `
-- You are a coding assistant that generates incremental file edits.
-- You will be given typescript files contents as input and you need to generate changes to that file based on the comments provided when ${breadIdentifier} is mentioned, sometimes they're more informational rather than suggesting an edit.
-- Its okay to not modify a file at all. Think if its needed to accomplish the task described by the collction of ${breadIdentifier} comments.
-- Start by changing the files that you are most confident about.
-- Here are some example input / output pairs. The xml comments are for explanation purposes only and should be not be included in the output.
-
-Examples:
-`
-
 /**
  * Diff generation with these proms has been kind of underwhelming, I have attributed thus to the approach itself
  * I have suggested the alternative of splitting the target code location into a separate task
  * And only then generating the new codes. I think that is still a more promising, but I can squeeze out more performance from thus with better prompts.
  *
- * Provide more smaller examples
+ * Provide smaller examples
  * Provide more truncated examples
  * Provide initial file content in a similar format (already doing this?)
+ *
+ * I should probably flatten out the examples to avoid further confusing the model
+ *   alternatively I should strip the extra indentation programmatically before submitting the prompts
+ *   ... but that's work
  */
+
+const diffGeneratorPromptPrefix = (breadIdentifier: string) => `
+- You are a coding assistant that generates incremental file edits.
+- You will be given typescript files contents as input and you need to generate changes to that file based on the comments provided when ${breadIdentifier} is mentioned, sometimes they're more informational rather than suggesting an edit.
+- Its okay to not modify a file at all. Think if its needed to accomplish the task described by the collction of ${breadIdentifier} comments.
+- Start by changing the files that you are most confident about.
+- Respect indentation of the original range you are replacing.
+- Here are some example input / output pairs. The xml comments are for explanation purposes only and should be not be included in the output.
+
+Examples:
+`
 
 export const typescriptHelloWorldParametrizationMultiFileExample = (
   breadIdentifier: string,
@@ -57,6 +62,62 @@ hello(name);
 </change>
 `
 
+/**
+ * I anticipate jsx generation will be tough as the model will probably get confused
+ * on whether it's the output format or the actual content of code blocks.
+ *
+ * Things will actually break if people use the same tags within their code such as file (I believe a legitimate Html tag)
+ * For instance this file will probably not get edited correctly. I should probably use more esoteric tag names.
+ */
+export const editMiddleOfAJsxExpressionEnsureIndentIsPreserved = (
+  breadIdentifier: string,
+) =>
+  `
+Given this file:
+
+<file>
+  <path>counter.ts</path>
+  <content>
+// @${breadIdentifier} Don't print out a list simply print out a single element with the counter
+const Counter: React.FC = () => {
+  const [count, setCount] = useState<number>(0);
+
+  return (
+    <div>
+      <button onClick={() => count > 0 && setCount(count - 1)}>-</button>
+      <button onClick={() => setCount(count + 1)}>+</button>
+      <ul>
+        {Array.from({ length: count }, 
+          (_, i) => 
+            <li key={i}>Item {i + 1}</li>)
+        }
+      </ul>
+    </div>
+  );
+};
+  </content>
+</file>
+
+The following is a reasonable response:
+<change>
+  <path>counter.ts</path>
+  <description>Use a single div simply showing the count instead of showing a list element with values from 0 to count</description>
+  <range-to-replace>
+      <ul>
+        {Array.from({ length: count }, 
+          (_, i) => 
+            <li key={i}>Item {i + 1}</li>)
+        }
+      </ul>
+  </range-to-replace>
+  <replacement>
+      <div>{count}</div>
+  </replacement>
+</change>
+
+Notice the indentation is respected from the original file
+`
+
 export const pythonRewriteBigPortionOfTheCodeWithTruncation = (
   breadIdentifier: string,
 ) => `
@@ -65,7 +126,7 @@ Assumed you were given this file:
 <file>
   <path>src/quicksort.py</path>
   <content>
-# ${breadIdentifier} Refactor thus using recursion
+# @${breadIdentifier} Refactor thus using recursion
 def partition(array, low, high):
   i = (low-1)
   pivot = array[high]
