@@ -1,28 +1,37 @@
 # Features
-- Multifile edits
-  - Making a local change and figuring out the places where the code gets broken and trying to iteratively fix them. For example adding a new parameter to a function should be trivial
-  - Planning out a larger change across the components of the codebase by leaving breakcrumbs in the codebase as comments / bookmarks (using bookmarks extension)
-  - One time
-  - Persistent - adding a new UI feature
-    - Redux model
-    - Initial value
-    - Case reducer
+- Multifile edits by leaving around comments
 - Run the compiler and generate inline errors
   - Add comments to all the files (as submitted to the LLM) with the errors inline to avoid messing up the code layout
   - It would be nice if we can just get the symbol that is causing the issue so the file where the symbol is defined was also included in the context automatically
-- Staging area already provides most of the bread you might need for some modifications, simply submit git diff
+
+# Next up (useful for recording a video)
+- Real time feedback on what the extension is doing
+- Ability to stop the execution
+- Show input where you can augment the instructions with anything one off
+- Add a keybinding and add a talon command
+
+# Next milestones
+- Try to replace continue on the current project
+- Automatically fix compilation errors
+
+# Later
+- Run on double enter ??
+- Instead of reading from the file system, read from opening a document since it might have more unsaved changes
+- Highlight the area that will receive an update
+- Do streaming of the response
 - Workspace changes
   - Adding a new file
 - Making legal moves
   - Factoring out variables
   - Splitting up functions
   - Renamings
-- Testing that the codebase compiles - we assume its a strict type system.
-- I feel like if it compiles its good to go
+- Staging area already provides most of the bread you might need for some modifications, simply submit git diff along with bread
 - Maybe generate a plan first with type signatures and developer would approve it?
+
+# Later Later
 - Create copies of the repo and try different approaches and then try to compile
 - Context - see what continue did. @google @url @< some actual symbol from code > are good starts
-  - ![cursor-learning-documentation](cursor-learning-documentation.png)
+  - ![cursor-learning-documentation](cursor-learning-documentationpng)
 - Keep bread in the codebase until the change is complete
   - Also add @bread comments as llm runs and touches files due to bread mentions
 - Watch for // bread: Refactor this function :hits-enter 2ce? Once such a comment is detected - automatically run the llm and apply the changes

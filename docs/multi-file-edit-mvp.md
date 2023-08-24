@@ -1,22 +1,10 @@
+[ACCOMPLISHED]
+
 # User flow
 - Leave breadcrumbs in the code
 - Run llm (feed the birds) providing it all files with breadcrumbs and the .bread file contents
 - Generate a diff in a smart way to make the changes to the input files
 - Apply the changes (keep the bread)
-
-# Next milestones
-- Try to replace continue on the current project
-- Automatically fix compilation errors
-
-# Next up
-- Do streaming of the response
-  - Start with at least applying to one file at a time
-  - Fixed issue where multiple edits to the same file will shift the content. I think a simple fix would be to perform a batch edit for all changes. This way VSCode will already shift the ranges accordingly.
-- Instead of reading from the file system read from opening a document
-- Run on double enter
-
-# Done
-
 
 # Overcoming dynamic target range + target replacement issues
 - Split the multi file edit task into two separate tasks
