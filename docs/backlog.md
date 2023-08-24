@@ -1,24 +1,30 @@
 # Features
 - Multifile edits by leaving around comments
-- Run the compiler and generate inline errors
-  - Add comments to all the files (as submitted to the LLM) with the errors inline to avoid messing up the code layout
-  - It would be nice if we can just get the symbol that is causing the issue so the file where the symbol is defined was also included in the context automatically
-
-# Next up (useful for recording a video)
-- Real time feedback on what the extension is doing
-- Ability to stop the execution
-- Show input where you can augment the instructions with anything one off
-- Add a keybinding and add a talon command
+- Automatically fix compile errors
 
 # Next milestones
 - Try to replace continue on the current project
 - Automatically fix compilation errors
 
+# Next up (useful for recording a video)
+- Add a keybinding and add a talon command
+- Real time feedback on what the extension is doing
+  - Open a file in column two showing which files were submitted as input, also providing a relative link to them
+  - Installed the extension locally, and trying hard not to use other extensions
+  - Highlight ranges that will be edited
+  - Printing out the plan 
+    - Probably more has shown sets to keep track of what we have already printed out and only print out once its completed streaming 
+    - At the same time I can start thinking about how to print out the it deltas for the same element
+    - I should probably also use Xml for the plan separators, and might as well flatten out the change tags
+- Ability to stop the execution
+  - A command, so you can add a keybinding to it
+  - More intuitively you would just close the editor with the logs (it will probably be annoying because it will always need saving? Can I just save it all the time after writing)
+- Show input where you can augment the instructions with anything one off
+
 # Later
 - Run on double enter ??
 - Instead of reading from the file system, read from opening a document since it might have more unsaved changes
-- Highlight the area that will receive an update
-- Do streaming of the response
+- Apply changes as a stream of text edits
 - Workspace changes
   - Adding a new file
 - Making legal moves

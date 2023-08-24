@@ -5,6 +5,4 @@
 - Sent to people on discord from Cursor
 - Show me email database?
 - Partner with bookmark extension to leave the breadcrumbs, possibly pay for advertising?
-
-# Product image
 - try to play on the fact that I'm an indi developer compared to a legitimate cursor company
