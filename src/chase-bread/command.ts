@@ -51,10 +51,11 @@ export async function chaseBreadCommand() {
 
   const messages = buildMultiFileEditingPrompt(fileContexts, breadIdentifier)
 
-  const patchSteam = from(
-    streamLlm<LlmGeneratedPatchXmlV1>(messages, parsePartialMultiFileEdit),
-    mapToResolvedChanges,
+  const unresolvedChangeStream = await streamLlm<LlmGeneratedPatchXmlV1>(
+    messages,
+    parsePartialMultiFileEdit,
   )
+  const patchSteam = from(unresolvedChangeStream, mapToResolvedChanges)
 
   await continuoulyApplyPatchStream(patchSteam)
 

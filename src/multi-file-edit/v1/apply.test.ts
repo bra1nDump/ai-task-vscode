@@ -24,7 +24,7 @@ suite('Apply Patch Tests', () => {
     // delete temporary directory using regular node file system command
     // as workspace does not have directory deletion
     if (fs.existsSync(temporaryFolder))
-      fs.rmdirSync(temporaryFolder, {
+      fs.rmSync(temporaryFolder, {
         recursive: true,
       })
   }

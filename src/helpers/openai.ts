@@ -1,11 +1,12 @@
 import OpenAI from 'openai'
 import * as vscode from 'vscode'
 
-import { from } from 'ix/asynciterable'
+import { AsyncIterableX, from } from 'ix/asynciterable'
 import {
   filter as filterAsync,
   map as mapAsync,
 } from 'ix/asynciterable/operators'
+import { multicast } from './ix-multicast'
 
 export type OpenAiMessage =
   OpenAI.Chat.Completions.CreateChatCompletionRequestMessage
@@ -17,11 +18,20 @@ let isStreamRunning = false
 
 /**
  * Parsing has no business in this function, but heh, its fine
+ * Returns AsyncIterableX to support nifty features like mapping.
+ *
+ * IMPORTANT: The iterable returned is multiplexed, meaning every time you get an iterator
+ * usually using await for of loop, it will start iterating from the very beginning.
+ *
+ * This is a desired behavior, since oftentimes we want to run different stateful operations on the stream.
+ * This is similar to an observer / listener model of RxJS, accept we can use await for loops :D
+ *
+ * The reason why the LLM stream is multiplexed is because is the stream that kicks off most of the processes.
  */
-export async function* streamLlm<T>(
+export async function streamLlm<T>(
   messages: OpenAiMessage[],
   tryParsePartial: (content: string) => T | undefined,
-): AsyncIterable<T> {
+): Promise<AsyncIterableX<T>> {
   let key: string | undefined =
     process.env.OPENAI_API_KEY ??
     vscode.workspace.getConfiguration('birds').get('openaiApiKey')
@@ -52,7 +62,7 @@ export async function* streamLlm<T>(
     stream: true,
   })
 
-  // Debug stream
+  // Debug stream - will be depleted since this is before multiplexing
   // for await (const part of stream) {
   //   console.log(`Part: `, JSON.stringify(part, null, 2))
   // }
@@ -89,5 +99,10 @@ export async function* streamLlm<T>(
     }),
     filterAsync((x): x is T => x !== undefined),
   )
-  yield* parsedPatchStream
+
+  /**
+   * This is important! See the docstring
+   */
+  const multicastStream = multicast(parsedPatchStream)
+  return multicastStream
 }

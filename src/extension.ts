@@ -19,10 +19,20 @@ export function deactivate() {
   console.log('deactivating bread extension')
 }
 
+/*
+These fucntions are to keep track of the content in editor to use it as source of truth
+even when editors become invisible (aka become inactive tabs)
+
+ON a second though, I think that using tabs api you can get uris and you can call workspace.openDocument(uri)
+which will not do anything if its already opened - and say dirty in the editor. The point is you can get the 
+dirty text from it!
+
+So I need to stop using fs.readFile and open documents document.getText() instead
+*/
 export function visibleTextEditorWatcher(
   editor: vscode.TextEditor | undefined,
 ) {
-  console.log('Visible text editor changed')
+  // console.log('Visible text editor changed')
 }
 
 export function changedEditorSelection(
@@ -31,5 +41,5 @@ export function changedEditorSelection(
   const editorThatChanged = event.textEditor
   const cachedContent = editorThatChanged.document.getText()
 
-  console.log('editorSelectionChanged, new content: ', cachedContent)
+  // console.log('editorSelectionChanged, new content: ', cachedContent)
 }

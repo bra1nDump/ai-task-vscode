@@ -35,6 +35,11 @@ export interface ResolvedChangesForASingleFile {
 export async function continuoulyApplyPatchStream(
   growingSetOfFileChanges: AsyncIterableX<ResolvedChangesForASingleFile[]>,
 ) {
+  // I think there's currently a bug in this code as multiplexing is not handled
+  // Just does something similar but not quiet I think
+  // https://github.com/ReactiveX/IxJS/blob/f07b7ef4095120f1ef21a4023030c75b36335cd1/src/asynciterable/operators/memoize.ts
+  //
+  //
   // Noop for files already opened
   // Can use distinctUntilChanged for the fun of it :D - micro optimization
   for await (const changesForMultipleFiles of growingSetOfFileChanges)

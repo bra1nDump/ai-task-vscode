@@ -1,4 +1,28 @@
+# Multiplexing a async iterable
+I think there's currently a bug in this code as multiplexing is not handled
+Just does something similar but not quiet I think
+https://github.com/ReactiveX/IxJS/blob/f07b7ef4095120f1ef21a4023030c75b36335cd1/src/asynciterable/operators/memoize.ts
 
+What I want is something like this:
+
+```ts
+const source = function* () {
+  yield 1;
+  yield 2;
+  yield 3;
+  yield 4;
+};
+
+const [origina, mirrored] = mirrorOrSomOtherOperator(source)
+
+for (let item of origina) {
+  console.log(`Next: ${item}`);
+}
+
+for (let item of mirrored) {
+  console.log(`Next: ${item}`);
+}
+```
 
 # Issues with multi-file edits
 There are a couple

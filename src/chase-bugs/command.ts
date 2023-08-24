@@ -52,8 +52,12 @@ export async function chaseBugsCommand() {
     getBreadIdentifier(),
   )
 
+  const unresolvedChangeStream = await streamLlm<LlmGeneratedPatchXmlV1>(
+    messages,
+    parsePartialMultiFileEdit,
+  )
   const resolvedChangeStream = from(
-    streamLlm<LlmGeneratedPatchXmlV1>(messages, parsePartialMultiFileEdit),
+    unresolvedChangeStream,
     mapToResolvedChanges,
   )
 
