@@ -12,6 +12,10 @@
 ===============================================================================
 
 # Multiplexing a async iterable
+I want to bring in @reactivex/ix-ts
+as it implements my hacked together async interables 
+and supports multiplexing which I want
+
 Will this was a fucking pain in the ass. Change pity was of great help but not enough and I still had to debug it manually.
 
 I think there's currently a bug in this code as multiplexing is not handled

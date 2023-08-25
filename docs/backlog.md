@@ -22,19 +22,27 @@
 - Show input where you can augment the instructions with anything one off
 
 # Later
+- Workspace changes
+  - Adding a new file
+- Tokenizer - show request stats - people would be spending their hard earned money on this
 - Run on double enter ??
 - Instead of reading from the file system, read from opening a document since it might have more unsaved changes
 - Apply changes as a stream of text edits
-- Workspace changes
-  - Adding a new file
+
+## Better as scripts
+- Staging area already provides most of the bread you might need for some modifications, simply submit git diff along with bread
+- Maybe generate a plan first with type signatures and developer would approve it?
+- Glob for all mark down files, and fix the links to the images after moving all images to one directory
+  - filesMatchingPath
+  - forEach / map
+
+# Later Later
+- Find target edit range using ast
+- Use function calling to try and improve the diff generation
 - Making legal moves
   - Factoring out variables
   - Splitting up functions
   - Renamings
-- Staging area already provides most of the bread you might need for some modifications, simply submit git diff along with bread
-- Maybe generate a plan first with type signatures and developer would approve it?
-
-# Later Later
 - Create copies of the repo and try different approaches and then try to compile
 - Context - see what continue did. @google @url @< some actual symbol from code > are good starts
   - ![cursor-learning-documentation](cursor-learning-documentationpng)
