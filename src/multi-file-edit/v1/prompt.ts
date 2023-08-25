@@ -1,27 +1,24 @@
 import { OpenAiMessage } from 'helpers/openai'
-import { FileContext } from '../../chase-bread/command'
+import { FileContext } from 'file-context'
 
 /**
- * Diff generation with these proms has been kind of underwhelming, I have attributed thus to the approach itself
+ * Diff generation with these proms has been kind of underwhelming
+ * I have attributed thus to the approach itself
  * I have suggested the alternative of splitting the target code location into a separate task
- * And only then generating the new codes. I think that is still a more promising, but I can squeeze out more performance from thus with better prompts.
+ * And only then generating the new codes. I think that is still a more promising.
+ * I can squeeze out more performance from thus with better prompts - [better prompts attempted].
  *
- * Provide smaller examples
- * Provide more truncated examples
- * Provide initial file content in a similar format (already doing this?)
- *
- * I should probably flatten out the examples to avoid further confusing the model
- *   alternatively I should strip the extra indentation programmatically before submitting the prompts
- *   ... but that's work
+ * Given that I now want multi file editing to work outside of the bread idea
+ * and bread is simply one way of giving the task to a multi file editing program
  */
 
 const diffGeneratorPromptPrefix = (breadIdentifier: string) => `
-- You are a coding assistant that generates incremental file edits.
-- You will be given typescript files contents as input and you need to generate changes to that file based on the comments provided when ${breadIdentifier} is mentioned, sometimes they're more informational rather than suggesting an edit.
-- Its okay to not modify a file at all. Think if its needed to accomplish the task described by the collction of ${breadIdentifier} comments.
-- Start by changing the files that you are most confident about.
-- Respect indentation of the original range you are replacing.
-- Here are some example input / output pairs. The xml comments are for explanation purposes only and should be not be included in the output.
+- You are a coding assistant that generates incremental file changes
+- You will be given files along with some task
+- You might generate changes to some file if it's necessary to accomplish the task
+- Start by changing the files that you are most confident about
+- Respect indentation of the original range you are replacing
+- Here are some examples on how to generate changes. Xml comments are for explanation purposes only and should be not be included in the output
 
 Examples:
 `
@@ -30,35 +27,33 @@ export const typescriptHelloWorldParametrizationMultiFileExample = (
   breadIdentifier: string,
 ) =>
   `
-The following output assumes you were given two files to work with.
-
+Given two files (omitted for brevity) and a task to make changes based on ${breadIdentifier} mentions. The following are acceptable changes to generate.
 <change>
-  <path>src/hello-world.ts</path>
-  <description>Parametrising function with a name of the thing to be greeted</description>
-  <range-to-replace>
+<path>src/hello-world.ts</path>
+<description>Parametrising function with a name of the thing to be greeted</description>
+<range-to-replace>
 function helloWorld() {
     // ${breadIdentifier} pass name to be greeted
     console.log('Hello World');
 }
 </range-to-replace>
-  <!-- The new content to replace the old content between the prefix and suffix -->
-  <replacement>
+<replacement>
 function hello(name: string) {
     console.log(\`Hello \${name}\`);
 }
-  </replacement>
+</replacement>
 </change>
 <change>
-  <path>src/main.ts</path>
-  <description>Use hello world from a helper module and use environment variable to get the user name</description>
-  <range-to-replace>
+<path>src/main.ts</path>
+<description>Use hello world from a helper module and use environment variable to get the user name</description>
+<range-to-replace>
 // ${breadIdentifier} use hello world from a helper module and use environment variable to get the user name
-  </range-to-replace>
-  <replacement>
+</range-to-replace>
+<replacement>
 import { hello } from './helper';
 const name = process.env.USER_NAME || 'World';
 hello(name);
-  </replacement>
+</replacement>
 </change>
 `
 
@@ -74,11 +69,9 @@ export const editMiddleOfAJsxExpressionEnsureIndentIsPreserved = (
 ) =>
   `
 Given this file:
-
 <file>
-  <path>counter.ts</path>
-  <content>
-// @${breadIdentifier} Don't print out a list simply print out a single element with the counter
+<path>counter.ts</path>
+<content>
 const Counter: React.FC = () => {
   const [count, setCount] = useState<number>(0);
 
@@ -95,37 +88,34 @@ const Counter: React.FC = () => {
     </div>
   );
 };
-  </content>
+</content>
 </file>
 
-The following is a reasonable response:
+Given a task to refactor the code to use a single div instead of a list, the following are acceptable changes to generate. Notice the indentation is respected from the original file.
 <change>
-  <path>counter.ts</path>
-  <description>Use a single div simply showing the count instead of showing a list element with values from 0 to count</description>
-  <range-to-replace>
+<path>counter.ts</path>
+<description>Use a single div simply showing the count instead of showing a list element with values from 0 to count</description>
+<range-to-replace>
       <ul>
         {Array.from({ length: count }, 
           (_, i) => 
             <li key={i}>Item {i + 1}</li>)
         }
       </ul>
-  </range-to-replace>
-  <replacement>
+</range-to-replace>
+<replacement>
       <div>{count}</div>
-  </replacement>
+</replacement>
 </change>
-
-Notice the indentation is respected from the original file
 `
 
 export const pythonRewriteBigPortionOfTheCodeWithTruncation = (
   breadIdentifier: string,
 ) => `
-Assumed you were given this file:
-
+Given this file:
 <file>
-  <path>src/quicksort.py</path>
-  <content>
+<path>src/quicksort.py</path>
+<content>
 # @${breadIdentifier} Refactor thus using recursion
 def partition(array, low, high):
   i = (low-1)
@@ -149,22 +139,21 @@ data = [10, 7, 8, 9, 1, 5]
 n = len(data)
 quicksort(data, 0, n-1)
 print("Sorted array is:", data)
-  </content>
+</content>
 </file>
 
-The following is a reasonable change to make:
-
+Given a task to address @${breadIdentifier} comments, the following is a reasonable change to make. Notice the use of </truncated>. Use it when the range you were replacing is large. Ranges over 5 lines long should be truncated.
 <change>
-  <path>src/quicksort.py</path>
-  <description>Replacing the existing quicksort implementation with a more efficient one</description>
-  <range-to-replace>
+<path>src/quicksortpy</path>
+<description>Replacing the existing quicksort implementation with a more efficient one</description>
+<range-to-replace>
 def partition(array, low, high):
   i = (low-1)
 </truncated>
     quicksort(array, low, pi-1)
     quicksort(array, pi+1, high)
-  </range-to-replace>
-  <replacement>
+</range-to-replace>
+<replacement>
 def quicksort(arr):
   if len(arr) <= 1:
     return arr
@@ -173,18 +162,30 @@ def quicksort(arr):
   middle = [x for x in arr if x == pivot]
   right = [x for x in arr if x > pivot]
   return quicksort(left) + middle + quicksort(right)
-  </replacement>
+</replacement>
 </change>
-
-Notice the use of </truncated>. Use it when the range you were replacing is large. Ranges over 5 lines long should be truncated.
-Notice the indentation within the code blocks is respected.
 `
 
 export const allDiffV1Examples = (breadIdentifier: string) => [
   typescriptHelloWorldParametrizationMultiFileExample(breadIdentifier),
+  typescriptHelloWorldParametrizationMultiFileExample(breadIdentifier),
   pythonRewriteBigPortionOfTheCodeWithTruncation(breadIdentifier),
 ]
 
+/**
+ * Generic prompt to generate changes to multiple files.
+ * Can work on both breaded and non-bread related requests.
+ *
+ * Refactor: Probably should create a separate function for each message:
+ * - file context (universal)
+ * - diff generation prompt (version dependent) (examples and format explanation)
+ *   assuming this will be changed to function calling eventually
+ * - task (should be passed from the top level command)
+ *
+ * @param fileContexts - files to be included for context and potentially for editing
+ * @param breadIdentifier - used to generate a more customized prompt for editing files with
+ *  @breadIdentifier mentions. Kind of has no business being here, but I will allow it.
+ */
 export function buildMultiFileEditingPrompt(
   fileContexts: FileContext[],
   breadIdentifier: string,
@@ -202,29 +203,30 @@ export function buildMultiFileEditingPrompt(
     .map(
       (fileContext) =>
         '<file>\n' +
-        `  <path>${fileContext.filePathRelativeTooWorkspace}</path>\n` +
-        `  <content>\n${fileContext.content}\n  </content>\n` +
+        `<path>${fileContext.filePathRelativeToWorkspace}</path>\n` +
+        `<content>\n${fileContext.content}\n</content>\n` +
         '</file>',
     )
-    .join('\n\n')
+    .join('\n')
 
   const filesContextXmlPromptSystemMessage: OpenAiMessage = {
-    content: 'Files you might want to edit:\n' + filesContextXmlPrompt,
+    content: 'Given files:\n' + filesContextXmlPrompt,
     role: 'system',
   }
 
   return [
     filesContextXmlPromptSystemMessage,
-    // I'm putting the dbff prompt after the file content since currently I'm more concerned with the output format correctness
+    // I'm putting the change generation prompt after the file content since currently
+    // I'm more concerned with the output format correctness
     // And my limited 'knowledge' says that you should put important things last.
     divPromptSystemMessage,
     {
       content:
-        '1. Output a rough plan of the changes and the changes themselves you want to make.\n' +
-        `   Pay special attention to ${breadIdentifier} mentions, they shuold guide the diff generation.\n` +
-        '   Your plan should only address the requested changes.\n' +
+        'Output a rough plan of the changes and the changes themselves you want to make.\n' +
+        `Pay special attention to ${breadIdentifier} mentions, they shuold guide the diff generation.\n` +
+        'Your plan should only address the requested changes.\n' +
         '2. Next output with generated file changes for the files you see fit. Remember to follow the \n' +
-        '   Do not forget to truncate long range-to-replaces.\n',
+        'Do not forget to truncate long range-to-replaces.\n',
       role: 'user',
     },
   ]
