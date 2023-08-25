@@ -1,5 +1,4 @@
 import { OpenAiMessage } from 'helpers/openai'
-import { FileContext } from 'file-context'
 
 /**
  * Diff generation with these proms has been kind of underwhelming
@@ -12,7 +11,7 @@ import { FileContext } from 'file-context'
  * and bread is simply one way of giving the task to a multi file editing program
  */
 
-const diffGeneratorPromptPrefix = (breadIdentifier: string) => `
+const diffGeneratorPromptPrefix = (examples: string[]) => `
 - You are a coding assistant that generates incremental file changes
 - You will be given files along with some task
 - You might generate changes to some file if it's necessary to accomplish the task
@@ -21,6 +20,7 @@ const diffGeneratorPromptPrefix = (breadIdentifier: string) => `
 - Here are some examples on how to generate changes. Xml comments are for explanation purposes only and should be not be included in the output
 
 Examples:
+${examples.join('\n\n')}
 `
 
 export const typescriptHelloWorldParametrizationMultiFileExample = (
@@ -182,52 +182,19 @@ export const allDiffV1Examples = (breadIdentifier: string) => [
  *   assuming this will be changed to function calling eventually
  * - task (should be passed from the top level command)
  *
- * @param fileContexts - files to be included for context and potentially for editing
  * @param breadIdentifier - used to generate a more customized prompt for editing files with
  *  @breadIdentifier mentions. Kind of has no business being here, but I will allow it.
  */
-export function buildMultiFileEditingPrompt(
-  fileContexts: FileContext[],
+export function multiFileEditV1FormatSystemMessage(
   breadIdentifier: string,
-): OpenAiMessage[] {
-  const diffExamplesPrompt = allDiffV1Examples(breadIdentifier).join('\n\n')
-  const diffPrompt =
-    diffGeneratorPromptPrefix(breadIdentifier) + '\n\n' + diffExamplesPrompt
+): OpenAiMessage {
+  const diffPrompt = diffGeneratorPromptPrefix(
+    allDiffV1Examples(breadIdentifier),
+  )
   const divPromptSystemMessage: OpenAiMessage = {
     content: diffPrompt,
     role: 'system',
   }
 
-  // Provide all these files including their path
-  const filesContextXmlPrompt = fileContexts
-    .map(
-      (fileContext) =>
-        '<file>\n' +
-        `<path>${fileContext.filePathRelativeToWorkspace}</path>\n` +
-        `<content>\n${fileContext.content}\n</content>\n` +
-        '</file>',
-    )
-    .join('\n')
-
-  const filesContextXmlPromptSystemMessage: OpenAiMessage = {
-    content: 'Given files:\n' + filesContextXmlPrompt,
-    role: 'system',
-  }
-
-  return [
-    filesContextXmlPromptSystemMessage,
-    // I'm putting the change generation prompt after the file content since currently
-    // I'm more concerned with the output format correctness
-    // And my limited 'knowledge' says that you should put important things last.
-    divPromptSystemMessage,
-    {
-      content:
-        'Output a rough plan of the changes and the changes themselves you want to make.\n' +
-        `Pay special attention to ${breadIdentifier} mentions, they shuold guide the diff generation.\n` +
-        'Your plan should only address the requested changes.\n' +
-        '2. Next output with generated file changes for the files you see fit. Remember to follow the \n' +
-        'Do not forget to truncate long range-to-replaces.\n',
-      role: 'user',
-    },
-  ]
+  return divPromptSystemMessage
 }

@@ -9,3 +9,5 @@ node_modules
 # Ignore all sessions including from testing
 **/.bread/sessions
 
+# Ignore all videos - they are too big
+**/*.m4v

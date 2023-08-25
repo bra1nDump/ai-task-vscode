@@ -1,18 +1,12 @@
 import * as vscode from 'vscode'
-import { parsePartialMultiFileEdit } from 'multi-file-edit/v1/parse'
-import { LlmGeneratedPatchXmlV1 } from 'multi-file-edit/v1/types'
-import { streamLlm } from 'helpers/openai'
-import { findAndCollectBreadedFiles } from './context'
-import { buildMultiFileEditingPrompt } from '../multi-file-edit/v1/prompt'
+import { findAndCollectBreadedFiles } from 'helpers/file-context'
 import { getBreadIdentifier } from 'helpers/bread-identifier'
-import { continuoulyApplyPatchStream } from 'multi-file-edit/applyResolvedChange'
-import { from } from 'ix/asynciterable'
-import { mapToResolvedChanges } from 'multi-file-edit/v1/resolveTargetRange'
-
-export interface FileContext {
-  filePathRelativeTooWorkspace: string
-  content: string
-}
+import {
+  appendToDocument,
+  saveCurrentEditorsHackToEnsureTheFreshestContents,
+} from 'helpers/vscode'
+import { showRealtimeFeedbackEditor } from 'execution/realtime-feedback'
+import { startMultiFileEditing } from 'multi-file-edit/v1'
 
 /**
  * Generates and applies diffs to files in the workspace containing @bread mention.
@@ -25,22 +19,16 @@ export interface FileContext {
  * Apply them to the current file in place
  */
 export async function chaseBreadCommand() {
-  console.log('Releasing the birds, your bread stands no chance')
+  await saveCurrentEditorsHackToEnsureTheFreshestContents()
 
-  // We don't want the content on disk to be stale for the currently opened editors
-  // because this is where we're reading the context from
-  // Hack :( first of the day lol
-  // More details in @mapToResolvedChanges
-  // Does not actually save all the editors.
-  // See extension.ts for beginning of work towards fixing this
-  for (const editor of vscode.window.visibleTextEditors) {
-    // This will prompt the user if the editor is not currently backed by a file
-    const success = await editor.document.save()
-    console.log(success)
-  }
+  const scriptOutputDocument = await showRealtimeFeedbackEditor()
+  await appendToDocument(
+    scriptOutputDocument,
+    '- Bread is being chased by professional birds your bread does not stand the chance\n',
+  )
 
+  // Functionality specific to bread mentions
   const breadIdentifier = getBreadIdentifier()
-
   const fileContexts = await findAndCollectBreadedFiles(breadIdentifier)
   if (!fileContexts) {
     void vscode.window.showErrorMessage(
@@ -49,15 +37,19 @@ export async function chaseBreadCommand() {
     return
   }
 
-  const messages = buildMultiFileEditingPrompt(fileContexts, breadIdentifier)
-
-  const unresolvedChangeStream = await streamLlm<LlmGeneratedPatchXmlV1>(
-    messages,
-    parsePartialMultiFileEdit,
+  // I imagine chasing bugs will be almost simply calling this code
+  // The main issue is in enriching the files with comments, or line numbers
+  // Actually passing the breaded identifier should be replaced with passing the entire task prompt
+  // this is currently generated within this function.
+  //
+  // To begin with I can simply dump all the compilation errs into a separate file!
+  // as well as update the prompt to not pay attention to breaded files but instead try to fix compilation errors
+  await startMultiFileEditing(
+    fileContexts,
+    `Look for tasks and informational comments tagged with ${breadIdentifier} in your input files and generate changes to accomplish them.`,
+    breadIdentifier,
+    scriptOutputDocument,
   )
-  const patchSteam = from(unresolvedChangeStream, mapToResolvedChanges)
-
-  await continuoulyApplyPatchStream(patchSteam)
 
   console.log('Birds released, your bread is gone')
 }

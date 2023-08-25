@@ -1,6 +1,12 @@
 import * as vscode from 'vscode'
-import { FileContext } from './command'
+
 import { getFileText } from 'helpers/vscode'
+import { OpenAiMessage } from 'helpers/openai'
+
+export interface FileContext {
+  filePathRelativeToWorkspace: string
+  content: string
+}
 
 /**
  * Find all files in the workspace with @breadIdentifier mention or with bread sub-extension
@@ -11,20 +17,22 @@ export async function findAndCollectBreadedFiles(
   const allFilesInWorkspace = await safeWorkspaceQueryAllFiles()
 
   const fileContexts = await Promise.all(
-    allFilesInWorkspace.map(async (fileUri) => {
-      const fileText = await getFileText(fileUri)
-      const containsBreadMentionOrIsBreadDotfile =
-        fileText.includes(`@${breadIdentifier}`) ||
-        fileUri.path.includes(`.${breadIdentifier}`)
+    allFilesInWorkspace.map(
+      async (fileUri): Promise<FileContext | undefined> => {
+        const fileText = await getFileText(fileUri)
+        const containsBreadMentionOrIsBreadDotfile =
+          fileText.includes(`@${breadIdentifier}`) ||
+          fileUri.path.includes(`.${breadIdentifier}`)
 
-      if (containsBreadMentionOrIsBreadDotfile)
-        return {
-          filePathRelativeTooWorkspace:
-            vscode.workspace.asRelativePath(fileUri),
-          content: fileText,
-        }
-      else return undefined
-    }),
+        if (containsBreadMentionOrIsBreadDotfile)
+          return {
+            filePathRelativeToWorkspace:
+              vscode.workspace.asRelativePath(fileUri),
+            content: fileText,
+          }
+        else return undefined
+      },
+    ),
   )
 
   const filteredFileContexts = fileContexts.filter(
@@ -65,4 +73,21 @@ async function safeWorkspaceQueryAllFiles(): Promise<vscode.Uri[]> {
     throw new Error(`Too many files matched: ${allFilesInWorkspace.length}`)
 
   return allFilesInWorkspace
+}
+export function fileContextSystemMessage(fileContexts: FileContext[]) {
+  const filesContextXmlPrompt = fileContexts
+    .map(
+      (fileContext) =>
+        '<file>\n' +
+        `<path>${fileContext.filePathRelativeToWorkspace}</path>\n` +
+        `<content>\n${fileContext.content}\n</content>\n` +
+        '</file>',
+    )
+    .join('\n')
+
+  const filesContextXmlPromptSystemMessage: OpenAiMessage = {
+    content: 'Given files:\n' + filesContextXmlPrompt,
+    role: 'system',
+  }
+  return filesContextXmlPromptSystemMessage
 }

@@ -348,8 +348,8 @@ helloWorld(userName);
 
     const parsedChange = parsePartialMultiFileEdit(llmFinalResponse)
     const resolveChanges = await mapToResolvedChanges(parsedChange)
-    const _applicationResults =
-      await applyResolvedChangesWhileShowingTheEditor(resolveChanges)
+    for (const change of resolveChanges)
+      await applyResolvedChangesWhileShowingTheEditor(change)
 
     assert.equal(
       mainEditor.document.getText().replace(/ /g, '+'),

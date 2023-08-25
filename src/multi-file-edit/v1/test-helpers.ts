@@ -1,5 +1,5 @@
 import * as vscode from 'vscode'
-import { applyChangesToSingleEditor } from '../applyResolvedChange'
+import { applyResolvedChangesWhileShowingTheEditor } from '../applyResolvedChange'
 import { Change } from './types'
 import { mapToResolvedChanges } from './resolveTargetRange'
 
@@ -22,10 +22,7 @@ export async function resolveAndApplyChanges(
 
   return Promise.all(
     resolvedChanges.map(async (resolvedChange) => {
-      return await applyChangesToSingleEditor(
-        resolvedChange.fileChanges,
-        editor,
-      )
+      return await applyResolvedChangesWhileShowingTheEditor(resolvedChange)
     }),
   )
 }

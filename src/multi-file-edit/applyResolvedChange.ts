@@ -1,121 +1,145 @@
 import * as vscode from 'vscode'
-import { AsyncIterableX } from 'ix/asynciterable'
+import { AsyncIterableX, last as lastAsync } from 'ix/asynciterable'
+import { ExecutionContext } from 'execution-context'
+import { appendToDocument } from 'helpers/vscode'
+import { ResolvedChange } from './types'
 
 /**
- * Various patch application implementations should map their changes to a common
- * denominator which is this type
+ * Currently top level extension command invokes this after applying v1
+ * specific transformations to resolve the changes.
+ * I think top level extension command should only call a single function from v1
+ * and that function in turn will use this application function.
  */
-export interface ResolvedChange {
-  rangeToReplace: vscode.Range
-  replacement: string
-  descriptionForHuman: string
-}
-
-/** Add info if the file edits are complete
- * Refactor: Similarly flattened this data structure, there's no point in grouping by file really
- * Since we will be showing each change separately even if there's multiple for a single file which already happens rarely.
- */
-export interface ResolvedChangesForASingleFile {
-  fileUri: vscode.Uri
-  fileChanges: ResolvedChange[]
-  isFinal: boolean
-}
-
-/**
- * This needs to be refactored and split out
- * - Looping over the stream should happen outside - in the command files most likely
- * - There should be two functions invoked on every stream item
- *   - earlyShowFileIntendedToBeModified (first for loop)
- *   - applyPartialPatch (not implements it yet)
- *     Will be hard to keep track of the target range - requires state
- *     alternatively I like the subscription model better, these helper functions will both receive
- *     the stream they can iterate over themselves so they can have state for logic.
- *
- * Each item in the stream is a more up to date set of file changes.
- * There can be multiple files in a single stream item.
- */
-export async function continuoulyApplyPatchStream(
-  growingSetOfFileChanges: AsyncIterableX<ResolvedChangesForASingleFile[]>,
+export async function startInteractiveMultiFileApplication(
+  growingSetOfFileChanges: AsyncIterableX<ResolvedChange[]>,
+  context: ExecutionContext,
 ) {
-  // Show the files we intend to modify early so the user gets an idea of the changes to come
-  const shownFiles = new Set<string>()
-  for await (const changesForMultipleFiles of growingSetOfFileChanges)
-    for (const changesForASingleFile of changesForMultipleFiles)
-      if (!shownFiles.has(changesForASingleFile.fileUri.fsPath)) {
-        const document = await vscode.workspace.openTextDocument(
-          changesForASingleFile.fileUri,
-        )
-        await vscode.window.showTextDocument(document)
-        shownFiles.add(changesForASingleFile.fileUri.fsPath)
-      }
-
-  // Initialize a set to keep track of applied changes
-  const appliedChanges = new Set<string>()
-  let finalSetOfChangesToMultipleFiles: ResolvedChangesForASingleFile[] = []
-  for await (const changesForMultipleFiles of growingSetOfFileChanges) {
-    finalSetOfChangesToMultipleFiles = changesForMultipleFiles
-    for (const changesForASingleFile of changesForMultipleFiles) {
-      // Convert the changes to a string to be able to store them in a set
-      const changesString = JSON.stringify(changesForASingleFile)
-
-      // If the changes have not been applied yet
-      if (!appliedChanges.has(changesString) && changesForASingleFile.isFinal) {
-        await applyResolvedChangesWhileShowingTheEditor([changesForASingleFile])
-
-        // Add the changes to the set of applied changes
-        appliedChanges.add(changesString)
-      }
-    }
-  }
-
-  if (finalSetOfChangesToMultipleFiles.length === 0)
-    console.error('No files got changed, thats strange')
+  await Promise.allSettled([
+    // It would be nice to have access to LLM stream here (or elsewhere )
+    // so we can show the user the prompt that was used to generate the changes, along with the changes
+    // This is to get more realtime feedback and for debugging
+    showFilesOnceWeKnowWeWantToModifyThem(growingSetOfFileChanges, context),
+    highlightTargetRangesAsTheyBecomeAvailable(
+      growingSetOfFileChanges,
+      context,
+    ),
+    applyChangesAsTheyBecomeAvailable(growingSetOfFileChanges, context),
+    showWarningWhenNoFileWasModified(growingSetOfFileChanges, context),
+  ])
 }
 
 export type ChangeApplicationResult =
   | 'appliedSuccessfully'
   | 'failedToApplyCanRetry'
 
-export async function applyResolvedChangesWhileShowingTheEditor(
-  finalSetOfChangesToMultipleFiles: ResolvedChangesForASingleFile[],
+// Refactor: abstract the iteration away alongside checking if a given change was already processed
+
+async function applyChangesAsTheyBecomeAvailable(
+  growingSetOfFileChanges: AsyncIterableX<ResolvedChange[]>,
+  context: ExecutionContext,
 ) {
-  for (const changesForASingleFile of finalSetOfChangesToMultipleFiles) {
-    const document = await vscode.workspace.openTextDocument(
-      changesForASingleFile.fileUri,
-    )
-    const editor = await vscode.window.showTextDocument(document)
+  const appliedChangesIndices = new Set<number>()
+  for await (const changesForMultipleFiles of growingSetOfFileChanges)
+    for (const [index, change] of changesForMultipleFiles.entries())
+      if (!appliedChangesIndices.has(index) && change.isFinal) {
+        const filePathRelativeToWorkspaceRoot = vscode.workspace.asRelativePath(
+          change.fileUri,
+        )
+        await appendToDocument(
+          context.realtimeProgressFeedbackDocument!,
+          `Applying changes to: ${filePathRelativeToWorkspaceRoot}\n`,
+        )
+        await applyResolvedChangesWhileShowingTheEditor(change)
 
-    const fileContentWithDiffApplied = await applyChangesToSingleEditor(
-      changesForASingleFile.fileChanges,
-      editor,
-    )
-
-    await new Promise((resolve) => setTimeout(resolve, 1_000))
-
-    console.log(
-      `Diff application results: ${fileContentWithDiffApplied.join('\n')}`,
-    )
-  }
+        // Add the index to the set of applied changes
+        appliedChangesIndices.add(index)
+      }
 }
 
-/**
- * Refactor: These changes should already have resolved locations in the code,
- *   resolution should be fully independent of application
- *   actually the only reason this file is within the multi file edit
- *   is because it depends on fine target range that is specific to the format
- */
-export async function applyChangesToSingleEditor(
-  changes: ResolvedChange[],
-  editor: vscode.TextEditor,
-): Promise<ChangeApplicationResult[]> {
-  return Promise.all(
-    changes.map(async (change) => {
-      const successfullyApplied = await editor.edit((editBuilder) => {
-        editBuilder.replace(change.rangeToReplace, change.replacement)
-      })
-      return successfullyApplied
-        ? 'appliedSuccessfully'
-        : 'failedToApplyCanRetry'
-    }),
+// Create a new decoration
+const targetRangeHighlightingDecoration =
+  vscode.window.createTextEditorDecorationType({
+    backgroundColor: 'rgba(255,255,0,0.3)',
+  })
+
+async function highlightTargetRangesAsTheyBecomeAvailable(
+  growingSetOfFileChanges: AsyncIterableX<ResolvedChange[]>,
+  context: ExecutionContext,
+) {
+  const processedChanges = new Set<number>()
+  for await (const changesForMultipleFiles of growingSetOfFileChanges)
+    for (const [index, change] of changesForMultipleFiles.entries())
+      if (!processedChanges.has(index)) {
+        const editor = await vscode.window.showTextDocument(change.fileUri)
+
+        // Set the decoration
+        editor.setDecorations(targetRangeHighlightingDecoration, [
+          change.rangeToReplace,
+        ])
+        await appendToDocument(
+          context.realtimeProgressFeedbackDocument!,
+          `Highlighting range about to be edited in: ${vscode.workspace.asRelativePath(
+            change.fileUri,
+          )}\n`,
+        )
+
+        // Add the index to the set of applied changes
+        processedChanges.add(index)
+      }
+}
+
+async function showFilesOnceWeKnowWeWantToModifyThem(
+  growingSetOfFileChanges: AsyncIterableX<ResolvedChange[]>,
+  context: ExecutionContext,
+) {
+  const shownChangeIndexes = new Set<string>()
+  for await (const changesForMultipleFiles of growingSetOfFileChanges)
+    for (const change of changesForMultipleFiles)
+      if (!shownChangeIndexes.has(change.fileUri.fsPath)) {
+        const document = await vscode.workspace.openTextDocument(change.fileUri)
+        const relativeFilepath = vscode.workspace.asRelativePath(change.fileUri)
+        await appendToDocument(
+          context.realtimeProgressFeedbackDocument!,
+          `Picked a file to modify: ${relativeFilepath}\n`,
+        )
+        await vscode.window.showTextDocument(document)
+        shownChangeIndexes.add(change.fileUri.fsPath)
+      }
+}
+
+async function showWarningWhenNoFileWasModified(
+  growingSetOfFileChanges: AsyncIterableX<ResolvedChange[]>,
+  context: ExecutionContext,
+) {
+  const finalSetOfChangesToMultipleFiles = await lastAsync(
+    growingSetOfFileChanges,
   )
+  if (!finalSetOfChangesToMultipleFiles)
+    await appendToDocument(
+      context.realtimeProgressFeedbackDocument!,
+      'No files got changed thats strange',
+    )
+}
+
+export async function applyResolvedChangesWhileShowingTheEditor(
+  resolvedChange: ResolvedChange,
+): Promise<ChangeApplicationResult> {
+  const document = await vscode.workspace.openTextDocument(
+    resolvedChange.fileUri,
+  )
+  const editor = await vscode.window.showTextDocument(document)
+
+  const isApplicationSuccessful = await editor.edit((editBuilder) => {
+    editBuilder.replace(
+      resolvedChange.rangeToReplace,
+      resolvedChange.replacement,
+    )
+  })
+
+  // Give the user a chance to see the results
+  await new Promise((resolve) => setTimeout(resolve, 5_000))
+
+  return isApplicationSuccessful
+    ? 'appliedSuccessfully'
+    : 'failedToApplyCanRetry'
 }

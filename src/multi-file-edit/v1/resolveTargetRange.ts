@@ -1,7 +1,7 @@
 import * as vscode from 'vscode'
 import { LlmGeneratedPatchXmlV1, TargetRange } from './types'
 import { LinesAndColumns } from 'helpers/lines-and-columns'
-import { ResolvedChangesForASingleFile } from 'multi-file-edit/applyResolvedChange'
+import { ResolvedChange } from 'multi-file-edit/types'
 import { findSingleFileMatchingPartialPath, getFileText } from 'helpers/vscode'
 
 /**
@@ -26,14 +26,14 @@ import { findSingleFileMatchingPartialPath, getFileText } from 'helpers/vscode'
  */
 export async function mapToResolvedChanges(
   multiFileChangeSet: LlmGeneratedPatchXmlV1,
-): Promise<ResolvedChangesForASingleFile[]> {
+): Promise<ResolvedChange[]> {
   const changesGroupedByFile = await Promise.all(
-    multiFileChangeSet.changes.flatMap(
+    multiFileChangeSet.changes.map(
       async ({
         changes,
         filePathRelativeToWorkspace,
         isStreamFinilized,
-      }): Promise<ResolvedChangesForASingleFile[]> => {
+      }): Promise<ResolvedChange[]> => {
         if (!filePathRelativeToWorkspace) return []
         const fileUri = await findSingleFileMatchingPartialPath(
           filePathRelativeToWorkspace,
@@ -42,34 +42,25 @@ export async function mapToResolvedChanges(
 
         const fileContent = await getFileText(fileUri)
 
-        const resolvedChanges = changes
-          .map((change) => {
-            // This is what does the bulk of the work
-            // everything else is just plumbing around it
-            const rangeToReplace = findTargetRangeInFileWithContent(
-              change.oldChunk,
-              fileContent,
-            )
-            if (!rangeToReplace) return []
+        const resolvedChanges = changes.reduce((acc, change) => {
+          const rangeToReplace = findTargetRangeInFileWithContent(
+            change.oldChunk,
+            fileContent,
+          )
+          if (!rangeToReplace) return acc
 
-            return [
-              {
-                fileUri: fileUri,
-                rangeToReplace,
-                replacement: change.newChunk.content,
-                descriptionForHuman: change.description,
-              },
-            ]
-          })
-          .flatMap((x) => x)
-
-        return [
-          {
+          const resolvedChange: ResolvedChange = {
             fileUri: fileUri,
-            fileChanges: resolvedChanges,
+            rangeToReplace,
+            replacement: change.newChunk.content,
+            descriptionForHuman: change.description,
             isFinal: isStreamFinilized,
-          },
-        ]
+          }
+
+          return [...acc, resolvedChange]
+        }, [] as ResolvedChange[])
+
+        return resolvedChanges
       },
     ),
   )
