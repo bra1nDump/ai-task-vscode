@@ -5,3 +5,7 @@ node_modules
 *.vsix
 *.DS_Store
 .env
+
+# Ignore all sessions including from testing
+**/.bread/sessions
+
