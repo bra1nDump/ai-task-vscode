@@ -14,10 +14,15 @@ const fs = require('fs')
 const srcDir = resolve(__dirname, 'src')
 
 // Read the directories in the 'src' folder
+// To allow absolute imports from all the folders in 'src'
+// For example instead of using 'src/extension' we can use 'extension'
 const dirs = fs
   .readdirSync(srcDir, { withFileTypes: true })
   .filter((dirent) => dirent.isDirectory())
   .map((dirent) => dirent.name)
+
+// Augment with the 'src' folder itself for files like 'src/execution-context.ts'?.
+// Ignoring this problem for now and disallowing top level files
 
 // Generate the alias object
 const aliasForAllSrcFolders = dirs.reduce((acc, dir) => {
