@@ -64,7 +64,7 @@ export async function findAndCollectBreadedFiles(
 async function safeWorkspaceQueryAllFiles(): Promise<vscode.Uri[]> {
   const allFilesInWorkspace = await vscode.workspace.findFiles(
     '**/*.{ts,md}',
-    '{node_modules,.git,out,dist}/**/*',
+    '**/{node_modules,.git,out,dist,.bread}/**/*',
     1000, // Give more then the limit below so we can throw an error if it exceeds to signal that the glob is bad
   )
 

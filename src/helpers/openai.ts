@@ -34,7 +34,7 @@ let isStreamRunning = false
 export async function streamLlm<T>(
   messages: OpenAiMessage[],
   tryParsePartial: (content: string) => T | undefined,
-  logger: (string: string) => void = console.log,
+  logger: (text: string) => Promise<void>,
 ): Promise<AsyncIterableX<T>> {
   let key: string | undefined =
     process.env.OPENAI_API_KEY ??
@@ -63,10 +63,15 @@ export async function streamLlm<T>(
     stream: true,
   })
 
-  // console.log(`Part is undefined, isLast: `, isLast)
-  // We should format the message content nicely instead of simple stringify
-  logger(`Messages submitted:`)
-  for (const { content, role } of messages) logger(`\n[${role}]\n${content}`)
+  // A simple work around the fact that logger is not guarantee sequentiality for now
+  async function logSubmittedMessages() {
+    await logger(`# Messages submitted:\n`)
+    for (const { content, role } of messages)
+      await logger(`## [${role}]\n\`\`\`${content}\`\`\`\n`)
+
+    await logger(`# [assistant]:\n\`\`\`\n`)
+  }
+  void logSubmittedMessages()
 
   // Maybe we should move decoding up a level?
   let currentContent = ''
@@ -76,13 +81,15 @@ export async function streamLlm<T>(
       if (!part) {
         isStreamRunning = false
 
+        void logger(`# AI:\n\`\`\``)
+
         return undefined
       }
 
       const delta = part.choices[0]?.delta?.content
       if (!delta) return undefined
 
-      logger(`${delta}`)
+      void logger(`${delta}`)
 
       currentContent += delta
       process.stdout.write(delta)

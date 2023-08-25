@@ -33,6 +33,8 @@ export async function findSingleFileMatchingPartialPath(
   return matchingFiles[0]
 }
 
+/** Ideally we want to guarantee text is written sequentially.
+ * This function is only used for logging purposes and out of order logs are clearly very annoying */
 export async function appendToDocument(
   document: vscode.TextDocument,
   text: string,

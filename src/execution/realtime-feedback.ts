@@ -39,6 +39,14 @@ export async function startSession(): Promise<SessionContext> {
   }
 }
 
+/** Persist session logs */
+export async function closeSession(
+  sessionContext: SessionContext,
+): Promise<void> {
+  await sessionContext.sessionMarkdownHighLevelFeedbackDocument.save()
+  await sessionContext.sessionMarkdownLowLevelFeedbackDocument.save()
+}
+
 async function createSessionLogDocuments() {
   const prettyPrintedDateWithTimeShort = new Date()
     .toLocaleString('en-US', {

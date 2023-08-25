@@ -5,12 +5,11 @@ import {
   appendToDocument,
   saveCurrentEditorsHackToEnsureTheFreshestContents,
 } from 'helpers/vscode'
-import { startSession } from 'execution/realtime-feedback'
+import { closeSession, startSession } from 'execution/realtime-feedback'
 import { startMultiFileEditing } from 'multi-file-edit/v1'
 
 /**
  * Generates and applies diffs to files in the workspace containing @bread mention.
- *
  *
  * Collect all files in workspace with @bread mention
  * Pack the files along with the diff generation prompts
@@ -55,4 +54,6 @@ export async function chaseBreadCommand() {
     sessionContext.sessionMarkdownHighLevelFeedbackDocument,
     '> Your bread was appreciated by the birds, pleasure doing business with you - Bird representative\n',
   )
+
+  await closeSession(sessionContext)
 }

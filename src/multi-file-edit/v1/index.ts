@@ -7,6 +7,7 @@ import { mapToResolvedChanges } from './resolveTargetRange'
 import { LlmGeneratedPatchXmlV1 } from './types'
 import { multiFileEditV1FormatSystemMessage } from './prompt'
 import { SessionContext } from 'execution/realtime-feedback'
+import { appendToDocument } from 'helpers/vscode'
 
 export async function startMultiFileEditing(
   fileContexts: FileContext[],
@@ -25,9 +26,18 @@ Next you should output changes as outlined by the format previously.
 `,
   }
   const messages = [outputFormatMessage, fileContextMessage, userTaskMessage]
+
+  async function logger(text: string) {
+    await appendToDocument(
+      sessionContext.sessionMarkdownLowLevelFeedbackDocument,
+      text,
+    )
+  }
+
   const unresolvedChangeStream = await streamLlm<LlmGeneratedPatchXmlV1>(
     messages,
     parsePartialMultiFileEdit,
+    logger,
   )
   const patchSteam = from(unresolvedChangeStream, mapToResolvedChanges)
   await startInteractiveMultiFileApplication(patchSteam, sessionContext)
