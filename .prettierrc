@@ -1,12 +1,9 @@
-
 {
-    "trailingComma": "all",
-    "semi": false,
-    "singleQuote": true,
-    "plugins": [
-    ],
-    "importOrder": [
-    ],
-    "importOrderSeparation": true,
-    "importOrderSortSpecifiers": true
+  "trailingComma": "all",
+  "semi": false,
+  "singleQuote": true,
+  "plugins": [],
+  "importOrder": [],
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true
 }

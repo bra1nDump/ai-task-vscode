@@ -1,4 +1,34 @@
-# August 24, Wednesday line count statistics
+# August 24, Thursday
+
+Real time feedback on what the extension is doing
+  - Open a file in column two showing which files were submitted as input, also providing a relative link to them
+  - Installed the extension locally, and trying hard not to use other extensions
+  - Highlight ranges that will be edited
+  - Printing out the plan
+    - Probably more has shown sets to keep track of what we have already printed out and only print out once its completed streaming
+    - At the same time I can start thinking about how to print out the it deltas for the same element
+    - I should probably also use Xml for the plan separators, and might as well flatten out the change tags
+
+Today was pretty productive, 
+Last commit, and scripting ideas
+
+===============================================================================
+ Language            Files        Lines         Code     Comments       Blanks
+===============================================================================
+ JavaScript              2          134           85           29           20
+ JSON                    2          107          107            0            0
+ Shell                   1            2            1            1            0
+ Plain Text              1            4            0            4            0
+ TypeScript             31         2490         1765          417          308
+-------------------------------------------------------------------------------
+ Markdown               21         4145            0         3903          242
+ |- JSON                 1            9            9            0            0
+ (Total)                           4154            9         3903          242
+===============================================================================
+ Total                  58         6882         1958         4354          570
+===============================================================================
+
+# August 23, Wednesday line count statistics
 ===============================================================================
  Language            Files        Lines         Code     Comments       Blanks
 ===============================================================================

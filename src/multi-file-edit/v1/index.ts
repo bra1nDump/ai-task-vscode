@@ -1,5 +1,3 @@
-import * as vscode from 'vscode'
-
 import { FileContext, fileContextSystemMessage } from 'helpers/file-context'
 import { OpenAiMessage, streamLlm } from 'helpers/openai'
 import { from } from 'ix/asynciterable'
@@ -8,12 +6,13 @@ import { parsePartialMultiFileEdit } from './parse'
 import { mapToResolvedChanges } from './resolveTargetRange'
 import { LlmGeneratedPatchXmlV1 } from './types'
 import { multiFileEditV1FormatSystemMessage } from './prompt'
+import { SessionContext } from 'execution/realtime-feedback'
 
 export async function startMultiFileEditing(
   fileContexts: FileContext[],
   taskPrompt: string,
   breadIdentifier: string,
-  scriptOutputDocument: vscode.TextDocument,
+  sessionContext: SessionContext,
 ) {
   const outputFormatMessage =
     multiFileEditV1FormatSystemMessage(breadIdentifier)
@@ -31,8 +30,5 @@ Next you should output changes as outlined by the format previously.
     parsePartialMultiFileEdit,
   )
   const patchSteam = from(unresolvedChangeStream, mapToResolvedChanges)
-  await startInteractiveMultiFileApplication(patchSteam, {
-    // realtimeProgressFeedbackEditor:
-    realtimeProgressFeedbackDocument: scriptOutputDocument,
-  })
+  await startInteractiveMultiFileApplication(patchSteam, sessionContext)
 }

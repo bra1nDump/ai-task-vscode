@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 import { AsyncIterableX, last as lastAsync } from 'ix/asynciterable'
-import { ExecutionContext } from 'execution-context'
+import { SessionContext } from 'execution/realtime-feedback'
 import { appendToDocument } from 'helpers/vscode'
 import { ResolvedChange } from './types'
 
@@ -12,7 +12,7 @@ import { ResolvedChange } from './types'
  */
 export async function startInteractiveMultiFileApplication(
   growingSetOfFileChanges: AsyncIterableX<ResolvedChange[]>,
-  context: ExecutionContext,
+  context: SessionContext,
 ) {
   await Promise.allSettled([
     // It would be nice to have access to LLM stream here (or elsewhere )
@@ -36,7 +36,7 @@ export type ChangeApplicationResult =
 
 async function applyChangesAsTheyBecomeAvailable(
   growingSetOfFileChanges: AsyncIterableX<ResolvedChange[]>,
-  context: ExecutionContext,
+  context: SessionContext,
 ) {
   const appliedChangesIndices = new Set<number>()
   for await (const changesForMultipleFiles of growingSetOfFileChanges)
@@ -46,8 +46,8 @@ async function applyChangesAsTheyBecomeAvailable(
           change.fileUri,
         )
         await appendToDocument(
-          context.realtimeProgressFeedbackDocument!,
-          `Applying changes to: ${filePathRelativeToWorkspaceRoot}\n`,
+          context.sessionMarkdownHighLevelFeedbackDocument,
+          `- Applying changes to: ${filePathRelativeToWorkspaceRoot}\n`,
         )
         await applyResolvedChangesWhileShowingTheEditor(change)
 
@@ -64,7 +64,7 @@ const targetRangeHighlightingDecoration =
 
 async function highlightTargetRangesAsTheyBecomeAvailable(
   growingSetOfFileChanges: AsyncIterableX<ResolvedChange[]>,
-  context: ExecutionContext,
+  context: SessionContext,
 ) {
   const processedChanges = new Set<number>()
   for await (const changesForMultipleFiles of growingSetOfFileChanges)
@@ -77,8 +77,8 @@ async function highlightTargetRangesAsTheyBecomeAvailable(
           change.rangeToReplace,
         ])
         await appendToDocument(
-          context.realtimeProgressFeedbackDocument!,
-          `Highlighting range about to be edited in: ${vscode.workspace.asRelativePath(
+          context.sessionMarkdownHighLevelFeedbackDocument,
+          `- Highlighting range about to be edited in: ${vscode.workspace.asRelativePath(
             change.fileUri,
           )}\n`,
         )
@@ -90,7 +90,7 @@ async function highlightTargetRangesAsTheyBecomeAvailable(
 
 async function showFilesOnceWeKnowWeWantToModifyThem(
   growingSetOfFileChanges: AsyncIterableX<ResolvedChange[]>,
-  context: ExecutionContext,
+  context: SessionContext,
 ) {
   const shownChangeIndexes = new Set<string>()
   for await (const changesForMultipleFiles of growingSetOfFileChanges)
@@ -99,8 +99,8 @@ async function showFilesOnceWeKnowWeWantToModifyThem(
         const document = await vscode.workspace.openTextDocument(change.fileUri)
         const relativeFilepath = vscode.workspace.asRelativePath(change.fileUri)
         await appendToDocument(
-          context.realtimeProgressFeedbackDocument!,
-          `Picked a file to modify: ${relativeFilepath}\n`,
+          context.sessionMarkdownHighLevelFeedbackDocument,
+          `- Picked a file to modify: ${relativeFilepath}\n`,
         )
         await vscode.window.showTextDocument(document)
         shownChangeIndexes.add(change.fileUri.fsPath)
@@ -109,15 +109,15 @@ async function showFilesOnceWeKnowWeWantToModifyThem(
 
 async function showWarningWhenNoFileWasModified(
   growingSetOfFileChanges: AsyncIterableX<ResolvedChange[]>,
-  context: ExecutionContext,
+  context: SessionContext,
 ) {
   const finalSetOfChangesToMultipleFiles = await lastAsync(
     growingSetOfFileChanges,
   )
   if (!finalSetOfChangesToMultipleFiles)
     await appendToDocument(
-      context.realtimeProgressFeedbackDocument!,
-      'No files got changed thats strange',
+      context.sessionMarkdownHighLevelFeedbackDocument,
+      '- No files got changed thats strange\n',
     )
 }
 

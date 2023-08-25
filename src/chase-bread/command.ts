@@ -5,7 +5,7 @@ import {
   appendToDocument,
   saveCurrentEditorsHackToEnsureTheFreshestContents,
 } from 'helpers/vscode'
-import { showRealtimeFeedbackEditor } from 'execution/realtime-feedback'
+import { startSession } from 'execution/realtime-feedback'
 import { startMultiFileEditing } from 'multi-file-edit/v1'
 
 /**
@@ -21,9 +21,9 @@ import { startMultiFileEditing } from 'multi-file-edit/v1'
 export async function chaseBreadCommand() {
   await saveCurrentEditorsHackToEnsureTheFreshestContents()
 
-  const scriptOutputDocument = await showRealtimeFeedbackEditor()
+  const sessionContext = await startSession()
   await appendToDocument(
-    scriptOutputDocument,
+    sessionContext.sessionMarkdownHighLevelFeedbackDocument,
     '- Bread is being chased by professional birds your bread does not stand the chance\n',
   )
 
@@ -48,8 +48,11 @@ export async function chaseBreadCommand() {
     fileContexts,
     `Look for tasks and informational comments tagged with ${breadIdentifier} in your input files and generate changes to accomplish them.`,
     breadIdentifier,
-    scriptOutputDocument,
+    sessionContext,
   )
 
-  console.log('Birds released, your bread is gone')
+  await appendToDocument(
+    sessionContext.sessionMarkdownHighLevelFeedbackDocument,
+    '> Your bread was appreciated by the birds, pleasure doing business with you - Bird representative\n',
+  )
 }
