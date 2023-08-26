@@ -33,16 +33,24 @@ export async function findSingleFileMatchingPartialPath(
   return matchingFiles[0]
 }
 
-/** Ideally we want to guarantee text is written sequentially.
- * This function is only used for logging purposes and out of order logs are clearly very annoying */
+const pendingEdits = new Map<string, Promise<void>>()
+
 export async function appendToDocument(
   document: vscode.TextDocument,
   text: string,
 ) {
-  const edit = new vscode.WorkspaceEdit()
-  const end = new vscode.Position(document.lineCount + 1, 0)
-  edit.insert(document.uri, end, text)
-  await vscode.workspace.applyEdit(edit)
+  const previousEdit = pendingEdits.get(document.uri.toString())
+  const applyEdit = async () => {
+    const edit = new vscode.WorkspaceEdit()
+    const end = new vscode.Position(document.lineCount + 1, 0)
+    edit.insert(document.uri, end, text)
+    await vscode.workspace.applyEdit(edit)
+  }
+
+  const editPromise = previousEdit ? previousEdit.then(applyEdit) : applyEdit()
+  pendingEdits.set(document.uri.toString(), editPromise)
+
+  await editPromise
 }
 
 /**

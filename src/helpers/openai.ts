@@ -63,29 +63,15 @@ export async function streamLlm<T>(
     stream: true,
   })
 
-  // A simple work around the fact that logger is not guarantee sequentiality for now
-  async function logSubmittedMessages() {
-    await logger(`# Messages submitted:\n`)
-    for (const { content, role } of messages)
-      await logger(`## [${role}]\n\`\`\`${content}\`\`\`\n`)
-
-    await logger(`# [assistant]:\n\`\`\`\n`)
-  }
-  void logSubmittedMessages()
+  void logger(`\n# Messages submitted:\n`)
+  for (const { content, role } of messages)
+    void logger(`## [${role}]:\n\`\`\`md${content}\`\`\`\n`)
+  void logger(`# [assistant, latest response]:\n\`\`\`md\n`)
 
   // Maybe we should move decoding up a level?
   let currentContent = ''
   const parsedPatchStream = from(stream).pipe(
     mapAsync((part) => {
-      // If the part is undefined, it means the stream is done
-      if (!part) {
-        isStreamRunning = false
-
-        void logger(`# AI:\n\`\`\``)
-
-        return undefined
-      }
-
       const delta = part.choices[0]?.delta?.content
       if (!delta) return undefined
 

@@ -21,9 +21,9 @@ export async function chaseBreadCommand() {
   await saveCurrentEditorsHackToEnsureTheFreshestContents()
 
   const sessionContext = await startSession()
-  await appendToDocument(
+  void appendToDocument(
     sessionContext.sessionMarkdownHighLevelFeedbackDocument,
-    '- Bread is being chased by professional birds your bread does not stand the chance\n',
+    '> Bread is being chased by professional birds your bread does not stand the chance\n\n',
   )
 
   // Functionality specific to bread mentions
@@ -52,7 +52,7 @@ export async function chaseBreadCommand() {
 
   await appendToDocument(
     sessionContext.sessionMarkdownHighLevelFeedbackDocument,
-    '> Your bread was appreciated by the birds, pleasure doing business with you - Bird representative\n',
+    '\n\n> Your bread was appreciated by the birds, pleasure doing business with you - Bird representative\n',
   )
 
   await closeSession(sessionContext)
