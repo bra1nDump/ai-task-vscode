@@ -34,8 +34,10 @@ export async function findSingleFileMatchingPartialPath(
 }
 
 const pendingEdits = new Map<string, Promise<void>>()
-
-export async function appendToDocument(
+/**
+ * Guarantees that the text will be appended to the document in the order it was called
+ */
+export async function queueAnAppendToDocument(
   document: vscode.TextDocument,
   text: string,
 ) {

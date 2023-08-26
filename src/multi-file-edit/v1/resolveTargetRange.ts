@@ -51,10 +51,11 @@ export async function mapToResolvedChanges(
 
           const resolvedChange: ResolvedChange = {
             fileUri: fileUri,
-            rangeToReplace,
-            replacement: change.newChunk.content,
             descriptionForHuman: change.description,
-            isFinal: isStreamFinilized,
+            rangeToReplace,
+            rangeToReplaceIsFinal: change.oldChunk.isStreamFinalized,
+            replacement: change.newChunk.content,
+            replacementIsFinal: isStreamFinilized,
           }
 
           return [...acc, resolvedChange]

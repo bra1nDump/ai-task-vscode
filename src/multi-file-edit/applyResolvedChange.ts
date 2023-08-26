@@ -1,7 +1,7 @@
 import * as vscode from 'vscode'
 import { AsyncIterableX, last as lastAsync } from 'ix/asynciterable'
 import { SessionContext } from 'execution/realtime-feedback'
-import { appendToDocument } from 'helpers/vscode'
+import { queueAnAppendToDocument } from 'helpers/vscode'
 import { ResolvedChange } from './types'
 
 /**
@@ -41,11 +41,11 @@ async function applyChangesAsTheyBecomeAvailable(
   const appliedChangesIndices = new Set<number>()
   for await (const changesForMultipleFiles of growingSetOfFileChanges)
     for (const [index, change] of changesForMultipleFiles.entries())
-      if (!appliedChangesIndices.has(index) && change.isFinal) {
+      if (!appliedChangesIndices.has(index) && change.replacementIsFinal) {
         const filePathRelativeToWorkspaceRoot = vscode.workspace.asRelativePath(
           change.fileUri,
         )
-        await appendToDocument(
+        await queueAnAppendToDocument(
           context.sessionMarkdownHighLevelFeedbackDocument,
           `- Applying changes to: ${filePathRelativeToWorkspaceRoot}\n`,
         )
@@ -69,22 +69,25 @@ async function highlightTargetRangesAsTheyBecomeAvailable(
   const processedChanges = new Set<number>()
   for await (const changesForMultipleFiles of growingSetOfFileChanges)
     for (const [index, change] of changesForMultipleFiles.entries())
-      if (!processedChanges.has(index)) {
+      if (!processedChanges.has(index) && change.rangeToReplace) {
         const editor = await vscode.window.showTextDocument(change.fileUri)
 
         // Set the decoration
         editor.setDecorations(targetRangeHighlightingDecoration, [
           change.rangeToReplace,
         ])
-        await appendToDocument(
-          context.sessionMarkdownHighLevelFeedbackDocument,
-          `- Highlighting range about to be edited in: ${vscode.workspace.asRelativePath(
-            change.fileUri,
-          )}\n`,
-        )
+        // Since we update decorations multiple times for single change
+        // this needs additional logic to only print this out once
+        // void queueAnAppendToDocument(
+        //   context.sessionMarkdownHighLevelFeedbackDocument,
+        //   `- Highlighting range about to be edited in: ${vscode.workspace.asRelativePath(
+        //     change.fileUri,
+        //   )}\n`,
+        // )
 
-        // Add the index to the set of applied changes
-        processedChanges.add(index)
+        // Mark as processed only once the range stopped changing
+        // Currently approximating by checking once the change is finalized fully
+        if (change.rangeToReplaceIsFinal) processedChanges.add(index)
       }
 }
 
@@ -98,7 +101,7 @@ async function showFilesOnceWeKnowWeWantToModifyThem(
       if (!shownChangeIndexes.has(change.fileUri.fsPath)) {
         const document = await vscode.workspace.openTextDocument(change.fileUri)
         const relativeFilepath = vscode.workspace.asRelativePath(change.fileUri)
-        await appendToDocument(
+        await queueAnAppendToDocument(
           context.sessionMarkdownHighLevelFeedbackDocument,
           `- Picked a file to modify: ${relativeFilepath}\n`,
         )
@@ -115,7 +118,7 @@ async function showWarningWhenNoFileWasModified(
     growingSetOfFileChanges,
   )
   if (!finalSetOfChangesToMultipleFiles)
-    await appendToDocument(
+    await queueAnAppendToDocument(
       context.sessionMarkdownHighLevelFeedbackDocument,
       '- No files got changed thats strange\n',
     )

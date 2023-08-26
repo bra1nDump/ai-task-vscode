@@ -2,7 +2,7 @@ import { startMultiFileEditing } from 'multi-file-edit/v1'
 import { projectDiagnosticEntriesWithAffectedFileContext } from './diagnostics'
 import { getBreadIdentifier } from 'helpers/bread-identifier'
 import { closeSession, startSession } from 'execution/realtime-feedback'
-import { appendToDocument } from 'helpers/vscode'
+import { queueAnAppendToDocument } from 'helpers/vscode'
 
 /**
  * Gathered the problems in the code base
@@ -19,7 +19,7 @@ export async function chaseBugsCommand() {
   console.log('Bird watch is on the way for those pesky bugs')
 
   const sessionContext = await startSession()
-  await appendToDocument(
+  await queueAnAppendToDocument(
     sessionContext.sessionMarkdownHighLevelFeedbackDocument,
     "- Bugs is being chased by professional birds your bugs don't not stand a chance\n",
   )
@@ -59,7 +59,7 @@ ${
     sessionContext,
   )
 
-  await appendToDocument(
+  await queueAnAppendToDocument(
     sessionContext.sessionMarkdownHighLevelFeedbackDocument,
     '> You snitching on your bugs was appreciated by the birds, pleasure doing business with you - Bird representative\n',
   )

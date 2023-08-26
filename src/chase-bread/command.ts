@@ -2,7 +2,7 @@ import * as vscode from 'vscode'
 import { findAndCollectBreadedFiles } from 'helpers/file-context'
 import { getBreadIdentifier } from 'helpers/bread-identifier'
 import {
-  appendToDocument,
+  queueAnAppendToDocument,
   saveCurrentEditorsHackToEnsureTheFreshestContents,
 } from 'helpers/vscode'
 import { closeSession, startSession } from 'execution/realtime-feedback'
@@ -21,7 +21,7 @@ export async function chaseBreadCommand() {
   await saveCurrentEditorsHackToEnsureTheFreshestContents()
 
   const sessionContext = await startSession()
-  void appendToDocument(
+  void queueAnAppendToDocument(
     sessionContext.sessionMarkdownHighLevelFeedbackDocument,
     '> Bread is being chased by professional birds your bread does not stand the chance\n\n',
   )
@@ -50,7 +50,7 @@ export async function chaseBreadCommand() {
     sessionContext,
   )
 
-  await appendToDocument(
+  await queueAnAppendToDocument(
     sessionContext.sessionMarkdownHighLevelFeedbackDocument,
     '\n\n> Your bread was appreciated by the birds, pleasure doing business with you - Bird representative\n',
   )
