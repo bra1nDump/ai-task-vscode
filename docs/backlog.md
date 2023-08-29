@@ -2,28 +2,38 @@
 
 - Multifile edits by leaving around comments
 - Automatically fix compile errors
+- Seamlessly invoke inline completions based on comments
 
 # Next milestones
 
-- Try to replace continue on the current project
+- Published extension and found a single demo user
+- Recorded impressive demo video
+- Replaced continue on the current project
+
+# Next up (useful for getting the first user)
+
+- Tests the compilation error fixing
+- Record the first video and publish it
+- Publish the extension
 - Automatically fix compilation errors
-
-# Next up (useful for recording a video)
-
-- Fix real time feedback output
-- Ability to stop the execution
-  - A command, so you can add a keybinding to it
-  - More intuitively you would just close the editor with the logs (it will probably be annoying because it will always need saving? Can I just save it all the time after writing)
-- Show input where you can augment the instructions with anything one off
+- Create a company and apply for open eye credits
 
 # Later
 
+- Show input where you can augment the instructions with anything one off
+- Ability to stop the execution
+  - A command, so you can add a keybinding to it
+  - More intuitively you would just close the editor with the logs (it will probably be annoying because it will always need saving? Can I just save it all the time after writing)
 - Workspace changes
   - Adding a new file
 - Tokenizer - show request stats - people would be spending their hard earned money on this
 - Run on double enter ??
 - Instead of reading from the file system, read from opening a document since it might have more unsaved changes
 - Apply changes as a stream of text edits
+
+# Done
+
+- Fix real time feedback output
 
 ## Better as scripts
 
