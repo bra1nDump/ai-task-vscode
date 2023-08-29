@@ -42,8 +42,7 @@ Sprinkle some @bread crumbs around your code base to get the birds attention. Bi
 
 ## Running
 ```sh
-npm i -g pnpm
-pnpm install
+npm install
 ```
 
 As this is a VSCode extension, you need to run it from within VSCode.

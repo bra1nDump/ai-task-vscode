@@ -23,6 +23,8 @@ I think notebooks make much more sense compared to just displaying a markdown fi
 
 There's plenty of unknowns. Let's first try to squeeze out as much as we can from the file based approach. Even though I know it's inherently not powerful enough.
 
+For instance there's buttons we can put up top of the file that can provide additional actions. See top of this file for example right side: ![tool-bar](top-right-file-tool-bar.png)
+
 It's a good idea to play around with notebooks to see what they can provide us with.
 
 # Continue at cursor
@@ -115,3 +117,9 @@ The idea is to provide the user the ability to script their own workflows off ba
 
 - There's really no primitive to work with right now
 - Attracting a customer who would be willing to customize things is really hard. To interest someone in investing time into learning the pi because there is a learning curve always, they need to experience out of the box functionality and like it. The only reason they would like to script is because they really like the multi file editing or simply the approach I'm taking with the comments, VSCode integration with highlighting regions about to be edited
+
+# [Scripting / summarization / auto selection] Migrate from pnpm to npm
+- Update scripts
+- Update docs
+
+Is ai needed for this?

@@ -16,6 +16,7 @@
 - Record the first video and publish it
 - Publish the extension
 - Automatically fix compilation errors
+- Gradually apply changes as they come in
 - Create a company and apply for open eye credits
 
 # Later

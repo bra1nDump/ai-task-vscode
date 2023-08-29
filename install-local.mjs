@@ -25,12 +25,15 @@ async function main() {
     // Read the existing package.json
     let packageObj = await jsonfile.readFile(packageFilePath)
 
-    // Write the updated package.json
-    await jsonfile.writeFile(packageFilePath, packageObj, { spaces: 2 })
+    console.log('Bundling extension...')
+    execSync('npm run bundle:prod', { stdio: 'inherit' })
+
+    console.log('Packaging extension...')
 
     // Run the packaging command
+    // --no-dependencies: don't include the dependencies in the vsix, workaround because we are using webpack to bundle the dependencies
     execSync(
-      'pnpm run bundle:prod && ./node_modules/.bin/vsce package --no-dependencies --allow-star-activation',
+      './node_modules/.bin/vsce package --no-dependencies --allow-star-activation',
       { stdio: 'inherit' },
     )
 
@@ -45,6 +48,8 @@ async function main() {
     } catch (err) {
       console.log('Extension not installed, continuing...')
     }
+
+    console.log('Installing extension...')
 
     // Install the extension in VS Code Insiders
     execSync(`${vscodeBinary} --install-extension ${vsixFileName}`, {

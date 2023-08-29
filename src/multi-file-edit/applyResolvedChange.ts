@@ -86,7 +86,6 @@ async function highlightTargetRangesAsTheyBecomeAvailable(
         // )
 
         // Mark as processed only once the range stopped changing
-        // Currently approximating by checking once the change is finalized fully
         if (change.rangeToReplaceIsFinal) processedChanges.add(index)
       }
 }
