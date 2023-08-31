@@ -9,7 +9,7 @@
 
 # Demo:
 
-[![Demo showing multi-file edit + bulk compile error fixing](https://img.youtube.com/vi/43tYTqNbBQeIfisT/0.jpg)](https://youtu.be/7FhcKhhFT4M?si=Gkn8U6sCc9KE1sWE)
+[![Demo showing multi-file edit + bulk compile error fixing](https://img.youtube.com/vi/7FhcKhhFT4M/0.jpg)](https://youtu.be/7FhcKhhFT4M?si=Gkn8U6sCc9KE1sWE)
 
 # Coming Soon
 
