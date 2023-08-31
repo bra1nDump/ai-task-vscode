@@ -7,10 +7,18 @@ import * as vscode from 'vscode'
  *
  * Note: Contents might be stale
  * due to fs writing using workspace.fs.writeFile being not done even though the promise resolves
+ * Opening document for some reason results different contents than what's on disk
  */
 export async function getFileText(uri: vscode.Uri): Promise<string> {
-  const document = await vscode.workspace.fs.readFile(uri)
-  return document.toString()
+  const fileContentBuffer = await vscode.workspace.fs.readFile(uri)
+  return fileContentBuffer.toString()
+}
+
+export async function getFilePossiblyDirtyContent(
+  uri: vscode.Uri,
+): Promise<string> {
+  const document = await vscode.workspace.openTextDocument(uri)
+  return document.getText()
 }
 
 export function getFullFileRange(fileText: string): vscode.Range {

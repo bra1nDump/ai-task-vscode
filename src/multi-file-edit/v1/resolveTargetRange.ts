@@ -42,6 +42,27 @@ export async function mapToResolvedChanges(
 
         const fileContent = await getFileText(fileUri)
 
+        /*
+          Bug: Downstream assumption of set of changes being growing is violated.
+          Let's say we're modifying two files, A, B
+          Once we have applied the changes to the first file, 
+          If get text file will return the updated content of the file 
+          The old edit range will not be found in the updated file content (we are using the old content to search for the range)
+
+          We do want to use the I updated content though, because this is how we enable multiple edits to the same file as well as editing unsaved files.
+
+          Related tissues:
+          - How would this interact if we refactor ranges to be based on lines instead of contents?
+          - How does this interact with partial application?
+
+          Possible solutions:
+          - Change range resolution to be stateful, and stop updating a range once it has been resolved fully
+            - Now for partial applications to work more work would being needed on the application side for range tracking. This is related logic so it will be two places to make mistakes for the same thing roughly.
+          - [Selected] Create and intermediate target range that is a discriminated union between two types: RangedToReplaceContentBased or to be added later RangedToReplaceLineBased
+            - Rename resolved change to Change and switch range to replace to be the intermediate type
+            - Instead of this file doing full resolution to VS called range it should simply bring v1 specific Xml patch type two a common Change type
+            - Final change resolution should be performed on the application side, it should cach the initial target range, and update it on subsequent partial edits. 
+        */
         const resolvedChanges = changes.reduce((acc, change) => {
           const rangeToReplace = findTargetRangeInFileWithContent(
             change.oldChunk,
