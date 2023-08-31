@@ -4,6 +4,9 @@ import * as vscode from 'vscode'
  * Most likely a major issue: if the file is not saved, the contents will be stale.
  * How can I instead read from the editor?
  * Do I need to keep track of all editors and their contents?
+ *
+ * Note: Contents might be stale
+ * due to fs writing using workspace.fs.writeFile being not done even though the promise resolves
  */
 export async function getFileText(uri: vscode.Uri): Promise<string> {
   const document = await vscode.workspace.fs.readFile(uri)
@@ -38,20 +41,28 @@ export async function findSingleFileMatchingPartialPath(
   return matchingFiles[0]
 }
 
-const pendingEdits = new Map<string, Promise<void>>()
 /**
- * Guarantees that the text will be appended to the document in the order it was called
+ * Guarantees that the text will be appended to the document in the order it was called.
  */
+const pendingEdits = new Map<string, Promise<void>>()
+const documentContents = new Map<string, string>()
 export async function queueAnAppendToDocument(
   document: vscode.TextDocument,
   text: string,
 ) {
   const previousEdit = pendingEdits.get(document.uri.toString())
   const applyEdit = async () => {
-    const edit = new vscode.WorkspaceEdit()
-    const end = new vscode.Position(document.lineCount + 1, 0)
-    edit.insert(document.uri, end, text)
-    await vscode.workspace.applyEdit(edit)
+    // @crust read file using workspace fs if it's not in the map
+    let currentContent = documentContents.get(document.uri.toString())
+    if (!currentContent) {
+      const fileData = await vscode.workspace.fs.readFile(document.uri)
+      currentContent = new TextDecoder().decode(fileData)
+      documentContents.set(document.uri.toString(), currentContent)
+    }
+    const newContent = currentContent + text
+    documentContents.set(document.uri.toString(), newContent)
+    const data = new TextEncoder().encode(newContent)
+    await vscode.workspace.fs.writeFile(document.uri, data)
   }
 
   const editPromise = previousEdit ? previousEdit.then(applyEdit) : applyEdit()

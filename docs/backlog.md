@@ -15,7 +15,22 @@
 - Gradually apply changes as they come in
 - Closing the session file should stop generation
 - Changing selection in the editor should clear the highlight
-- Try fixing stale file content by keeping uri -> content map or reading from documents
+- Deduplicate files with problems, generally deduplicate files?
+- Stale files, specifically making it impossible to do multi-edits in the same file
+  - https://github.com/microsoft/vscode/issues/15723
+  - openTextDocument should work ..
+- Logging is still kinda broken
+  - \` appear in strange places (aka right after some </file> closes)
+  - Files are not strictly ordered by timestamp, and the format all the title is to verbose
+  - Running two sessions within the same minute concatenates the two files
+
+# Frustrations without a planned fix
+
+- Slow - manual range selection is faster
+- Dumber than simple completions due to extra context
+
+- Offsets are broken due to old edits + stale files, multiple edits to the same file fail
+- Errors don't show up if files are not active - run tsc if its a typescript project
 
 # Later
 
@@ -38,6 +53,12 @@
 
 # Done
 
+- Too many things to clean up after the session
+  - [maybe] Use fs to write to files instead of opening documents
+    - Hide logger implementation in the context object
+  - Preview high level
+  - High level .md itself
+  - Low level .md
 - Tests the compilation error fixing
 - Record the first video and publish it
 - Include all active tabs as context

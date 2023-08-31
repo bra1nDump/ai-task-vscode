@@ -1,3 +1,15 @@
+# August 31, Thursday
+
+Issue: The issue where the document was shown in the editor on the first append has been resolved. We are now using vscode.workspace.fs to write to the file instead and maintaining a map of documents to their contents, similar to pending edits. We are assuming that we are the only ones writing to the file. No other functions were modified during this process.
+
+Issue: @bread document is shown in editor on first append. Use vscode.workspace.fs to write to file instead. Maintain a map of documents to their contents. similar to pending edits.
+ * Assume we are the only ones writing to the file.
+ * DONT MODIFY OTHER FUNCTIONS, ONLY THIS ONE
+
+[.bread/sessions/8-31-23, 10-12 AM.raw.md](../.bread/sessions/8-31-23,\ 10-12\ AM.raw.md)
+
+Did not respect part of the instruction to maintain map of contents
+
 # August 24, Thursday
 
 Real time feedback on what the extension is doing

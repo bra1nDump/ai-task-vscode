@@ -64,19 +64,21 @@ Next you should output changes as outlined by the format previously.
       text,
     )
 
-  // Log files that we are submitting as context
-  void highLevelLogger(`\n# Files submitted:\n`)
-  for (const fileContext of fileContexts) {
+  const logFilePath = (fileContext: FileContext) => {
     const path = fileContext.filePathRelativeToWorkspace
-    void highLevelLogger(`- [${path}](${path})\n`)
+    // Assumes we are in .bread/sessions
+    void highLevelLogger(`- [${path}](../../${path})\n`)
   }
 
+  // Log files that we are submitting as context
+  void highLevelLogger(`\n# Files submitted:\n`)
+  for (const fileContext of fileContexts) logFilePath(fileContext)
+
   // Log files from tabs
-  void highLevelLogger(`\n# Files from open tabs:\n`)
-  for (const fileContext of fileContextFromOpenTabsNotInFileContexts) {
-    const path = fileContext.filePathRelativeToWorkspace
-    void highLevelLogger(`- [${path}](${path})\n`)
-  }
+  if (fileContextFromOpenTabsNotInFileContexts.length > 0)
+    void highLevelLogger(`\n# Files from open tabs:\n`)
+  for (const fileContext of fileContextFromOpenTabsNotInFileContexts)
+    logFilePath(fileContext)
 
   const unresolvedChangeStream = await streamLlm<LlmGeneratedPatchXmlV1>(
     messages,
