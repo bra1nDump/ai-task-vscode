@@ -9,7 +9,7 @@
 
 # Demo:
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/7FhcKhhFT4M?si=43tYTqNbBQeIfisT" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+[![Demo showing multi-file edit + bulk compile error fixing](https://img.youtube.com/vi/43tYTqNbBQeIfisT/0.jpg)](https://youtu.be/7FhcKhhFT4M?si=Gkn8U6sCc9KE1sWE)
 
 # Coming Soon
 

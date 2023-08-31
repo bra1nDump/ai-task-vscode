@@ -31,11 +31,8 @@ async function main() {
     console.log('Packaging extension...')
 
     // Run the packaging command
-    // --no-dependencies: don't include the dependencies in the vsix, workaround because we are using webpack to bundle the dependencies
-    execSync(
-      './node_modules/.bin/vsce package --no-dependencies --allow-star-activation',
-      { stdio: 'inherit' },
-    )
+    // --no-dependencies: don't include the dependencies in the vsix, because we are using webpack to bundle the dependencies
+    execSync('npm run package', { stdio: 'inherit' })
 
     const extensionId = packageObj.publisher + '.' + packageObj.name
     const vsixFileName = packageObj.name + '-' + packageObj.version + '.vsix'
