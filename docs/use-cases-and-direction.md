@@ -61,9 +61,11 @@ Notebooks, or other bread files focused on user friendly autocomplete context ta
 
 - No need to find the files and actually comment them with bread to include them for consideration
 - Assemble the task in one place
--
 
-## Downsides
+## Shortcuts
+
+- Use plain urls
+- Use relative file urls as file://./backlog.md
 
 # [50% addressable with a small modification to the prompt + application algorithm] Bootstrapping a new feature across multiple files potentially creating new files
 
@@ -118,8 +120,41 @@ The idea is to provide the user the ability to script their own workflows off ba
 - There's really no primitive to work with right now
 - Attracting a customer who would be willing to customize things is really hard. To interest someone in investing time into learning the pi because there is a learning curve always, they need to experience out of the box functionality and like it. The only reason they would like to script is because they really like the multi file editing or simply the approach I'm taking with the comments, VSCode integration with highlighting regions about to be edited
 
-# [Scripting / summarization / auto selection] Migrate from pnpm to npm
+# Small ones, not direction, simply examples and things to try
+
+## [Scripting / summarization / auto selection] Migrate from pnpm to npm
+
 - Update scripts
 - Update docs
 
 Is ai needed for this?
+
+# Add helpers for ``` and new lines to appendToDocument and logger
+
+I have a function that appends to a document, but it does not create leading new lines, I want to have more helpers like
+appendNewLine
+or appendNewMarkdownBlock.
+I then want to find all uses of that function and automatically refactor to use the new abstractions.
+
+### Blocked by
+
+- Simple @search context provider
+- Scripting
+- Or automatic symbol / summaries
+
+# I got mermaid to finally work with esbuild etc, I now have a shit load of code thats just 'chilling'
+
+I want to strip it, I want to also just reorganize the code in a better way but keep it working.
+Very generic ...
+
+# I want to document decision making in the code base
+
+I know the codebase, but other people don't and I will not either soon.
+So I can run a script to ask me questions about the codebase to add more documentation.
+
+## Blocked by
+
+- Whole codebase understanding
+- Prompt to identify 'gaps' in decision documentation
+- Symbol extraction for code base
+- Interrupts for user input

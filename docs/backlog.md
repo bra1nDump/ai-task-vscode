@@ -16,8 +16,13 @@
 - Record the first video and publish it
 - Publish the extension
 - Automatically fix compilation errors
+- Refactor logging - try getting this to work automatically
 - Gradually apply changes as they come in
 - Create a company and apply for open eye credits
+- Run on double enter
+- Explore UIs
+  - stop button up top
+  - notebook interface
 
 # Later
 

@@ -3,17 +3,17 @@
 - Avoid creating communication protocols - no server, keep in typescript
 - Focus on a single development ecosystem - vscode, typescript
 - Use vscode apis when possible, for example getting symbol information, ast, etc
-- Avoid sessions - get what you see by keeping state in plain text
+- Avoid session state - get what you see by keeping state in plain text
 - ~~Use langchain for all things llm to keep getting free features~~
 
 # Focus
 - Features
   - Multi-file editing
+  - Simple continuation at cursor
   - Language server integration for crawling compile errors
 - User perceived speed
   - Partial result application
   - Effective encoding
-  - Avoiding printing out repeated information by llm
   - Parallelism
 - UX
   - Simple way to interact with the system. I suspect Notebooks.
