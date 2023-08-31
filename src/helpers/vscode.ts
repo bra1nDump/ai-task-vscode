@@ -1,5 +1,10 @@
 import * as vscode from 'vscode'
 
+/**
+ * Most likely a major issue: if the file is not saved, the contents will be stale.
+ * How can I instead read from the editor?
+ * Do I need to keep track of all editors and their contents?
+ */
 export async function getFileText(uri: vscode.Uri): Promise<string> {
   const document = await vscode.workspace.fs.readFile(uri)
   return document.toString()

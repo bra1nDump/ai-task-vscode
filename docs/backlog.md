@@ -7,25 +7,23 @@
 # Next milestones
 
 - Published extension and found a single demo user
-- Recorded impressive demo video
+- Recorded impressive demo video + gif for readme
 - Replaced continue on the current project
 
 # Next up (useful for getting the first user)
 
-- Tests the compilation error fixing
-- Record the first video and publish it
-- Publish the extension
-- Automatically fix compilation errors
-- Refactor logging - try getting this to work automatically
 - Gradually apply changes as they come in
-- Create a company and apply for open eye credits
-- Run on double enter
-- Explore UIs
-  - stop button up top
-  - notebook interface
+- Closing the session file should stop generation
+- Changing selection in the editor should clear the highlight
+- Try fixing stale file content by keeping uri -> content map or reading from documents
 
 # Later
 
+- Add play button to @bread comments
+- Explore UIs
+  - stop button up top
+  - notebook interface
+- Refactor logging - try getting this to work automatically
 - Show input where you can augment the instructions with anything one off
 - Ability to stop the execution
   - A command, so you can add a keybinding to it
@@ -36,9 +34,15 @@
 - Run on double enter ??
 - Instead of reading from the file system, read from opening a document since it might have more unsaved changes
 - Apply changes as a stream of text edits
+- Create a company and apply for open eye credits
 
 # Done
 
+- Tests the compilation error fixing
+- Record the first video and publish it
+- Include all active tabs as context
+- Publish the extension
+- Automatically fix compilation errors
 - Fix real time feedback output
 
 ## Better as scripts

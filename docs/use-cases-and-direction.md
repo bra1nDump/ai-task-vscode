@@ -45,7 +45,13 @@ Leave a breaded comment and had entered twice to invoke completion.
   - [Workaround] Simply have a command that you run manually
 - Single file editing prompt to skip the planning stage or complex xml output format. Start printing out directly into the file
 
-# Consolidate task in one place - comment or bread or notebook
+# Context providers
+
+- @url Fetch contents over euro
+  - Ideally should provide away too only include part of the page for example between the next #
+  - Limiting to only part of the page is useful for referencing big documentation websites like VSCode extension api https://code.visualstudio.com/api/references/vscode-api#Tab
+
+# Consolidate task in one place: comment or bread or notebook
 
 - Include other files into generation process without having to touch the files themselves
 - Use the syntax in comments and bread files

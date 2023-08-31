@@ -47,7 +47,7 @@ async function applyChangesAsTheyBecomeAvailable(
         )
         await queueAnAppendToDocument(
           context.sessionMarkdownHighLevelFeedbackDocument,
-          `- Applying changes to: ${filePathRelativeToWorkspaceRoot}\n`,
+          `\nApplying changes\n`,
         )
         await applyResolvedChangesWhileShowingTheEditor(change)
 
@@ -102,7 +102,7 @@ async function showFilesOnceWeKnowWeWantToModifyThem(
         const relativeFilepath = vscode.workspace.asRelativePath(change.fileUri)
         await queueAnAppendToDocument(
           context.sessionMarkdownHighLevelFeedbackDocument,
-          `- Picked a file to modify: ${relativeFilepath}\n`,
+          `\n### Modifying: ${relativeFilepath}\n`,
         )
         await vscode.window.showTextDocument(document)
         shownChangeIndexes.add(change.fileUri.fsPath)
@@ -119,7 +119,7 @@ async function showWarningWhenNoFileWasModified(
   if (!finalSetOfChangesToMultipleFiles)
     await queueAnAppendToDocument(
       context.sessionMarkdownHighLevelFeedbackDocument,
-      '- No files got changed thats strange\n',
+      '\n## No files got changed thats strange\n',
     )
 }
 
