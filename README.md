@@ -7,9 +7,9 @@
 - Directory specific context files like `components/team-patterns.birds.md`
 - What you see is what you get. Everything is in the file system making it easy to share and version control
 
-# Demo:
+# Demo (Click to play YouTube video):
 
-[![Demo showing multi-file edit + bulk compile error fixing](https://img.youtube.com/vi/7FhcKhhFT4M/0.jpg)](https://youtu.be/7FhcKhhFT4M?si=Gkn8U6sCc9KE1sWE)
+[![Demo showing multi-file edit + bulk compile error fixing](https://img.youtube.com/vi/t2evckJtRgM/0.jpg)](https://youtu.be/t2evckJtRgM)
 
 # Coming Soon
 
