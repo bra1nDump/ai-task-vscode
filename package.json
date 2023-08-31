@@ -3,8 +3,9 @@
   "displayName": "birds",
   "publisher": "bra1nDump",
   "description": "Leave breakcrumbs across the codebase and have llm type for you inline",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "license": "Business Source License 1.1",
+  "icon": "icon-v1.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/bra1nDump/bread"

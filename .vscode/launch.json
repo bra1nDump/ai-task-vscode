@@ -6,7 +6,7 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "Extension",
+			"name": "Sandbox",
 			"type": "extensionHost",
 			"request": "launch",
 			"args": [
@@ -23,7 +23,7 @@
 		},
 		// This is the same as Extension, but it runs with the current project directory and the current file
 		//   Limitation: Can't open the same directory in two windows - https://stackoverflow.com/a/51426734/5278310
-		//   Instead will just open /src
+		//   Created a simlink to workaround
 		// The idea is to test new features on the actual codebase instead of a simple toy project
 		// I called it Quine because similar to a quine program, it runs on itself
 		// - A quine program is a program that prints its own source code
@@ -32,8 +32,7 @@
 			"type": "extensionHost",
 			"request": "launch",
 			"args": [
-				"${workspaceFolder}/src",
-				"${file}",
+				"${workspaceFolder}/../bread-soft-linked",
 				"--extensionDevelopmentPath=${workspaceFolder}"
 			],
 			"envFile": "${workspaceFolder}/.env",
@@ -53,6 +52,21 @@
 			"request": "launch",
 			"args": [
 				"${workspaceFolder}/../show-me-chatgpt-plugin",
+				"--extensionDevelopmentPath=${workspaceFolder}"
+			],
+			"envFile": "${workspaceFolder}/.env",
+			"outFiles": [
+				"${workspaceFolder}/dist/**/*.js"
+			],
+			"sourceMaps": true,
+			"preLaunchTask": "${defaultBuildTask}"
+		},
+		{
+			"name": "Mermiad to Miro",
+			"type": "extensionHost",
+			"request": "launch",
+			"args": [
+				"${workspaceFolder}/../mermaid-laid-out-graph",
 				"--extensionDevelopmentPath=${workspaceFolder}"
 			],
 			"envFile": "${workspaceFolder}/.env",
