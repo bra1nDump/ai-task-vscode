@@ -45,9 +45,19 @@ Leave a breaded comment and had entered twice to invoke completion.
   - [Workaround] Simply have a command that you run manually
 - Single file editing prompt to skip the planning stage or complex xml output format. Start printing out directly into the file
 
-# Define the task in a single file or notebook instead of spreading out @bread comments
+# Consolidate task in one place - comment or bread or notebook
+
+- Include other files into generation process without having to touch the files themselves
+- Use the syntax in comments and bread files
+- Should contain autocomplete and highlighting (language server)
 
 Notebooks, or other bread files focused on user friendly autocomplete context task building and execution. Currently execution is being logged in a single markdown file. The task is only provided by either compilation errors or inline comments.
+
+## Shortcuts
+
+- Use plain urls
+- Use relative file urls as file://./backlog.md
+- Use all tabs that are opened as context (probably should be a setting)
 
 ## Primitives required
 
@@ -61,11 +71,6 @@ Notebooks, or other bread files focused on user friendly autocomplete context ta
 
 - No need to find the files and actually comment them with bread to include them for consideration
 - Assemble the task in one place
-
-## Shortcuts
-
-- Use plain urls
-- Use relative file urls as file://./backlog.md
 
 # [50% addressable with a small modification to the prompt + application algorithm] Bootstrapping a new feature across multiple files potentially creating new files
 

@@ -1,7 +1,7 @@
 import OpenAI from 'openai'
 import * as vscode from 'vscode'
 
-import { AsyncIterableX, from } from 'ix/asynciterable'
+import { AsyncIterableX, from, last } from 'ix/asynciterable'
 import {
   filter as filterAsync,
   map as mapAsync,
@@ -65,8 +65,8 @@ export async function streamLlm<T>(
 
   void logger(`\n# Messages submitted:\n`)
   for (const { content, role } of messages)
-    void logger(`## [${role}]:\n\`\`\`md${content}\`\`\`\n`)
-  void logger(`# [assistant, latest response]:\n\`\`\`md\n`)
+    void logger(`\n## [${role}]:\n\`\`\`md\n${content}\`\`\`\n`)
+  void logger(`\n# [assistant, latest response]:\n\`\`\`md\n`)
 
   // Maybe we should move decoding up a level?
   let currentContent = ''
@@ -90,6 +90,21 @@ export async function streamLlm<T>(
    * This is important! See the docstring
    */
   const multicastStream = multicast(parsedPatchStream)
+
+  // Detect end of stream and free up the llm resource
+  void last(multicastStream)
+    .catch((error: Error) => {
+      console.error(error)
+      void logger(
+        `\n# [error occurred in stream]:\n\`\`\`md\n${
+          error as unknown as any
+        }\`\`\`\n`,
+      )
+      return undefined
+    })
+    .then(() => {
+      isStreamRunning = false
+    })
 
   return multicastStream
 }

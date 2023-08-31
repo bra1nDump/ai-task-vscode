@@ -47,6 +47,7 @@ export interface FileChange {
 }
 
 export interface LlmGeneratedPatchXmlV1 {
+  plan: string[]
   changes: FileChange[]
   /** Not used now, but it's much easier to add a new field to an object type versus an array */
   isStreamFinalizedUnused: boolean

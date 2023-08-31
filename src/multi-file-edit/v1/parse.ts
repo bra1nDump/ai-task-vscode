@@ -8,6 +8,10 @@ import { TargetRange, LlmGeneratedPatchXmlV1 } from './types'
 
 /*
 For reference the new format is
+
+- Item 1 of the plan
+- Item 2
+
 <change>
   <path>src/hello-world.ts</path>
   <description>Parametrising function with a name of the thing to be greeted</description>
@@ -26,6 +30,17 @@ function hello(name: string) {
 </change>
 */
 export function parsePartialMultiFileEdit(xml: string): LlmGeneratedPatchXmlV1 {
+  // Plan is encoded using - as a bullet point for each item
+  // Extract the plan before the first change tag
+  const planItems: string[] = []
+  const [planSection] = xml.split('<change>')
+  // Extract plan items using regex,
+  // account for first item being in the beginning of the string or on a new line
+  const planItemsRegex = /(?:^|\n)- (.*)/g
+  let match: RegExpExecArray | null
+  while ((match = planItemsRegex.exec(planSection)) !== null)
+    planItems.push(match[1])
+
   const fileChangeOutputs = extractXmlElementsForTag(xml, 'change')
 
   // TODO: Drop the new lines right after opening tags range-to-replace and replacement and right before closing tags
@@ -94,5 +109,9 @@ export function parsePartialMultiFileEdit(xml: string): LlmGeneratedPatchXmlV1 {
     }
   })
 
-  return { changes: fileChanges, isStreamFinalizedUnused: false }
+  return {
+    changes: fileChanges,
+    isStreamFinalizedUnused: false,
+    plan: planItems,
+  }
 }

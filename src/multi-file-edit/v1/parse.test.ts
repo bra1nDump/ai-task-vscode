@@ -202,3 +202,32 @@ function helloWorld() {
     assert.equal(oldChunk.suffixContent, '    console.log')
   })
 })
+
+suite('Can parse plan items correctly', () => {
+  test('Completed plan', () => {
+    const payload = `- Plan item one\n- Item two`
+    const patch = parsePartialMultiFileEdit(payload)
+    assert.ok(patch)
+    assert.equal(patch.plan.length, 2)
+    assert.equal(patch.plan[0], 'Plan item one')
+    assert.equal(patch.plan[1], 'Item two')
+  })
+
+  test('Plan that is still being generated', () => {
+    const payload = `- Plan item one\n- Item two\n- `
+    const patch = parsePartialMultiFileEdit(payload)
+    assert.ok(patch)
+    assert.equal(patch.plan.length, 3)
+    assert.equal(patch.plan[0], 'Plan item one')
+    assert.equal(patch.plan[1], 'Item two')
+    assert.equal(patch.plan[2], '')
+  })
+
+  test('Plan with some preamble before the plan points', () => {
+    const payload = `Plan is next:\n- Plan item one`
+    const patch = parsePartialMultiFileEdit(payload)
+    assert.ok(patch)
+    assert.equal(patch.plan.length, 1)
+    assert.equal(patch.plan[0], 'Plan item one')
+  })
+})

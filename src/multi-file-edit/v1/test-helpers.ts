@@ -17,6 +17,8 @@ export async function resolveAndApplyChanges(
         ),
       },
     ],
+    // Doesn't matter what we put here, plan is only for informational purposes
+    plan: [],
     isStreamFinalizedUnused: false,
   })
 
