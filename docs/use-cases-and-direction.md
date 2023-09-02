@@ -78,7 +78,15 @@ Notebooks, or other bread files focused on user friendly autocomplete context ta
 - No need to find the files and actually comment them with bread to include them for consideration
 - Assemble the task in one place
 
-# [50% addressable with a small modification to the prompt + application algorithm] Bootstrapping a new feature across multiple files potentially creating new files
+# Documenting findings during a day of development
+
+Its tedious but very useful to write out things that worked and thigs that did not and why.
+Sometimes we don't get to this part + its annoying.
+Would be nice if we can collect what we are troubleshooting and be prompted to add auto-log entry for the day and maybe something to the readme file as well.
+
+# [Later] Bootstrapping a new feature across multiple files potentially creating new files
+
+[50% addressable with a small modification to the prompt + application algorithm]
 
 ## Primitives required
 
@@ -108,7 +116,9 @@ Actually I am providing these instructions but just to myself
 - Rename release.ts chase-bread.ts, and its test file
 - ...I have not actually completed this and continued coding the way I knew how
 
-# [90% achievable with a more reliable simpler solution] Using summarization figure out what files to consider modifying in the first place, as well as what should be added as context
+# [Later] Using summarization figure out what files to consider modifying in the first place, as well as what should be added as context
+
+[90% achievable with a more reliable simpler solution]
 
 ## Primitives required
 
@@ -122,7 +132,9 @@ Actually I am providing these instructions but just to myself
 - Same results can be achieved with manually picking out the context using better bread files with auto complete
 - Contradicts the bet of what you sees what you get by requiring cashing
 
-# [Technically very attractive, but premature. Focus on first customer to use out of the box tools instead] Allow scripting
+# [Later] Allow scripting
+
+[Technically very attractive, but premature. Focus on first customer to use out of the box tools instead]
 
 The idea is to provide the user the ability to script their own workflows off badge source updates.
 
@@ -169,3 +181,9 @@ So I can run a script to ask me questions about the codebase to add more documen
 - Prompt to identify 'gaps' in decision documentation
 - Symbol extraction for code base
 - Interrupts for user input
+
+# Moving away from using strings as statuses: two part refactor with first creating a constant, and then updating all references
+
+## Blocked by
+
+- Stale file issue for multi edits on a single file

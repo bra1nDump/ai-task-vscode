@@ -49,6 +49,13 @@
 			"type": "npm",
 			"script": "install-local",
 			"problemMatcher": []
-		}
+		},
+		// Task to publish
+		{
+			"label": "Publish",
+			"type": "npm",
+			"script": "publish",
+			"problemMatcher": []
+		},
 	]
 }

@@ -6,23 +6,25 @@
 
 # Next milestones
 
-- Published extension and found a single demo user
+- [done] Published extension
+- Found a single demo user
 - Recorded impressive demo video + gif for readme
 - Replaced continue on the current project
 
 # Next up (useful for getting the first user)
 
 - Gradually apply changes as they come in
+- Stale files, specifically making it impossible to do multi-edits in the same file
+  - https://github.com/microsoft/vscode/issues/15723
+  - openTextDocument should work ..w
 - Closing the session file should stop generation
 - Changing selection in the editor should clear the highlight
 - Deduplicate files with problems, generally deduplicate files?
-- Stale files, specifically making it impossible to do multi-edits in the same file
-  - https://github.com/microsoft/vscode/issues/15723
-  - openTextDocument should work ..
-- Logging is still kinda broken
+- Logging is still kinda broken40
   - \` appear in strange places (aka right after some </file> closes)
   - Files are not strictly ordered by timestamp, and the format all the title is to verbose
   - Running two sessions within the same minute concatenates the two files
+- Preview for the high level oftentimes flickers. Not sure what causes itb but try larger outputs
 
 # Frustrations without a planned fix
 
