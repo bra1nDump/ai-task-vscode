@@ -1,3 +1,118 @@
+# Gradually apply changes
+
+- target range resolution should run on the file snapshots that were submitted to the LLM
+- Resolution will be called while being coupled with the change application
+- Resolution should only be performed for a single change - Only the change that's currently being processed is of interest to the applicator / continuous patcher
+
+
+Reading cursorless code because they are dealing with a similar issue.
+The way they have solved this problem is by
+- Having a watcher of text edits globally
+- Once a text edit was performed update the ranges that were registered
+- Basically if you want to keep some range up to date you simply added to the RangeUpdater, and it is magically kept up to date. You are simply holding a mutable reference to the range I'm assuming?
+
+It is a really good solution because it will also handle the cases when a human is editing the file alongside with the LLM. I assume other projects will have trouble with thus, and this is how we can stand out.
+This will also take care of the case when multiple sessions are running at the same time. My original design assumed the LLM is the only thing performing and edit and it's only a single session, the state will be only the changes that come during this one session.
+
+
+## The tradeoffs:
+
+### Implementing myself from scratch
+- will probably result in a simpler algorithm
+- likely contain multiple hard to fix bugs that will be hidden and I will have to continuously go back and fix it
+- Will probably be faster to get to a working prototype
+
+### Getting the code from cursorless 
+Key abstractions RangeUpdater, updateRangeInfos
+- Handles more cases as described above for concurrent edits - will set aside from competition
+- Is battle tested so as long as I integrate correctly should just work
+- I think will work nicely with the repeated edits. Basically I will not unregistered the ranges until the session is complete. It should then continuously override the range
+- I probably still need to modify the code because I don't want to pull in all the abstractions
+- If I do decide to pull all the abstractions, I can then more easily take more things from cursor lists later on
+  - I now need to have mappings from VSCode types, and bloating code with interfaces and transformations
+  - I need common package
+    - typings
+    - utils
+  - cursorless-engine
+    - core/updateSelections
+    - core/typings
+- A good first step is to run the extension locally and see how it handles the range updates
+- Next stage is probably simply copying the least amount of code possible to get it to compile
+- Alternatively I can literally copy the entire thing, then it is guaranteed to compile!
+
+It seems like I will be going back to pnpm...
+
+
+The common package contains most of the abstract range and file types, which I already kind of have for myself. It also contains some of the nice arithmetics that I would have to use either way for my custom implementation so that's definitely getting borrowed.
+Update selections looks actually pretty self contained, 
+
+### Big turn - what if I join cursorless with this llm shit?
+It has many abstractions already, but whats more important it has 2 really strong vscode super experts + open source experts.
+Approach - take this one feature - range updater out of the repo.
+Later suggest factoring this out into its own package, and factor out other abstractions that are needed by both birds and cursorless.
+Cursorless is a good name actually - it can be cursorless-voice and simply cursorless - the llm way of editing your codebase.
+Voice / precise mode will deal with referencing tokens / 
+Create a separate project within the cursorless organization
+
+#### Why do it?
+- Work with experts
+- Pipeline is kinda similarish
+  - Targets (@bread comments, @file) -> modifiders, precise (smart, dynamic, un-structured) -> action, precize from one fo the tools (full replace, using one of the precize tools)
+
+#### Why not do it?
+- Overlap in abstractions is not high enough
+  - Target locating is done by the llm and usually does not need to be as precise
+  - Target locating is also very dynamic - not every function
+  - Target is often an entire file - cursorless targets things within the file only
+    - Can be expanded. Move file x to folder y is a great idea actually for voice
+  - Action is also usually dynamic, simply re-write the thing
+  - Actions can also use structured tools tho
+    - For example when exploring code you can ask for every function, open the return type definition
+- Long term we will not be referring to low level tokens / scopes at all?
+
+### State of the code:
+
+```
+cursorless-vscode % tokei -e "*fixture*" -e "*yaml"
+===============================================================================
+ Language            Files        Lines         Code     Comments       Blanks
+===============================================================================
+ BASH                    1           20           10            5            5
+ C#                      1            1            1            0            0
+ C++                     1            1            1            0            0
+ CSS                     3           98           87            2            9
+ Java                    1            6            6            0            0
+ JavaScript             12          471          380           59           32
+ JSON                   29         3756         3756            0            0
+ Python                 62         4168         3370           99          699
+ Sass                    2            8            0            8            0
+ Scala                   1           51           36            6            9
+ Scheme                 11          790          482          230           78
+ Shell                   6          199          108           45           46
+ SVG                    14         3245         3245            0            0
+ TeX                     1          102           85           10            7
+ Plain Text              2           11            0            9            2
+ TOML                    2           11           10            0            1
+ TSX                    22          769          679           25           65
+ TypeScript            586        46923        34801         7036         5086
+ XML                     1            3            3            0            0
+-------------------------------------------------------------------------------
+ HTML                    2           32           30            1            1
+ |- CSS                  1            4            4            0            0
+ |- JavaScript           1            2            1            1            0
+ (Total)                             38           35            2            1
+-------------------------------------------------------------------------------
+ Markdown               39         2477            0         1664          813
+ |- BASH                 4           12           12            0            0
+ |- Batch                1            2            2            0            0
+ |- JSON                 3           95           94            0            1
+ |- TypeScript           1           21           21            0            0
+ (Total)                           2607          129         1664          814
+===============================================================================
+ Total                 799        63142        47090         9199         6853
+===============================================================================
+```
+
 # Sometime in August
 Looking at all the use cases and thus directions I could go, I decided to test the current solution and try to market it as is to some users.
 

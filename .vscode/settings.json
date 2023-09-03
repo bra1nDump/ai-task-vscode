@@ -18,4 +18,12 @@
     * otherwise a bunch of files related to @bread functionality - like this one - will be picked up
     */
     "birds.at-bread-mention": "crust",
+    /**
+    * Foam is an extension to VSCode that helps you organize your thoughts and connect your ideas using a [[wiki-style links]] and [[markdown]]
+    */
+    "foam.files.ignore": [
+        ".vscode**/*",
+        "node_modules",
+        "**/.bread"
+    ],
 }

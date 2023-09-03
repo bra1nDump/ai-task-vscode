@@ -24,6 +24,8 @@
 
 ## Type at cursor - allows me to replace continue
 
+- For example current model does not support inserts only some sort of replacement
+
 ## Split target selection into a separate task - address speed, reliability and dumbness due to complex prompt
 
 - Let's try squeezing out as much as possible with the current model using better prompts
