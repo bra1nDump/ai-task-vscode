@@ -1,15 +1,9 @@
-Looking at all the use cases and thus directions I could go, I decided to test the current solution and try to market it as is to some users.
-
-Next in line is probably better insights and control of the generation. I should be able to stop generation at any point. I should also better understand what files were included as context, and be able to navigate to them quickly.
-
-I might later attempt continuing at cursor simply to replace continue for small modifications. Again this feels like the wrong direction to go as of right now. I have something working already, there might be use case I need to double down and check if there is a legitimate use case by trying to sell.
-
-# [Theoretically addressed - TEST, Advertise] Tedious test file edits due to data structure changes
+# [Partially implemented] Tedious test file edits due to data structure changes
 
 - Add export to all constants in a file
 - Update data structure string -> { content: string, someFlag: boolean }
   - compilation will fail and you want to automatically fix it across the codebase
-  - ![Example data structure change](fix-tsc-value.png)
+  - ![Example data structure change](assets/fix-tsc-value.png)
   - Maybe you show it how to fix one of these problems manually
   - You can also provide heuristics for how to fix it, the problem old as day is - oh, I now need this new data thats unavailable in this context, let me pass it in as a parameter, oh, oh oh.
   - Solve this publically! Github will literally roll this out in a week / month
@@ -23,7 +17,7 @@ I think notebooks make much more sense compared to just displaying a markdown fi
 
 There's plenty of unknowns. Let's first try to squeeze out as much as we can from the file based approach. Even though I know it's inherently not powerful enough.
 
-For instance there's buttons we can put up top of the file that can provide additional actions. See top of this file for example right side: ![tool-bar](top-right-file-tool-bar.png)
+For instance there's buttons we can put up top of the file that can provide additional actions. See top of this file for example right side: ![tool-bar](assets/top-right-file-tool-bar.png)
 
 It's a good idea to play around with notebooks to see what they can provide us with.
 
@@ -47,6 +41,7 @@ Leave a breaded comment and had entered twice to invoke completion.
 
 # Context providers
 
+- @tabs
 - @url Fetch contents over euro
   - Ideally should provide away too only include part of the page for example between the next #
   - Limiting to only part of the page is useful for referencing big documentation websites like VSCode extension api https://code.visualstudio.com/api/references/vscode-api#Tab
@@ -67,6 +62,7 @@ Notebooks, or other bread files focused on user friendly autocomplete context ta
 
 ## Primitives required
 
+- Parsing context providers within @bread, for example other files @src/server.ts, @tabs
 - Bread files that can include other files
 - Language server that can provide autocomplete for bread files
   - File names
@@ -142,48 +138,3 @@ The idea is to provide the user the ability to script their own workflows off ba
 
 - There's really no primitive to work with right now
 - Attracting a customer who would be willing to customize things is really hard. To interest someone in investing time into learning the pi because there is a learning curve always, they need to experience out of the box functionality and like it. The only reason they would like to script is because they really like the multi file editing or simply the approach I'm taking with the comments, VSCode integration with highlighting regions about to be edited
-
-# Small ones, not direction, simply examples and things to try
-
-## [Scripting / summarization / auto selection] Migrate from pnpm to npm
-
-- Update scripts
-- Update docs
-
-Is ai needed for this?
-
-# Add helpers for ``` and new lines to appendToDocument and logger
-
-I have a function that appends to a document, but it does not create leading new lines, I want to have more helpers like
-appendNewLine
-or appendNewMarkdownBlock.
-I then want to find all uses of that function and automatically refactor to use the new abstractions.
-
-### Blocked by
-
-- Simple @search context provider
-- Scripting
-- Or automatic symbol / summaries
-
-# I got mermaid to finally work with esbuild etc, I now have a shit load of code thats just 'chilling'
-
-I want to strip it, I want to also just reorganize the code in a better way but keep it working.
-Very generic ...
-
-# I want to document decision making in the code base
-
-I know the codebase, but other people don't and I will not either soon.
-So I can run a script to ask me questions about the codebase to add more documentation.
-
-## Blocked by
-
-- Whole codebase understanding
-- Prompt to identify 'gaps' in decision documentation
-- Symbol extraction for code base
-- Interrupts for user input
-
-# Moving away from using strings as statuses: two part refactor with first creating a constant, and then updating all references
-
-## Blocked by
-
-- Stale file issue for multi edits on a single file

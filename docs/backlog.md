@@ -31,9 +31,6 @@
 - Slow - manual range selection is faster
 - Dumber than simple completions due to extra context
 
-- Offsets are broken due to old edits + stale files, multiple edits to the same file fail
-- Errors don't show up if files are not active - run tsc if its a typescript project
-
 # Later
 
 - Add play button to @bread comments
@@ -68,16 +65,9 @@
 - Automatically fix compilation errors
 - Fix real time feedback output
 
-## Better as scripts
-
-- Staging area already provides most of the bread you might need for some modifications, simply submit git diff along with bread
-- Maybe generate a plan first with type signatures and developer would approve it?
-- Glob for all mark down files, and fix the links to the images after moving all images to one directory
-  - filesMatchingPath
-  - forEach / map
-
 # Later Later
 
+- Errors don't show up if files are not active - run tsc if its a typescript project
 - Find target edit range using ast
 - Use function calling to try and improve the diff generation
 - Making legal moves

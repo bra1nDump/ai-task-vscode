@@ -6,3 +6,5 @@
 - Show me email database?
 - Partner with bookmark extension to leave the breadcrumbs, possibly pay for advertising?
 - try to play on the fact that I'm an indi developer compared to a legitimate cursor company
+- Create a discord server
+- Straight up advertise to people interested in VSCode extensions

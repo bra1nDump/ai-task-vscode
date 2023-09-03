@@ -1,3 +1,10 @@
+# Sometime in August
+Looking at all the use cases and thus directions I could go, I decided to test the current solution and try to market it as is to some users.
+
+Next in line is probably better insights and control of the generation. I should be able to stop generation at any point. I should also better understand what files were included as context, and be able to navigate to them quickly.
+
+I might later attempt continuing at cursor simply to replace continue for small modifications. Again this feels like the wrong direction to go as of right now. I have something working already, there might be use case I need to double down and check if there is a legitimate use case by trying to sell.
+
 # August 31, Thursday
 
 Issue: The issue where the document was shown in the editor on the first append has been resolved. We are now using vscode.workspace.fs to write to the file instead and maintaining a map of documents to their contents, similar to pending edits. We are assuming that we are the only ones writing to the file. No other functions were modified during this process.
