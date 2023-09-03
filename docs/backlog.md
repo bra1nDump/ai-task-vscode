@@ -13,12 +13,28 @@
 
 # Next up (useful for getting the first user)
 
+## Make user experience of the current features acceptable
+
 - Gradually apply changes as they come in
 - Stale files, specifically making it impossible to do multi-edits in the same file
   - https://github.com/microsoft/vscode/issues/15723
-  - openTextDocument should work ..w
+  - openTextDocument should work ..
 - Closing the session file should stop generation
 - Changing selection in the editor should clear the highlight
+
+## Type at cursor - allows me to replace continue
+
+## Split target selection into a separate task - address speed, reliability and dumbness due to complex prompt
+
+- Let's try squeezing out as much as possible with the current model using better prompts
+- We can also make some modifications to use line ranges as target ranges instead of printing the whole thing out
+- We probably also want the breaded files to come last, not sure of that matters for the attention mechanism, but probably won't make it worse
+
+This is a complex task that will require rewriting roughly 1/3 of the code base if not more
+Will function calling help me getter faster? I would not need to deal with Xml parsing, but I will have to deal with new apis and parsing partial JSON
+
+## Bugs
+
 - Deduplicate files with problems, generally deduplicate files?
 - Logging is still kinda broken40
   - \` appear in strange places (aka right after some </file> closes)
@@ -26,13 +42,9 @@
   - Running two sessions within the same minute concatenates the two files
 - Preview for the high level oftentimes flickers. Not sure what causes itb but try larger outputs
 
-# Frustrations without a planned fix
-
-- Slow - manual range selection is faster
-- Dumber than simple completions due to extra context
-
 # Later
 
+- Typing @run should start executing
 - Add play button to @bread comments
 - Explore UIs
   - stop button up top
