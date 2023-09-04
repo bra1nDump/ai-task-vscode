@@ -60,11 +60,9 @@ export async function queueAnAppendToDocument(
 ) {
   const previousEdit = pendingEdits.get(document.uri.toString())
   const applyEdit = async () => {
-    // @crust read file using workspace fs if it's not in the map
     let currentContent = documentContents.get(document.uri.toString())
     if (!currentContent) {
-      const fileData = await vscode.workspace.fs.readFile(document.uri)
-      currentContent = new TextDecoder().decode(fileData)
+      currentContent = document.getText()
       documentContents.set(document.uri.toString(), currentContent)
     }
     const newContent = currentContent + text

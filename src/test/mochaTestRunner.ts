@@ -20,13 +20,14 @@ export function run(): Promise<void> {
   })
 
   const testsRoot = path.resolve(__dirname, '../..')
+  console.log(`${testsRoot}`)
 
   return new Promise((c, e) => {
-    const testGlob = process.env.TEST_SUITE_GLOB ?? '**/**.test.js'
-    glob(testGlob, { cwd: testsRoot }, (err, files) => {
+    glob('out/**/*.test.js', { cwd: testsRoot }, (err, files) => {
       if (err) return e(err)
 
       // Add files to the test suite
+      console.log(`Found files: ${files.join(', ')}.`)
       files.forEach((f) => mocha.addFile(path.resolve(testsRoot, f)))
 
       try {

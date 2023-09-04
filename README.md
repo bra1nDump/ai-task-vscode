@@ -56,7 +56,7 @@ As this is a VSCode extension, you need to run it from within VSCode.
 Open the project in VSCode and open debug view (Ctrl+Shift+D).
 
 To run the extension: Then select `Extension` and press `F5` or hit play.
-To run tests: Then select `Tests` and press `F5` or hit play.
+To run tests: Then select `Tests` and press `F5` or hit play. If you only want to run a single test suite, within the test suite files use mocha `suite.only` or `test.only`
 
 **NOTE** Sometimes currently the watch tasks seemed to fail, but I'm pretty sure I'm just overriding the out folder ..., anyways it sometimes causes the tests to not be found in out folder
 

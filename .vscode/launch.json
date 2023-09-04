@@ -88,14 +88,6 @@
 				"--extensionTestsPath=${workspaceFolder}/out/test/mochaTestRunner.js"
 			],
 			"envFile": "${workspaceFolder}/.env",
-			"env": {
-				// This is a cheaper model + it's faster
-				// "OPENAI_DEFAULT_MODEL": "gpt-3.5-turbo",
-				// Important! The glob needs to match js files, not original ts files
-				// Use test.only instead of test in the code to run only one test
-				// Use this glob if you want to run only one test suite
-				// "TEST_SUITE_GLOB": "**/parse.test.js"
-			},
 			"outFiles": [
 				"${workspaceFolder}/out/**/*.js",
 				"${workspaceFolder}/dist/**/*.js"
