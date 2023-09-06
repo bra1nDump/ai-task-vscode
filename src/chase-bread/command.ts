@@ -1,5 +1,5 @@
 import * as vscode from 'vscode'
-import { findAndCollectBreadedFiles } from 'helpers/file-context'
+import { findAndCollectBreadedFiles } from 'document-helpers/file-context'
 import { getBreadIdentifier } from 'helpers/bread-identifier'
 import {
   queueAnAppendToDocument,

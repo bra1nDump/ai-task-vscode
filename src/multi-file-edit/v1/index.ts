@@ -2,7 +2,7 @@ import {
   FileContext,
   fileContextSystemMessage,
   getFileContextForOpenedTabs,
-} from 'helpers/file-context'
+} from 'document-helpers/file-context'
 import { OpenAiMessage, streamLlm } from 'helpers/openai'
 import { from } from 'ix/asynciterable'
 import { map as mapAsync } from 'ix/asynciterable/operators'
@@ -47,8 +47,8 @@ Next you should output changes as outlined by the format previously.
   }
   const messages = [
     outputFormatMessage,
-    fileContextMessage,
     fileContextFromOpenTabsMessage,
+    fileContextMessage,
     userTaskMessage,
   ]
 

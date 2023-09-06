@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
-import { getFileText } from '../helpers/vscode'
-import { FileContext } from 'helpers/file-context'
+import { getDocumentText } from '../helpers/vscode'
+import { FileContext } from 'document-helpers/file-context'
 
 export interface DiagnosticEntry {
   fileContext: FileContext
@@ -23,7 +23,7 @@ export async function projectDiagnosticEntriesWithAffectedFileContext(): Promise
 
   for (const [uri, fileDiagnostics] of diagnostics)
     for (const fileDiagnostic of fileDiagnostics) {
-      const fileContent = await getFileText(uri)
+      const fileContent = await getDocumentText(uri)
       diagnosticEntries.push({
         fileContext: {
           filePathRelativeToWorkspace: vscode.workspace.asRelativePath(uri),

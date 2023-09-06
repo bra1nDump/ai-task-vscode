@@ -1,14 +1,28 @@
 import * as vscode from 'vscode'
 import { LlmGeneratedPatchXmlV1, TargetRange } from './types'
-import { LinesAndColumns } from 'helpers/lines-and-columns'
+import { LinesAndColumns } from 'document-helpers/lines-and-columns'
 import { ResolvedChange } from 'multi-file-edit/types'
-import { findSingleFileMatchingPartialPath, getFileText } from 'helpers/vscode'
+import {
+  findSingleFileMatchingPartialPath,
+  getDocumentText,
+} from 'helpers/vscode'
+import { SessionContext } from 'execution/realtime-feedback'
 
 /**
  * Data structure limitation:
  * Right now we are silently dropping the things that were not resolved.
  * Instead we should be returning a resolved change that is actually not resolved.
- * so return MayBeResolved type
+ * so return MayBeResolved type+
+ *
+ * Design decision notes:
+ * I'm taking a slightly different approach than I was thinking before.
+ * I thought the mapper to resolve changes was going to be independent from version specific logic.
+ * It can still be done and probably is a better way of doing this, but I'm going to start with a simpler approach. That approach would involve having two mappers, the first one is version specific that will map to a resolved outdated range give the file snapshots.
+ * The second mapper would adjust the ranges to the current file content.
+ *
+ * I think this is a path to introduced more abstractions prematurely without understanding the problem well enough.
+ *
+ * TODO: Cleanup documentation. Once I start using session context to extract file contents the limitation should be overcome
  *
  * Limitation: resolution is performed relative to file contents
  * on disk. Often editor contents - which is what the user expects to be referenced
@@ -26,6 +40,7 @@ import { findSingleFileMatchingPartialPath, getFileText } from 'helpers/vscode'
  */
 export async function mapToResolvedChanges(
   multiFileChangeSet: LlmGeneratedPatchXmlV1,
+  sessionContext: SessionContext,
 ): Promise<ResolvedChange[]> {
   const changesGroupedByFile = await Promise.all(
     multiFileChangeSet.changes.map(
@@ -40,7 +55,8 @@ export async function mapToResolvedChanges(
         )
         if (!fileUri) return []
 
-        const fileContent = await getFileText(fileUri)
+        // TODO: sessionContext.documentManager to get document snapshot instead
+        const fileContent = await getDocumentText(fileUri)
 
         /*
           Bug: Downstream assumption of set of changes being growing is violated.
@@ -68,6 +84,7 @@ export async function mapToResolvedChanges(
             change.oldChunk,
             fileContent,
           )
+          // Here use the DocumentSnapshot to adjust the range to current time
           if (!rangeToReplace) return acc
 
           const resolvedChange: ResolvedChange = {
@@ -90,6 +107,12 @@ export async function mapToResolvedChanges(
   return changesGroupedByFile.flatMap((x) => x)
 }
 
+/**
+ * Isaiah would blame me for using a third party library for this.
+ * But I did simply just copy it over, though I'm also barely using it.
+ *
+ * Simplify to remove the dependency
+ */
 export function findTargetRangeInFileWithContent(
   oldChunk: TargetRange,
   fileContent: string,
@@ -103,9 +126,6 @@ export function findTargetRangeInFileWithContent(
   const searchLine = (lines: string[], line: string) => {
     const trimmedLine = line.trim()
 
-    // Never match empty lines
-    if (trimmedLine === '') return -1
-
     const firstMatchIndex = lines.findIndex((l) => l.trim() === trimmedLine)
 
     // Make sure its the only match
@@ -117,7 +137,7 @@ export function findTargetRangeInFileWithContent(
     return firstMatchIndex
   }
 
-  // Separately handle a case of very simple / empty files
+  // Separately handle a case of very simple / empty files or where the content matches the entire file
   // Search for entire content in the document
   if (oldChunk.type === 'fullContentRange') {
     const fullContentIndex = fileContent.indexOf(oldChunk.fullContent)

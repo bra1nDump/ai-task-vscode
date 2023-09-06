@@ -1,15 +1,14 @@
 import * as vscode from 'vscode'
 
 /**
- * Most likely a major issue: if the file is not saved, the contents will be stale.
- * How can I instead read from the editor?
- * Do I need to keep track of all editors and their contents?
- *
- * Note: Contents might be stale
- * due to fs writing using workspace.fs.writeFile being not done even though the promise resolves
- * Opening document for some reason results different contents than what's on disk
+ * Previously we were reading from the file system which caused the contents to be stale.
  */
-export async function getFileText(uri: vscode.Uri): Promise<string> {
+export async function getDocumentText(uri: vscode.Uri): Promise<string> {
+  const document = await vscode.workspace.openTextDocument(uri)
+  return document.getText()
+}
+
+export async function getFileOnDiskText(uri: vscode.Uri): Promise<string> {
   const fileContentBuffer = await vscode.workspace.fs.readFile(uri)
   return fileContentBuffer.toString()
 }
@@ -84,11 +83,14 @@ export async function queueAnAppendToDocument(
  * More details in @mapToResolvedChanges
  * Does not actually save all the editors.
  * See extension.ts for beginning of work towards fixing this
+ *
+ * Undesired side effect:
+ * Will prompt the user if the editor is not currently backed by a file on disk
+ * to pick a name and save it in some location
+ *
+ * No longer necessary when we're reading from the document instead of the file system
  */
-export async function saveCurrentEditorsHackToEnsureTheFreshestContents() {
-  for (const editor of vscode.window.visibleTextEditors) {
-    // This will prompt the user if the editor is not currently backed by a file
-    const success = await editor.document.save()
-    console.log(success)
-  }
-}
+// export async function saveCurrentEditorsHackToEnsureTheFreshestContents() {
+//   for (const editor of vscode.window.visibleTextEditors)
+//     await editor.document.save()
+// }

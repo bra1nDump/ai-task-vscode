@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 
-import { getFileText } from 'helpers/vscode'
+import { getDocumentText } from 'helpers/vscode'
 import { OpenAiMessage } from 'helpers/openai'
 
 export interface FileContext {
@@ -19,7 +19,7 @@ export async function findAndCollectBreadedFiles(
   const fileContexts = await Promise.all(
     allFilesInWorkspace.map(
       async (fileUri): Promise<FileContext | undefined> => {
-        const fileText = await getFileText(fileUri)
+        const fileText = await getDocumentText(fileUri)
         const containsBreadMentionOrIsBreadDotfile =
           fileText.includes(`@${breadIdentifier}`) ||
           fileUri.path.includes(`.${breadIdentifier}`)
@@ -58,7 +58,7 @@ export async function getFileContextForOpenedTabs(): Promise<FileContext[]> {
 
   return await Promise.all(
     urisForOpenTabs.map(async (uri) => {
-      const fileText = await getFileText(uri)
+      const fileText = await getDocumentText(uri)
       return {
         filePathRelativeToWorkspace: vscode.workspace.asRelativePath(uri),
         content: fileText,
