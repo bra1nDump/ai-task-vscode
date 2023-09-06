@@ -1,3 +1,22 @@
+# September 5 - Finished simple and flawed DocumentSnapshot implementation for backdating edits
+
+
+kirilldubovitskiy@Kirills-MacBook-Pro bread % ./get-lines-of-code.sh
+===============================================================================
+ Language            Files        Lines         Code     Comments       Blanks
+===============================================================================
+ JavaScript              2          136           85           29           22
+ JSON                    2          108          108            0            0
+ Shell                   1            2            1            1            0
+ TypeScript             33         3289         2259          660          370
+-------------------------------------------------------------------------------
+ Markdown               24         5526            0         5050          476
+ |- JSON                 1            9            9            0            0
+ (Total)                           5535            9         5050          476
+===============================================================================
+ Total                  62         9061         2453         5740          868
+===============================================================================
+
 # Gradually apply changes
 
 - target range resolution should run on the file snapshots that were submitted to the LLM
