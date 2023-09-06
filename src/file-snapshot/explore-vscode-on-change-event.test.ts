@@ -33,7 +33,7 @@ Say we have an empty 0th line in the editor - Position(0, 0) will be a position 
 import * as vscode from 'vscode'
 import * as assert from 'assert'
 
-suite.only('vscode.workspace.OnDidChangeTextDocumentEvent', () => {
+suite('vscode.workspace.OnDidChangeTextDocumentEvent', () => {
   const initialContent = [
     'Line 1',
     'Line 2',

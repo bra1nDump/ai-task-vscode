@@ -43,26 +43,33 @@ for await (const changeStream = await llm.changeSet()) {
 }
 
 Line ranges are encoded in the following way:
-StartOfLine 0 - Represents an empty range, aka an insertion point at the beginning of the document
 LineRange Ls, Le - Represents the range of Range(Ls, 0, Le, lengthOfLine(Le))
 
 
 Let's say the LLM responds with the following changes (infer partial states yourself)
 
+
 Change 0
-- rangeInSnapshot: StartOfLine 0
+- rangeInSnapshot: LineRange 0, 0
 - Final New Content:
-`Prepended New Line 0
-`
+`Line 0
+Prepended New Line 0`
 
     Iteration 0
-    - currentTargetRange: StartOfLine 0
+    - currentTargetRange: LineRange 0, 0
     - newContent: ""
+    - explanation: This replaces the 0th line with empty content overriding "Line 0", which does not change the line range within the document.
     
     Iteration 1
-    - currentTargetRange: StartOfLine 0
-    - newContent: "Prepended New Line 0\n" 
+    - currentTargetRange: LineRange 0, 0
+    - newContent: "Prepended New Line 0" 
     - explanation: Since the previous replace did not have any affect, the range is still empty, and we are adding a new line to the beginning of the document, the range is now LineRange 0, 0. Notice it changed from an empty range to a non-empty range. This is because the line content grew from empty to non-empty
+
+    Iteration 2
+    - currentTargetRange: LineRange 0, 0
+    - newContent: "Prepended New Line 0\nLine 0" 
+    - explanation: This restores the original line. Because we have added a
+    between the pretended and the original line, the range is now LineRange 0, 1. This will result in ranges that appear after this range to be shifted down by 1 line.
 
 Document content after fully applying the change:
 `Prepended Line 0
@@ -114,7 +121,7 @@ Added Line 4`
     - explanation: After applying the final new content the range becomes LineRange 2, 5. We will not call toCurrentDocumentRange anymore but if we did this is the range et with output.
 
 - Document content after fully applying the change:
-`Prepended Line 0
+`Prepended New Line 0
 Line 0
 Replaced Line 1
 Line 2
@@ -128,29 +135,35 @@ Line 5
 
 import {
   workspace,
+  Position,
   Range,
   TextDocument,
   TextDocumentContentChangeEvent,
 } from 'vscode'
 
 export interface LineRange {
-  type: 'LineRange'
   start: number
   end: number
 }
 
-export interface StartOfLine {
-  type: 'StartOfLine'
-  line: number
-}
+export type Result<Value, Error> =
+  | { type: 'success'; value: Value }
+  | { type: 'error'; error: Error }
 
-export type SnapshotRange = LineRange | StartOfLine
+export function resultMap<Value, NewValue, Error>(
+  f: (value: Value) => NewValue,
+  result: Result<Value, Error>,
+): Result<NewValue, Error> {
+  if (result.type === 'success')
+    return { type: 'success', value: f(result.value) }
+  else return result
+}
 
 export class DocumentSnapshot {
   public getSnapshotText: string
   private contentChanges: TextDocumentContentChangeEvent[] = []
 
-  constructor(document: TextDocument) {
+  constructor(private document: TextDocument) {
     this.getSnapshotText = document.getText()
 
     workspace.onDidChangeTextDocument((change) => {
@@ -160,19 +173,73 @@ export class DocumentSnapshot {
     })
   }
 
-  toCurrentDocumentRange(rangeInSnapshot: SnapshotRange): SnapshotRange {
-    let currentRange: SnapshotRange
+  toCurrentDocumentLineRange(
+    rangeInSnapshot: LineRange,
+  ): Result<LineRange, string> {
+    // We need to continuously update the range as we apply the changes
+    // since the changes that have arrived are valid for the newest version of the document at the time
+    const currentRange: LineRange = { ...rangeInSnapshot }
 
-    this.contentChanges.forEach((change) => {
+    /*
+      There are 3 cases we need to handle:
+|
+      1. The contentChange is strictly before the range we're looking to adjust
+        - Most likely this isn't edit by hand in a different part of the file or this is an LLM changing a different part of the file for cases when we're changing multiple ranges.
+
+        - We need to find line displacement (difference from new line count to old line count for a given content change). We might need to record this information at the time of the change, since it might need us to access the document.
+        - We need to adjust the range by the line displacement by adding the displacement to the start and end of the currentRangeb
+
+      2. The contentChange is strictly after the range we're looking to adjust
+        - This will not effect the range we're looking to adjust, so we can ignore it
+
+      3. The contentChange exactly matches the range we're looking to adjust
+        - The most common case. This will constantly happen as the LLM updates the same range with more and more content as it becomes available.
+        - Idea to simplify: I'm now thinking applying only deltas instead of the entire content because we would only need to keep track of a single position where to insert the text. Is will also allow us to edit the code that LLM has already printed out and we might want to change by hand already while it's still working on the rest of that same change.
+
+        - This is kind of similar to the first case because we also need to find the line displacement. The only differences we only add thus to the end range, because the range is strictly expanding or staying the same when we are simply adding more characters to the last line in the range.
+
+      4. The contentChange is partially overlapping the range we're looking to adjust.
+        - This is a complex case that we should not encounter with basic usage. Simply return and error.
+      */
+    for (const contentChange of this.contentChanges) {
+      const lineDisplacement =
+        contentChange.text.split('\n').length -
+        // Off by one
+        1 -
+        contentChange.range.end.line +
+        contentChange.range.start.line
       if (
-        change.range.start.line >= rangeInSnapshot.start &&
-        change.range.end.line <= rangeInSnapshot.end
+        contentChange.range.end.isBefore(new Position(currentRange.start, 0))
       ) {
-        currentRange.start = change.range.start.line
-        currentRange.end = change.range.end.line
-      }
-    })
-    return currentRange
+        // Case 1: contentChange is strictly before the range
+        currentRange.start += lineDisplacement
+        currentRange.end += lineDisplacement
+      } else if (contentChange.range.start.line > currentRange.end)
+        // Case 2: contentChange is strictly after the range
+        continue
+      else if (
+        // Not using isEqual because for it to work we would need to know the length
+        // of the last line in the range at the time that this contentChange was applied
+        contentChange.range.start.isEqual(
+          new Position(currentRange.start, 0),
+        ) &&
+        contentChange.range.end.line === currentRange.end
+      )
+        // Case 3: contentChange exactly matches the range
+
+        currentRange.end += lineDisplacement
+      // Case 4: contentChange is partially overlapping the range
+      else return { type: 'error', error: 'Range is partially overlapping' }
+    }
+
+    return { type: 'success', value: currentRange }
+  }
+
+  toCurrentDocumentRange(rangeInSnapshot: LineRange): Result<Range, string> {
+    return resultMap(
+      (lineRange) => lineRangeToVscodeRange(lineRange, this.document),
+      this.toCurrentDocumentLineRange(rangeInSnapshot),
+    )
   }
 }
 
@@ -180,10 +247,9 @@ export class DocumentSnapshot {
  * Translation requires document because we need to 1 how long the last line in the range is
  */
 export function lineRangeToVscodeRange(
-  lineRange: SnapshotRange,
+  lineRange: LineRange,
   document: TextDocument,
 ): Range {
-  // @crust fixes for different range types
   return new Range(
     lineRange.start,
     0,
@@ -197,6 +263,6 @@ export function lineRangeToVscodeRange(
  * I'm not sure when we would want to use this, but it's here if we need it.
  * I anticipate we might want to use this when we process the text document change events to converting the line ranges.
  */
-export function vscodeRangeToLineRange(range: Range): SnapshotRange {
-  return { type: 'LineRange', start: range.start.line, end: range.end.line }
+export function vscodeRangeToLineRange(range: Range): LineRange {
+  return { start: range.start.line, end: range.end.line }
 }
