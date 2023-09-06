@@ -21,6 +21,13 @@ Line 5
 
 
 Add more test cases: merge two lines, perform two edits on different lines indifferent order in two different test cases and observe on did change event and assert the order of the contentChanges in both cases. Expected is an reverse document order, no matter the order in the edit builder. You probably need to create a promise that you will resolve once the correct change event was fired.
+
+TODO later: create a helper that will close all other editors and open a new editor with an array of lines instead of having a setup function. Inline all of that within each individual test. 
+
+Side note - this is a good test case for multi-editing in a single file without a full replace.
+
+Its helpful to think about how VSCode addresses empty lines.
+Say we have an empty 0th line in the editor - Position(0, 0) will be a position at the end of the line. It does not include the newline character tho. If the next line is not empty "Next Line", making a replace of Range Position(0, 0), Position(1, 0) with let's say a , will result the first empty line being merged with the second empty line, reducing to number of lines in the file by one and the first line will now be "Next Line,". It seems that the range is not inclusive on the right side.
 */
 
 import * as vscode from 'vscode'
@@ -101,17 +108,22 @@ suite.only('vscode.workspace.OnDidChangeTextDocumentEvent', () => {
     assert.equal(editor.document.lineAt(0).text, 'Line ')
   })
 
-  test('Deleting an empty range fails', async () => {
+  test('Deleting an empty range succeeds but has no affect', async () => {
     const editor = vscode.window.activeTextEditor
     assert.ok(editor)
-    try {
-      await editor.edit((editBuilder) => {
-        editBuilder.delete(new vscode.Range(0, 0, 0, 0))
-      })
-      assert.fail('Expected error was not thrown')
-    } catch (error) {
-      assert.ok(error instanceof Error)
-    }
+    await editor.edit((editBuilder) => {
+      editBuilder.delete(new vscode.Range(0, 0, 0, 0))
+    })
+    assert.equal(editor.document.lineAt(0).text, 'Line 1')
+  })
+
+  test('Replacing an empty range succeeds', async () => {
+    const editor = vscode.window.activeTextEditor
+    assert.ok(editor)
+    await editor.edit((editBuilder) => {
+      editBuilder.replace(new vscode.Range(0, 0, 0, 0), 'Suffix')
+    })
+    assert.equal(editor.document.lineAt(0).text, 'SuffixLine 1')
   })
 
   test('Merge two lines', async () => {

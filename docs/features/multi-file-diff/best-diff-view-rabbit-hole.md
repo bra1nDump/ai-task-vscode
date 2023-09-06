@@ -8,7 +8,10 @@ Do interesting things with ![Overlays on top of entire editor](../features/multi
 
 ### Diff application view
 
-Github copilot has the best UI I would say https://code.visualstudio.com/api/references/vscode-api#TabInputTextDiff
+Github copilot has the best UI I would say
+![This is not a chat view this is an inline replacement](inline-not-chat-view.png)
+
+https://code.visualstudio.com/api/references/vscode-api#TabInputTextDiff
 
 Hmm found one promising https://github.com/billgoo/vscode-tab-group/blob/9c81c47d708f378636927897a74f474bf3c8473e/src/TabTypeHandler.ts#L121
 
