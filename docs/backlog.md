@@ -61,7 +61,10 @@ Will function calling help me getter faster? I would not need to deal with Xml p
 
 # Later
 
-- Removed plan craziness with custom list parsing and simply use <plan> tags
+- Content based matching has bugged out when there were multiple matches within the same file of the same string
+- Prevent starting a debug session if compilation failed. It's really annoying to accidentally tried debugging a simple compile error during runtime and not knowing about the compile error
+- Support source maps to jump from test stack traces directly to the file https://www.npmjs.com/package/source-map-support
+- Remove plan craziness with custom list parsing and simply use <plan> tags
 - Typing @run should start executing
 - Add play button to @bread comments
 - Explore UIs

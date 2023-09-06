@@ -1,40 +1,30 @@
 import {
   FileContext,
   fileContextSystemMessage,
-  getFileContextForOpenedTabs,
 } from 'document-helpers/file-context'
 import { OpenAiMessage, streamLlm } from 'helpers/openai'
 import { from } from 'ix/asynciterable'
 import { map as mapAsync } from 'ix/asynciterable/operators'
 import { startInteractiveMultiFileApplication } from 'multi-file-edit/applyResolvedChange'
 import { parsePartialMultiFileEdit } from './parse'
-import { mapToResolvedChanges } from './resolveTargetRange'
+import { makeToResolvedChangesTransformer } from './resolveTargetRange'
 import { LlmGeneratedPatchXmlV1 } from './types'
 import { multiFileEditV1FormatSystemMessage } from './prompt'
 import { SessionContext } from 'execution/realtime-feedback'
 import { queueAnAppendToDocument } from 'helpers/vscode'
 
 export async function startMultiFileEditing(
-  fileContexts: FileContext[],
   taskPrompt: string,
   breadIdentifier: string,
   sessionContext: SessionContext,
 ) {
-  const fileContextFromOpenTabs = await getFileContextForOpenedTabs()
-  const fileContextFromOpenTabsNotInFileContexts =
-    fileContextFromOpenTabs.filter(
-      (context) =>
-        !fileContexts
-          .map((x) => x.filePathRelativeToWorkspace)
-          .includes(context.filePathRelativeToWorkspace),
-    )
-
+  const fileContexts = sessionContext.documentManager.getFileContexts()
   const outputFormatMessage =
     multiFileEditV1FormatSystemMessage(breadIdentifier)
   const fileContextMessage = fileContextSystemMessage(fileContexts)
-  const fileContextFromOpenTabsMessage = fileContextSystemMessage(
-    fileContextFromOpenTabsNotInFileContexts,
-  )
+  // const fileContextFromOpenTabsMessage = fileContextSystemMessage(
+  //   fileContextFromOpenTabsNotInFileContexts,
+  // )
   const userTaskMessage: OpenAiMessage = {
     role: 'user',
     content: `Your task: ${taskPrompt}
@@ -47,20 +37,20 @@ Next you should output changes as outlined by the format previously.
   }
   const messages = [
     outputFormatMessage,
-    fileContextFromOpenTabsMessage,
+    // fileContextFromOpenTabsMessage,
     fileContextMessage,
     userTaskMessage,
   ]
 
   const highLevelLogger = (text: string) =>
     queueAnAppendToDocument(
-      sessionContext.sessionMarkdownHighLevelFeedbackDocument,
+      sessionContext.markdownHighLevelFeedbackDocument,
       text,
     )
 
   const lowLevelLogger = (text: string) =>
     queueAnAppendToDocument(
-      sessionContext.sessionMarkdownLowLevelFeedbackDocument,
+      sessionContext.markdownLowLevelFeedbackDocument,
       text,
     )
 
@@ -75,10 +65,10 @@ Next you should output changes as outlined by the format previously.
   for (const fileContext of fileContexts) logFilePath(fileContext)
 
   // Log files from tabs
-  if (fileContextFromOpenTabsNotInFileContexts.length > 0)
-    void highLevelLogger(`\n# Files from open tabs:\n`)
-  for (const fileContext of fileContextFromOpenTabsNotInFileContexts)
-    logFilePath(fileContext)
+  // if (fileContextFromOpenTabsNotInFileContexts.length > 0)
+  //   void highLevelLogger(`\n# Files from open tabs:\n`)
+  // for (const fileContext of fileContextFromOpenTabsNotInFileContexts)
+  //   logFilePath(fileContext)
 
   const unresolvedChangeStream = await streamLlm<LlmGeneratedPatchXmlV1>(
     messages,
@@ -114,7 +104,10 @@ Next you should output changes as outlined by the format previously.
   }
 
   async function startApplication() {
-    const patchSteam = from(unresolvedChangeStream, mapToResolvedChanges)
+    const patchSteam = from(
+      unresolvedChangeStream,
+      makeToResolvedChangesTransformer(sessionContext.documentManager),
+    )
     await startInteractiveMultiFileApplication(patchSteam, sessionContext)
   }
 

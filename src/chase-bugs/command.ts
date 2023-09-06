@@ -1,3 +1,4 @@
+import * as vscode from 'vscode'
 import { startMultiFileEditing } from 'multi-file-edit/v1'
 import { projectDiagnosticEntriesWithAffectedFileContext } from './diagnostics'
 import { getBreadIdentifier } from 'helpers/bread-identifier'
@@ -20,18 +21,18 @@ export async function chaseBugsCommand() {
 
   const sessionContext = await startSession()
   await queueAnAppendToDocument(
-    sessionContext.sessionMarkdownHighLevelFeedbackDocument,
+    sessionContext.markdownHighLevelFeedbackDocument,
     "- Bugs is being chased by professional birds your bugs don't not stand a chance\n",
   )
 
   const diagnosticsAlongWithTheirFileContexts =
-    await projectDiagnosticEntriesWithAffectedFileContext()
+    projectDiagnosticEntriesWithAffectedFileContext()
 
   // Construct a user message similar to the one in the bread command
   // This time include whole compilation errors
   const diagnosticsPromptParts = diagnosticsAlongWithTheirFileContexts.map(
-    ({ fileContext, diagnostic }) => {
-      const { filePathRelativeToWorkspace } = fileContext
+    ({ uri, diagnostic }) => {
+      const filePathRelativeToWorkspace = vscode.workspace.asRelativePath(uri)
 
       return `File: ${filePathRelativeToWorkspace}
 Error message: ${diagnostic.message}
@@ -47,20 +48,23 @@ ${
     },
   )
 
-  const filesWithProblems = diagnosticsAlongWithTheirFileContexts.map(
-    ({ fileContext }) => fileContext,
+  const fileUrisWithProblems = diagnosticsAlongWithTheirFileContexts.map(
+    (x) => x.uri,
+  )
+  await sessionContext.documentManager.addDocuments(
+    'Files with problems',
+    fileUrisWithProblems,
   )
 
   const breadIdentifier = getBreadIdentifier()
   await startMultiFileEditing(
-    filesWithProblems,
     `Fix these problems: ${diagnosticsPromptParts.join('\n')}}`,
     breadIdentifier,
     sessionContext,
   )
 
   await queueAnAppendToDocument(
-    sessionContext.sessionMarkdownHighLevelFeedbackDocument,
+    sessionContext.markdownHighLevelFeedbackDocument,
     '> You snitching on your bugs was appreciated by the birds, pleasure doing business with you - Bird representative\n',
   )
 

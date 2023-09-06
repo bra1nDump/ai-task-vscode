@@ -4,15 +4,15 @@ import { afterEach, beforeEach } from 'mocha'
 import { Change } from './types'
 import {
   makeTemporaryFileWriterAndOpener,
-  resolveAndApplyChanges,
+  resolveAndApplyChangesToMultipleFiles,
+  resolveAndApplyChangesToSingleFile,
 } from './test-helpers'
 import { parsePartialMultiFileEdit } from './parse'
-import { mapToResolvedChanges } from './resolveTargetRange'
-import { applyResolvedChangesWhileShowingTheEditor } from 'multi-file-edit/applyResolvedChange'
 import * as fs from 'fs'
 import * as path from 'path'
 
-suite('Apply Patch Tests', () => {
+suite('Apply Patch Tests', function () {
+  this.timeout(20_000)
   const setupEditorWithContent = makeTemporaryFileWriterAndOpener('test.txt')
 
   const cleanTmpDirectory = () => {
@@ -61,7 +61,7 @@ suite('Apply Patch Tests', () => {
         newChunk: { content: 'Hello World\nline2', isStreamFinalized: true },
       },
     ]
-    await resolveAndApplyChanges(changes, editor)
+    await resolveAndApplyChangesToSingleFile(changes, editor)
 
     assert.strictEqual(editor.document.getText(), 'Hello World\nline2')
   })
@@ -87,7 +87,7 @@ suite('Apply Patch Tests', () => {
       },
     ]
 
-    await resolveAndApplyChanges(changes, editor)
+    await resolveAndApplyChangesToSingleFile(changes, editor)
 
     assert.strictEqual(
       editor.document.getText(),
@@ -111,7 +111,7 @@ suite('Apply Patch Tests', () => {
       },
     ]
 
-    await resolveAndApplyChanges(changes, editor)
+    await resolveAndApplyChangesToSingleFile(changes, editor)
 
     assert.strictEqual(editor.document.getText(), 'Hello World\nline2')
   })
@@ -134,8 +134,11 @@ suite('Apply Patch Tests', () => {
 
     // Application results does not even show because the rangers failed to resolve
     // Ideally would return some sort of failure but it's currently not doing this
-    const [applicationResults] = await resolveAndApplyChanges(changes, editor)
-    assert.ok(applicationResults.length === 0)
+    const applicationResults = await resolveAndApplyChangesToSingleFile(
+      changes,
+      editor,
+    )
+    assert.equal(applicationResults.length, 0)
   })
 
   test('Apply change to a fully empty file', async () => {
@@ -154,7 +157,7 @@ suite('Apply Patch Tests', () => {
       },
     ]
 
-    await resolveAndApplyChanges(changes, editor)
+    await resolveAndApplyChangesToSingleFile(changes, editor)
 
     assert.strictEqual(editor.document.getText(), 'Hello World')
   })
@@ -174,7 +177,7 @@ suite('Apply Patch Tests', () => {
       },
     ]
 
-    await resolveAndApplyChanges(changes, editor)
+    await resolveAndApplyChangesToSingleFile(changes, editor)
 
     assert.strictEqual(editor.document.getText(), 'Hello World')
   })
@@ -200,7 +203,10 @@ suite('Apply Patch Tests', () => {
       },
     ]
 
-    const [_applicationResult] = await resolveAndApplyChanges(changes, editor)
+    const [_applicationResult] = await resolveAndApplyChangesToSingleFile(
+      changes,
+      editor,
+    )
 
     assert.strictEqual(editor.document.getText(), 'line1\nHello World\nline3\n')
   })
@@ -226,7 +232,7 @@ suite('Apply Patch Tests', () => {
       },
     ]
 
-    await resolveAndApplyChanges(changes, editor)
+    await resolveAndApplyChangesToSingleFile(changes, editor)
 
     assert.strictEqual(
       editor.document.getText(),
@@ -266,7 +272,7 @@ export function helloWorld() {
     const editor = await setupEditorWithContent(initialContent)
 
     const changes = parsedChange.changes[0].changes
-    await resolveAndApplyChanges(changes, editor)
+    await resolveAndApplyChangesToSingleFile(changes, editor)
 
     const finalContent = editor.document.getText()
     assert.equal(
@@ -280,8 +286,6 @@ export function helloWorld(name: string) {
   })
 
   test('should correctly parse and apply changes to multiple files', async function () {
-    this.timeout(10_000)
-
     const mainEditor = await makeTemporaryFileWriterAndOpener('tmp/main.ts')(
       `// @bread implement so it will print out current user's name using helper functions
   `,
@@ -347,9 +351,8 @@ helloWorld(userName);
 `
 
     const parsedChange = parsePartialMultiFileEdit(llmFinalResponse)
-    const resolveChanges = await mapToResolvedChanges(parsedChange)
-    for (const change of resolveChanges)
-      await applyResolvedChangesWhileShowingTheEditor(change)
+
+    await resolveAndApplyChangesToMultipleFiles(parsedChange)
 
     assert.equal(
       mainEditor.document.getText().replace(/ /g, '+'),

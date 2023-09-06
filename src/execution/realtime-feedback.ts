@@ -1,15 +1,18 @@
+import { SessionDocumentManager } from 'document-helpers/document-manager'
 import * as vscode from 'vscode'
 
 export interface SessionContext {
   /**
    * This will be open to the side to show real time feedback of what is happening in the session.
    */
-  sessionMarkdownHighLevelFeedbackDocument: vscode.TextDocument
+  markdownHighLevelFeedbackDocument: vscode.TextDocument
 
   /**
    * This is the document where raw LLM request is logged. This is mostly for development.
    */
-  sessionMarkdownLowLevelFeedbackDocument: vscode.TextDocument
+  markdownLowLevelFeedbackDocument: vscode.TextDocument
+
+  documentManager: SessionDocumentManager
 }
 
 export async function startSession(): Promise<SessionContext> {
@@ -33,9 +36,13 @@ export async function startSession(): Promise<SessionContext> {
       cachedActiveEditor.viewColumn,
     )
 
+  // Great document manager that will help us backdate edits throughout this sessiong
+  const documentManager = new SessionDocumentManager()
+
   return {
-    sessionMarkdownHighLevelFeedbackDocument,
-    sessionMarkdownLowLevelFeedbackDocument,
+    markdownHighLevelFeedbackDocument: sessionMarkdownHighLevelFeedbackDocument,
+    markdownLowLevelFeedbackDocument: sessionMarkdownLowLevelFeedbackDocument,
+    documentManager,
   }
 }
 
@@ -43,8 +50,8 @@ export async function startSession(): Promise<SessionContext> {
 export async function closeSession(
   sessionContext: SessionContext,
 ): Promise<void> {
-  await sessionContext.sessionMarkdownHighLevelFeedbackDocument.save()
-  await sessionContext.sessionMarkdownLowLevelFeedbackDocument.save()
+  await sessionContext.markdownHighLevelFeedbackDocument.save()
+  await sessionContext.markdownLowLevelFeedbackDocument.save()
 }
 
 async function createSessionLogDocuments() {

@@ -3,7 +3,7 @@ import * as assert from 'assert'
 
 import { DocumentSnapshot, vscodeRangeToLineRange } from './document-snapshot'
 
-suite.only('DocumentSnapshot', () => {
+suite('DocumentSnapshot', () => {
   setup(async () => {
     // Close all editors prior to opening new ones
     await vscode.commands.executeCommand('workbench.action.closeAllEditors')

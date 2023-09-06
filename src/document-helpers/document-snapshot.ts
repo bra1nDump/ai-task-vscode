@@ -140,6 +140,7 @@ import {
   TextDocument,
   TextDocumentContentChangeEvent,
 } from 'vscode'
+import { FileContext } from './file-context'
 
 export interface LineRange {
   start: number
@@ -160,11 +161,20 @@ export function resultMap<Value, NewValue, Error>(
 }
 
 export class DocumentSnapshot {
-  public getSnapshotText: string
+  public snapshotContext: FileContext
   private contentChanges: TextDocumentContentChangeEvent[] = []
 
+  /**
+   * We are keeping the document as reference which might be risky
+   * because I'm not sure what happens if the document is closed.
+   * Is it still accessible?
+   * Maybe write a simple Unittest to test this similar to how I did with VSCode edit apis
+   */
   constructor(private document: TextDocument) {
-    this.getSnapshotText = document.getText()
+    this.snapshotContext = {
+      filePathRelativeToWorkspace: workspace.asRelativePath(document.uri),
+      content: document.getText(),
+    }
 
     workspace.onDidChangeTextDocument((change) => {
       if (change.document !== document) return

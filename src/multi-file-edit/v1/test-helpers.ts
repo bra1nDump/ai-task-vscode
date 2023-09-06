@@ -1,13 +1,19 @@
 import * as vscode from 'vscode'
 import { applyResolvedChangesWhileShowingTheEditor } from '../applyResolvedChange'
-import { Change } from './types'
-import { mapToResolvedChanges } from './resolveTargetRange'
+import { Change, LlmGeneratedPatchXmlV1 } from './types'
+import { makeToResolvedChangesTransformer } from './resolveTargetRange'
+import { SessionDocumentManager } from 'document-helpers/document-manager'
+import { findSingleFileMatchingPartialPath } from 'helpers/vscode'
 
-export async function resolveAndApplyChanges(
+export async function resolveAndApplyChangesToSingleFile(
   changes: Change[],
   editor: vscode.TextEditor,
 ) {
-  const resolvedChanges = await mapToResolvedChanges({
+  const sessionDocumentManager = new SessionDocumentManager()
+  await sessionDocumentManager.addDocuments('test', [editor.document.uri])
+  const resolvedChanges = await makeToResolvedChangesTransformer(
+    sessionDocumentManager,
+  )({
     changes: [
       {
         changes: changes,
@@ -27,6 +33,27 @@ export async function resolveAndApplyChanges(
       return await applyResolvedChangesWhileShowingTheEditor(resolvedChange)
     }),
   )
+}
+
+export async function resolveAndApplyChangesToMultipleFiles(
+  patch: LlmGeneratedPatchXmlV1,
+) {
+  const documentUris = await Promise.all(
+    patch.changes.map((fileChange) =>
+      findSingleFileMatchingPartialPath(
+        fileChange.filePathRelativeToWorkspace!,
+      ).then((x) => x!),
+    ),
+  )
+  const sessionDocumentManager = new SessionDocumentManager()
+  await sessionDocumentManager.addDocuments('test', documentUris)
+  const resolvedChanges = await makeToResolvedChangesTransformer(
+    sessionDocumentManager,
+  )(patch)
+
+  // Need to apply serially to hold the application assumption that only a single editor is open at the same time
+  for (const resolvedChange of resolvedChanges)
+    await applyResolvedChangesWhileShowingTheEditor(resolvedChange)
 }
 
 export const makeTemporaryFileWriterAndOpener = (temporaryFileName: string) => {

@@ -1,9 +1,7 @@
 import * as vscode from 'vscode'
-import { getDocumentText } from '../helpers/vscode'
-import { FileContext } from 'document-helpers/file-context'
 
 export interface DiagnosticEntry {
-  fileContext: FileContext
+  uri: vscode.Uri
   diagnostic: vscode.Diagnostic
   // suggestedEditTargetRange: vscode.Range
 }
@@ -15,24 +13,17 @@ export interface DiagnosticEntry {
  * I think I will just return the entire file for now for simplicity
  * There's a question of separation of concerns here as well, what is the best home for this edit locating?
  */
-export async function projectDiagnosticEntriesWithAffectedFileContext(): Promise<
-  DiagnosticEntry[]
-> {
+export function projectDiagnosticEntriesWithAffectedFileContext(): DiagnosticEntry[] {
   const diagnostics = vscode.languages.getDiagnostics()
   const diagnosticEntries: DiagnosticEntry[] = []
 
   for (const [uri, fileDiagnostics] of diagnostics)
-    for (const fileDiagnostic of fileDiagnostics) {
-      const fileContent = await getDocumentText(uri)
+    for (const fileDiagnostic of fileDiagnostics)
       diagnosticEntries.push({
-        fileContext: {
-          filePathRelativeToWorkspace: vscode.workspace.asRelativePath(uri),
-          content: fileContent,
-        } as FileContext,
+        uri,
         diagnostic: fileDiagnostic,
         // suggestedEditTargetRange: getFullFileRange(fileContent),
       })
-    }
 
   return diagnosticEntries
 }

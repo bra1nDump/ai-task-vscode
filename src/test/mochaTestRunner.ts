@@ -27,7 +27,7 @@ export function run(): Promise<void> {
       if (err) return e(err)
 
       // Add files to the test suite
-      console.log(`Found files: ${files.join(', ')}.`)
+      console.log(`Found files:\n${files.join('\n')}`)
       files.forEach((f) => mocha.addFile(path.resolve(testsRoot, f)))
 
       try {

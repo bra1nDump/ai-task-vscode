@@ -46,7 +46,7 @@ async function applyChangesAsTheyBecomeAvailable(
           change.fileUri,
         )
         await queueAnAppendToDocument(
-          context.sessionMarkdownHighLevelFeedbackDocument,
+          context.markdownHighLevelFeedbackDocument,
           `\nApplying changes\n`,
         )
         await applyResolvedChangesWhileShowingTheEditor(change)
@@ -101,7 +101,7 @@ async function showFilesOnceWeKnowWeWantToModifyThem(
         const document = await vscode.workspace.openTextDocument(change.fileUri)
         const relativeFilepath = vscode.workspace.asRelativePath(change.fileUri)
         await queueAnAppendToDocument(
-          context.sessionMarkdownHighLevelFeedbackDocument,
+          context.markdownHighLevelFeedbackDocument,
           `\n### Modifying: ${relativeFilepath}\n`,
         )
         await vscode.window.showTextDocument(document)
@@ -118,7 +118,7 @@ async function showWarningWhenNoFileWasModified(
   )
   if (!finalSetOfChangesToMultipleFiles)
     await queueAnAppendToDocument(
-      context.sessionMarkdownHighLevelFeedbackDocument,
+      context.markdownHighLevelFeedbackDocument,
       '\n## No files got changed thats strange\n',
     )
 }
@@ -131,6 +131,22 @@ export async function applyResolvedChangesWhileShowingTheEditor(
   )
   const editor = await vscode.window.showTextDocument(document)
 
+  /*
+  This will throw if the editor has been de allocated! 
+  This is likely to happen if the user switches tabs while we are applying the changes
+  We don't want everything to fail simply because the user switched tabs or closed it.
+
+  The issue was discovered when awaiting all the changes to be applied creating a race condition for the active editor.
+  For the time being I will basically do serial applications similar to how we do it in the extension()
+
+  Ideally we should support two ways of applying changes:
+  1. Apply changes to the current editor
+  2. Apply changes to the document in the background
+
+  We can try to perform the edit on the editor, and if fails we will perform it on the document.
+  Ideally we also want to prevent opening the same editor multiple times within the session.
+  This most likely will require another abstraction to keep track of things we have already shown to the user.
+  */
   const isApplicationSuccessful = await editor.edit((editBuilder) => {
     editBuilder.replace(
       resolvedChange.rangeToReplace,

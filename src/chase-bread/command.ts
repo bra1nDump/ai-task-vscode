@@ -1,10 +1,10 @@
 import * as vscode from 'vscode'
-import { findAndCollectBreadedFiles } from 'document-helpers/file-context'
-import { getBreadIdentifier } from 'helpers/bread-identifier'
 import {
-  queueAnAppendToDocument,
-  saveCurrentEditorsHackToEnsureTheFreshestContents,
-} from 'helpers/vscode'
+  findAndCollectBreadedFiles,
+  getFileContextForOpenedTabs,
+} from 'document-helpers/file-context'
+import { getBreadIdentifier } from 'helpers/bread-identifier'
+import { queueAnAppendToDocument } from 'helpers/vscode'
 import { closeSession, startSession } from 'execution/realtime-feedback'
 import { startMultiFileEditing } from 'multi-file-edit/v1'
 
@@ -18,23 +18,33 @@ import { startMultiFileEditing } from 'multi-file-edit/v1'
  * Apply them to the current file in place
  */
 export async function chaseBreadCommand() {
-  await saveCurrentEditorsHackToEnsureTheFreshestContents()
-
   const sessionContext = await startSession()
   void queueAnAppendToDocument(
-    sessionContext.sessionMarkdownHighLevelFeedbackDocument,
+    sessionContext.markdownHighLevelFeedbackDocument,
     '> Bread is being chased by professional birds your bread does not stand the chance\n\n',
   )
 
   // Functionality specific to bread mentions
   const breadIdentifier = getBreadIdentifier()
-  const fileContexts = await findAndCollectBreadedFiles(breadIdentifier)
-  if (!fileContexts) {
+  const breadFileUris = await findAndCollectBreadedFiles(breadIdentifier)
+  if (!breadFileUris) {
     void vscode.window.showErrorMessage(
       'No bread found, birds are getting hungry. Remember to add @bread mention to at least one file in the workspace.',
     )
     return
   }
+
+  await sessionContext.documentManager.addDocuments(
+    'Bread files',
+    breadFileUris,
+  )
+
+  const openTabsFileUris = getFileContextForOpenedTabs()
+
+  await sessionContext.documentManager.addDocuments(
+    'Open tabs',
+    openTabsFileUris,
+  )
 
   // I imagine chasing bugs will be almost simply calling this code
   // The main issue is in enriching the files with comments, or line numbers
@@ -44,14 +54,13 @@ export async function chaseBreadCommand() {
   // To begin with I can simply dump all the compilation errs into a separate file!
   // as well as update the prompt to not pay attention to breaded files but instead try to fix compilation errors
   await startMultiFileEditing(
-    fileContexts,
     `Look for tasks and informational comments tagged with ${breadIdentifier} in your input files and generate changes to accomplish them.`,
     breadIdentifier,
     sessionContext,
   )
 
   await queueAnAppendToDocument(
-    sessionContext.sessionMarkdownHighLevelFeedbackDocument,
+    sessionContext.markdownHighLevelFeedbackDocument,
     '\n\n> Your bread was appreciated by the birds, pleasure doing business with you - Bird representative\n',
   )
 

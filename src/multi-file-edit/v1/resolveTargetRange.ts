@@ -2,11 +2,9 @@ import * as vscode from 'vscode'
 import { LlmGeneratedPatchXmlV1, TargetRange } from './types'
 import { LinesAndColumns } from 'document-helpers/lines-and-columns'
 import { ResolvedChange } from 'multi-file-edit/types'
-import {
-  findSingleFileMatchingPartialPath,
-  getDocumentText,
-} from 'helpers/vscode'
-import { SessionContext } from 'execution/realtime-feedback'
+import { findSingleFileMatchingPartialPath } from 'helpers/vscode'
+import { SessionDocumentManager } from 'document-helpers/document-manager'
+import { vscodeRangeToLineRange } from 'document-helpers/document-snapshot'
 
 /**
  * Data structure limitation:
@@ -38,27 +36,35 @@ import { SessionContext } from 'execution/realtime-feedback'
  * Hack: check if file isDirty is set - ignore the file. The idea is you
  * are observing the llm doing the work so you should not be modifying files yourself :D
  */
-export async function mapToResolvedChanges(
-  multiFileChangeSet: LlmGeneratedPatchXmlV1,
-  sessionContext: SessionContext,
-): Promise<ResolvedChange[]> {
-  const changesGroupedByFile = await Promise.all(
-    multiFileChangeSet.changes.map(
-      async ({
-        changes,
-        filePathRelativeToWorkspace,
-        isStreamFinilized,
-      }): Promise<ResolvedChange[]> => {
-        if (!filePathRelativeToWorkspace) return []
-        const fileUri = await findSingleFileMatchingPartialPath(
+export const makeToResolvedChangesTransformer = (
+  sessionDocumentManager: SessionDocumentManager,
+) =>
+  async function (
+    multiFileChangeSet: LlmGeneratedPatchXmlV1,
+  ): Promise<ResolvedChange[]> {
+    const changesGroupedByFile = await Promise.all(
+      multiFileChangeSet.changes.map(
+        async ({
+          changes,
           filePathRelativeToWorkspace,
-        )
-        if (!fileUri) return []
+          isStreamFinilized,
+        }): Promise<ResolvedChange[]> => {
+          if (!filePathRelativeToWorkspace) return []
+          const fileUri = await findSingleFileMatchingPartialPath(
+            filePathRelativeToWorkspace,
+          )
+          if (!fileUri) return []
 
-        // TODO: sessionContext.documentManager to get document snapshot instead
-        const fileContent = await getDocumentText(fileUri)
+          const documentSnapshot =
+            sessionDocumentManager.getDocumentSnapshot(fileUri)
+          if (!documentSnapshot)
+            throw new Error(
+              `Document ${
+                fileUri.fsPath
+              } not found in session. Files in the session: ${sessionDocumentManager.dumpState()} Unable to modify files but were not added to the snapshot. This is most likely a bug or LLM might have produced a bogus file path to modify.`,
+            )
 
-        /*
+          /*
           Bug: Downstream assumption of set of changes being growing is violated.
           Let's say we're modifying two files, A, B
           Once we have applied the changes to the first file, 
@@ -79,33 +85,44 @@ export async function mapToResolvedChanges(
             - Instead of this file doing full resolution to VS called range it should simply bring v1 specific Xml patch type two a common Change type
             - Final change resolution should be performed on the application side, it should cach the initial target range, and update it on subsequent partial edits. 
         */
-        const resolvedChanges = changes.reduce((acc, change) => {
-          const rangeToReplace = findTargetRangeInFileWithContent(
-            change.oldChunk,
-            fileContent,
-          )
-          // Here use the DocumentSnapshot to adjust the range to current time
-          if (!rangeToReplace) return acc
 
-          const resolvedChange: ResolvedChange = {
-            fileUri: fileUri,
-            descriptionForHuman: change.description,
-            rangeToReplace,
-            rangeToReplaceIsFinal: change.oldChunk.isStreamFinalized,
-            replacement: change.newChunk.content,
-            replacementIsFinal: isStreamFinilized,
-          }
+          const resolvedChanges = changes.reduce((acc, change) => {
+            const rangeToReplace = findTargetRangeInFileWithContent(
+              change.oldChunk,
+              documentSnapshot.snapshotContext.content,
+            )
 
-          return [...acc, resolvedChange]
-        }, [] as ResolvedChange[])
+            // Here use the DocumentSnapshot to adjust the range to current time
+            if (!rangeToReplace) return acc
 
-        return resolvedChanges
-      },
-    ),
-  )
+            const lineRangedToReplace = vscodeRangeToLineRange(rangeToReplace)
+            const rangeInCurrentDocument =
+              documentSnapshot.toCurrentDocumentRange(lineRangedToReplace)
 
-  return changesGroupedByFile.flatMap((x) => x)
-}
+            if (rangeInCurrentDocument.type === 'error')
+              throw new Error(
+                `Range is out of bounds of the document ${fileUri.fsPath}\nError: ${rangeInCurrentDocument.error}`,
+              )
+
+            const resolvedChange: ResolvedChange = {
+              fileUri: fileUri,
+              descriptionForHuman: change.description,
+              rangeToReplace: rangeInCurrentDocument.value,
+              rangeToReplaceIsFinal: change.oldChunk.isStreamFinalized,
+              replacement: change.newChunk.content,
+              replacementIsFinal: isStreamFinilized,
+            }
+
+            return [...acc, resolvedChange]
+          }, [] as ResolvedChange[])
+
+          return resolvedChanges
+        },
+      ),
+    )
+
+    return changesGroupedByFile.flatMap((x) => x)
+  }
 
 /**
  * Isaiah would blame me for using a third party library for this.

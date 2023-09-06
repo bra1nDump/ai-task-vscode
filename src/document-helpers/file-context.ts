@@ -13,30 +13,25 @@ export interface FileContext {
  */
 export async function findAndCollectBreadedFiles(
   breadIdentifier: string,
-): Promise<FileContext[] | undefined> {
+): Promise<vscode.Uri[] | undefined> {
   const allFilesInWorkspace = await safeWorkspaceQueryAllFiles()
 
   const fileContexts = await Promise.all(
     allFilesInWorkspace.map(
-      async (fileUri): Promise<FileContext | undefined> => {
+      async (fileUri): Promise<vscode.Uri | undefined> => {
         const fileText = await getDocumentText(fileUri)
         const containsBreadMentionOrIsBreadDotfile =
           fileText.includes(`@${breadIdentifier}`) ||
           fileUri.path.includes(`.${breadIdentifier}`)
 
-        if (containsBreadMentionOrIsBreadDotfile)
-          return {
-            filePathRelativeToWorkspace:
-              vscode.workspace.asRelativePath(fileUri),
-            content: fileText,
-          }
+        if (containsBreadMentionOrIsBreadDotfile) return fileUri
         else return undefined
       },
     ),
   )
 
   const filteredFileContexts = fileContexts.filter(
-    (fileContext): fileContext is FileContext => fileContext !== undefined,
+    (fileContext): fileContext is vscode.Uri => fileContext !== undefined,
   )
 
   if (fileContexts.length === 0) return undefined
@@ -48,23 +43,13 @@ export async function findAndCollectBreadedFiles(
  * Read all documents opened as tabs in vscode.
  * Useful when the setting suggests to include all open files in the workspace on performing tasks
  */
-export async function getFileContextForOpenedTabs(): Promise<FileContext[]> {
+export function getFileContextForOpenedTabs(): vscode.Uri[] {
   const tabs = vscode.window.tabGroups.all.flatMap((tabGroup) => tabGroup.tabs)
 
-  const urisForOpenTabs = tabs.flatMap((tab) => {
+  return tabs.flatMap((tab) => {
     if (tab.input instanceof vscode.TabInputText) return [tab.input.uri]
     else return []
   })
-
-  return await Promise.all(
-    urisForOpenTabs.map(async (uri) => {
-      const fileText = await getDocumentText(uri)
-      return {
-        filePathRelativeToWorkspace: vscode.workspace.asRelativePath(uri),
-        content: fileText,
-      }
-    }),
-  )
 }
 
 /**
