@@ -1,3 +1,5 @@
+Sort of coupled with distribution because the potential contributors are also a subset of the target audience.
+
 - Find people with experience building extensions
 - Voice community: Pokey, Andreas, Will
 - Strangers with open source extensions

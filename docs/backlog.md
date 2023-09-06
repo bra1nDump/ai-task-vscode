@@ -15,10 +15,24 @@
 
 ## Make user experience of the current features acceptable
 
-- Gradually apply changes as they come in
+### Gradually apply changes as they come in, while supporting multiple edits within the file
+
+- Allow backdate edits using line range tracker - DocumentSnapshot
+  - [done] Implemented the base class
+  - Change the range output of the LLM to be line numbers
+    - Might further decrease quality off completions since the model will not have the quote off the code it is modifying. This will be addressed with splitting into tasks to provide range to edit
+    - A workaround is to convert the content based line ranges to LineRanges the first time it becomes available in the mapper
+  - Adjust the mapper that maps to resolved changes to be stateful
+    - The mapper should be returned from a file context aggregator
+    - The file context should be read from the snapshots only before being placed to the LLM to ensure consistency
+    - I need to refactor file context providing helpers to return uris instead of file context directly
+    - Next a FileContextManager should be created which will keep track of of a map with relative file paths to DocumentSnapshot
+    - It should be available in SessionContext as we will need to dispose off subscriptions once the session ends
 - Stale files, specifically making it impossible to do multi-edits in the same file
+
   - https://github.com/microsoft/vscode/issues/15723
   - openTextDocument should work ..
+
 - Closing the session file should stop generation
 - Changing selection in the editor should clear the highlight
 
@@ -31,6 +45,7 @@
 - Let's try squeezing out as much as possible with the current model using better prompts
 - We can also make some modifications to use line ranges as target ranges instead of printing the whole thing out
 - We probably also want the breaded files to come last, not sure of that matters for the attention mechanism, but probably won't make it worse
+- This has a hidden feature - allowing us to parallelize code generation if the user allows it
 
 This is a complex task that will require rewriting roughly 1/3 of the code base if not more
 Will function calling help me getter faster? I would not need to deal with Xml parsing, but I will have to deal with new apis and parsing partial JSON
@@ -38,7 +53,7 @@ Will function calling help me getter faster? I would not need to deal with Xml p
 ## Bugs
 
 - Deduplicate files with problems, generally deduplicate files?
-- Logging is still kinda broken40
+- Logging is still kinda broken
   - \` appear in strange places (aka right after some </file> closes)
   - Files are not strictly ordered by timestamp, and the format all the title is to verbose
   - Running two sessions within the same minute concatenates the two files
@@ -46,6 +61,7 @@ Will function calling help me getter faster? I would not need to deal with Xml p
 
 # Later
 
+- Removed plan craziness with custom list parsing and simply use <plan> tags
 - Typing @run should start executing
 - Add play button to @bread comments
 - Explore UIs
