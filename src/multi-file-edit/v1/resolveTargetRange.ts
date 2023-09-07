@@ -15,26 +15,12 @@ import { vscodeRangeToLineRange } from 'document-helpers/document-snapshot'
  * Design decision notes:
  * I'm taking a slightly different approach than I was thinking before.
  * I thought the mapper to resolve changes was going to be independent from version specific logic.
- * It can still be done and probably is a better way of doing this, but I'm going to start with a simpler approach. That approach would involve having two mappers, the first one is version specific that will map to a resolved outdated range give the file snapshots.
+ * It can still be done and probably is a better way of doing this, but I'm going to start with a simpler approach.
+ * Original approach would involve having two mappers.
+ * The first one is version specific that will map to a resolved outdated range give the file snapshots.
  * The second mapper would adjust the ranges to the current file content.
  *
  * I think this is a path to introduced more abstractions prematurely without understanding the problem well enough.
- *
- * TODO: Cleanup documentation. Once I start using session context to extract file contents the limitation should be overcome
- *
- * Limitation: resolution is performed relative to file contents
- * on disk. Often editor contents - which is what the user expects to be referenced
- * should be used instead. Check all opened editors and if there is one
- * matching the file path - get the content from there.
- *
- * Hack: save all editors before sending the request? :D
- *
- * Even that solution would still have a bug - llm is recommending the changes
- * based on the snapshot it was sent, by the time the changes are resolved the file
- * or editor might have been updated.
- *
- * Hack: check if file isDirty is set - ignore the file. The idea is you
- * are observing the llm doing the work so you should not be modifying files yourself :D
  */
 export const makeToResolvedChangesTransformer = (
   sessionDocumentManager: SessionDocumentManager,
@@ -42,6 +28,8 @@ export const makeToResolvedChangesTransformer = (
   async function (
     multiFileChangeSet: LlmGeneratedPatchXmlV1,
   ): Promise<ResolvedChange[]> {
+    // Refactor: xml generator is already better represented with a flat set of changes
+    // let's update the rest of the code including this function to reflect that
     const changesGroupedByFile = await Promise.all(
       multiFileChangeSet.changes.map(
         async ({
@@ -49,6 +37,7 @@ export const makeToResolvedChangesTransformer = (
           filePathRelativeToWorkspace,
           isStreamFinilized,
         }): Promise<ResolvedChange[]> => {
+          // Find the matching document snapshot, we need those to perform an edit with an outdated range
           if (!filePathRelativeToWorkspace) return []
           const fileUri = await findSingleFileMatchingPartialPath(
             filePathRelativeToWorkspace,
@@ -64,41 +53,22 @@ export const makeToResolvedChangesTransformer = (
               } not found in session. Files in the session: ${sessionDocumentManager.dumpState()} Unable to modify files but were not added to the snapshot. This is most likely a bug or LLM might have produced a bogus file path to modify.`,
             )
 
-          /*
-          Bug: Downstream assumption of set of changes being growing is violated.
-          Let's say we're modifying two files, A, B
-          Once we have applied the changes to the first file, 
-          If get text file will return the updated content of the file 
-          The old edit range will not be found in the updated file content (we are using the old content to search for the range)
-
-          We do want to use the I updated content though, because this is how we enable multiple edits to the same file as well as editing unsaved files.
-
-          Related tissues:
-          - How would this interact if we refactor ranges to be based on lines instead of contents?
-          - How does this interact with partial application?
-
-          Possible solutions:
-          - Change range resolution to be stateful, and stop updating a range once it has been resolved fully
-            - Now for partial applications to work more work would being needed on the application side for range tracking. This is related logic so it will be two places to make mistakes for the same thing roughly.
-          - [Selected] Create and intermediate target range that is a discriminated union between two types: RangedToReplaceContentBased or to be added later RangedToReplaceLineBased
-            - Rename resolved change to Change and switch range to replace to be the intermediate type
-            - Instead of this file doing full resolution to VS called range it should simply bring v1 specific Xml patch type two a common Change type
-            - Final change resolution should be performed on the application side, it should cach the initial target range, and update it on subsequent partial edits. 
-        */
-
+          // Collect all the result changes for this file so far
           const resolvedChanges = changes.reduce((acc, change) => {
             const rangeToReplace = findTargetRangeInFileWithContent(
               change.oldChunk,
               documentSnapshot.snapshotContext.content,
             )
 
-            // Here use the DocumentSnapshot to adjust the range to current time
             if (!rangeToReplace) return acc
 
+            // Use the DocumentSnapshot to adjust the range to current time
             const lineRangedToReplace = vscodeRangeToLineRange(rangeToReplace)
             const rangeInCurrentDocument =
               documentSnapshot.toCurrentDocumentRange(lineRangedToReplace)
 
+            // TODO: We really should not be throwing an error here.
+            // Instead we should somehow report this change as not resolved
             if (rangeInCurrentDocument.type === 'error')
               throw new Error(
                 `Range is out of bounds of the document ${fileUri.fsPath}\nError: ${rangeInCurrentDocument.error}`,

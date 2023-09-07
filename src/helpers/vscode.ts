@@ -50,6 +50,7 @@ export async function findSingleFileMatchingPartialPath(
 
 /**
  * Guarantees that the text will be appended to the document in the order it was called.
+ * Usually should not be awaited, use void operator to explicitly not await.
  */
 const pendingEdits = new Map<string, Promise<void>>()
 const documentContents = new Map<string, string>()
@@ -57,16 +58,24 @@ export async function queueAnAppendToDocument(
   document: vscode.TextDocument,
   text: string,
 ) {
-  const previousEdit = pendingEdits.get(document.uri.toString())
+  const path = document.uri.path
+  const previousEdit = pendingEdits.get(path)
   const applyEdit = async () => {
-    let currentContent = documentContents.get(document.uri.toString())
+    let currentContent = documentContents.get(path)
     if (!currentContent) {
       currentContent = document.getText()
-      documentContents.set(document.uri.toString(), currentContent)
+      documentContents.set(path, currentContent)
     }
     const newContent = currentContent + text
-    documentContents.set(document.uri.toString(), newContent)
+    documentContents.set(path, newContent)
     const data = new TextEncoder().encode(newContent)
+
+    // Pretty sure this causes a flicker
+    // Previously we were using workplace edits but that has caused unnecessary tabs to open.
+    // Potential workaround is to right to the file system for the detailed log file
+    // and workplace edits for high level markdown file while also opening it in the same tab group as the preview
+    // ? We do want to keep the same queue abstraction to avoid races for both
+    //   Honestly just duplicate the code, it's super small
     await vscode.workspace.fs.writeFile(document.uri, data)
   }
 
@@ -75,22 +84,3 @@ export async function queueAnAppendToDocument(
 
   await editPromise
 }
-
-/**
- * We don't want the content on disk to be stale for the currently opened editors
- * because this is where we're reading the context from
- * Hack :( first of the day lol
- * More details in @mapToResolvedChanges
- * Does not actually save all the editors.
- * See extension.ts for beginning of work towards fixing this
- *
- * Undesired side effect:
- * Will prompt the user if the editor is not currently backed by a file on disk
- * to pick a name and save it in some location
- *
- * No longer necessary when we're reading from the document instead of the file system
- */
-// export async function saveCurrentEditorsHackToEnsureTheFreshestContents() {
-//   for (const editor of vscode.window.visibleTextEditors)
-//     await editor.document.save()
-// }

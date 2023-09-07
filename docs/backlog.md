@@ -15,30 +15,59 @@
 
 ## Make user experience of the current features acceptable
 
-### Gradually apply changes as they come in, while supporting multiple edits within the file
+### Wednesday Gradually apply changes as they come in, while supporting multiple edits within the file
 
-- Allow backdate edits using line range tracker - DocumentSnapshot
-  - [done] Implemented the base class
-  - Change the range output of the LLM to be line numbers
-    - Might further decrease quality off completions since the model will not have the quote off the code it is modifying. This will be addressed with splitting into tasks to provide range to edit
-    - A workaround is to convert the content based line ranges to LineRanges the first time it becomes available in the mapper
-  - Adjust the mapper that maps to resolved changes to be stateful
-    - The mapper should be returned from a file context aggregator
-    - The file context should be read from the snapshots only before being placed to the LLM to ensure consistency
-    - I need to refactor file context providing helpers to return uris instead of file context directly
-    - Next a FileContextManager should be created which will keep track of of a map with relative file paths to DocumentSnapshot
-    - It should be available in SessionContext as we will need to dispose off subscriptions once the session ends
-- Stale files, specifically making it impossible to do multi-edits in the same file
-
-  - https://github.com/microsoft/vscode/issues/15723
-  - openTextDocument should work ..
-
+- Finally gradually apply changes
+  - Use existing end to end test
 - Closing the session file should stop generation
 - Changing selection in the editor should clear the highlight
+- Provide token count on the input and provide approximate price
 
-## Type at cursor - allows me to replace continue
+### Wednesday Compilation Step
+
+- Refactor chase bread and chase bugs commands to to use a virtual script with context provider mentions and prompt
+- Add context providers for
+  - @bread, @bugs, @url
+  - Think about auto completion, specifically for @url would probably want some fixed websites will use often. For instance I would include vscode Api docs
+  - Have them implement a common interface
+- Compile the script to get context instead of getting context manually within two available commands
+
+## Thursday Record demo video for multi file edit
+
+## Thursday Type at cursor - allows me to replace continue
 
 - For example current model does not support inserts only some sort of replacement
+- The simplest version is to keep reusing the multi file edit prompt and simply instruct to replace a single line with the comment /run
+- We can also get rid of the planning stage (maybe we should also inject at using /plan directive)
+
+## Friday Language server draft for @bread scripts (inline)
+
+- Reuse the context provider definitions to provide autocomplete
+
+## Friday Record Type at cursor
+
+## Saturday Release - REALLY DON'T WANT TO DO THIS, BUT THIS IS ESSENTIAL
+
+- Make repository public on GitHub
+- Create issues for some of my todos here
+- Style discord server, add basic documentation
+- Ping friends asking to try it
+
+## Sunday Promote, Recruit Cofounders - REALLY DON'T WANT TO DO THIS, BUT THIS IS ESSENTIAL
+
+- Manually go over popular repositories in the space vscode extensions find top contributors
+- Send them an email from a personal email sending the GitHub page + Discord
+
+## Bugs
+
+- Logging is still kinda broken
+  - \` appear in strange places (aka right after some </file> closes)
+  - Files are not strictly ordered by timestamp, and the format all the title is to verbose
+  - Running two sessions within the same minute concatenates the two files
+- Preview for the high level oftentimes flickers. Not sure what causes itb but try larger outputs
+  - we rewriting the entire file. Workaround documented in append function
+
+# Later
 
 ## Split target selection into a separate task - address speed, reliability and dumbness due to complex prompt
 
@@ -50,16 +79,7 @@
 This is a complex task that will require rewriting roughly 1/3 of the code base if not more
 Will function calling help me getter faster? I would not need to deal with Xml parsing, but I will have to deal with new apis and parsing partial JSON
 
-## Bugs
-
-- Deduplicate files with problems, generally deduplicate files?
-- Logging is still kinda broken
-  - \` appear in strange places (aka right after some </file> closes)
-  - Files are not strictly ordered by timestamp, and the format all the title is to verbose
-  - Running two sessions within the same minute concatenates the two files
-- Preview for the high level oftentimes flickers. Not sure what causes itb but try larger outputs
-
-# Later
+## Uncategorized
 
 - Content based matching has bugged out when there were multiple matches within the same file of the same string
 - Prevent starting a debug session if compilation failed. It's really annoying to accidentally tried debugging a simple compile error during runtime and not knowing about the compile error
@@ -85,6 +105,21 @@ Will function calling help me getter faster? I would not need to deal with Xml p
 
 # Done
 
+- Deduplicate files with problems, generally deduplicate files?
+- Allow backdate edits using line range tracker - DocumentSnapshot
+  - [done] Implemented the base class
+  - Change the range output of the LLM to be line numbers
+    - Might further decrease quality off completions since the model will not have the quote off the code it is modifying. This will be addressed with splitting into tasks to provide range to edit
+    - A workaround is to convert the content based line ranges to LineRanges the first time it becomes available in the mapper
+  - Adjust the mapper that maps to resolved changes to be stateful
+    - The mapper should be returned from a file context aggregator
+    - The file context should be read from the snapshots only before being placed to the LLM to ensure consistency
+    - I need to refactor file context providing helpers to return uris instead of file context directly
+    - Next a FileContextManager should be created which will keep track of of a map with relative file paths to DocumentSnapshot
+    - It should be available in SessionContext as we will need to dispose off subscriptions once the session ends
+- Stale files, specifically making it impossible to do multi-edits in the same file
+  - https://github.com/microsoft/vscode/issues/15723
+  - openTextDocument should work ..
 - Too many things to clean up after the session
   - [maybe] Use fs to write to files instead of opening documents
     - Hide logger implementation in the context object
