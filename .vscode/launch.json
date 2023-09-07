@@ -13,7 +13,6 @@
 				"${workspaceFolder}/testing-sandbox",
 				"${workspaceFolder}/testing-sandbox/helloWorld.ts",
 				"--extensionDevelopmentPath=${workspaceFolder}",
-				"--disable-extensions", // Disables other extensions to avoid unnecessary logs in the console
 			],
 			"envFile": "${workspaceFolder}/.env",
 			"outFiles": [

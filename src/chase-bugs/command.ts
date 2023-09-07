@@ -2,7 +2,7 @@ import * as vscode from 'vscode'
 import { startMultiFileEditing } from 'multi-file-edit/v1'
 import { projectDiagnosticEntriesWithAffectedFileContext } from './diagnostics'
 import { getBreadIdentifier } from 'helpers/bread-identifier'
-import { closeSession, startSession } from 'execution/realtime-feedback'
+import { closeSession, startSession } from 'session'
 import { queueAnAppendToDocument } from 'helpers/vscode'
 
 /**

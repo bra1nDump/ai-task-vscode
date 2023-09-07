@@ -2,18 +2,17 @@ import OpenAI from 'openai'
 import * as vscode from 'vscode'
 
 import { AsyncIterableX, from, last } from 'ix/asynciterable'
-import {
-  filter as filterAsync,
-  map as mapAsync,
-} from 'ix/asynciterable/operators'
+import { filter, map as mapAsync } from 'ix/asynciterable/operators'
 import { multicast } from './ix-multicast'
 
 export type OpenAiMessage = OpenAI.Chat.Completions.ChatCompletionMessageParam
 
-/**
- * To avoid 4000 request per minute limit like bug ... and a big bill ...
- */
 let isStreamRunning = false
+
+export interface LlmPartialResponse {
+  cumulativeResponse: string
+  delta: string
+}
 
 /**
  * Refactoring:
@@ -30,11 +29,11 @@ let isStreamRunning = false
  *
  * The reason why the LLM stream is multiplexed is because is the stream that kicks off most of the processes.
  */
-export async function streamLlm<T>(
+export async function streamLlm(
   messages: OpenAiMessage[],
-  tryParsePartial: (content: string) => T | undefined,
   logger: (text: string) => Promise<void>,
-): Promise<AsyncIterableX<T>> {
+): Promise<[AsyncIterableX<LlmPartialResponse>, AbortController]> {
+  // Ensure the key is provided
   let key: string | undefined =
     process.env.OPENAI_API_KEY ??
     vscode.workspace.getConfiguration('birds').get('openaiApiKey')
@@ -46,6 +45,8 @@ export async function streamLlm<T>(
     })
   if (!key) throw new Error('No OpenAI API key provided')
 
+  // Ensure we are not already running a stream,
+  // we want to avoid large bills if there's a bug and we start too many streams at once
   if (isStreamRunning) throw new Error('Stream is already running')
   isStreamRunning = true
 
@@ -62,35 +63,28 @@ export async function streamLlm<T>(
     stream: true,
   })
 
+  let currentContent = ''
+  const simplifiedStream = from(stream).pipe(
+    mapAsync((part) => {
+      // Refactor: These details should have stayed in openai.ts
+      const delta = part.choices[0]?.delta?.content
+      if (!delta) return undefined
+      currentContent += delta
+      return {
+        cumulativeResponse: currentContent,
+        delta,
+      }
+    }),
+    filter((part): part is LlmPartialResponse => !!part),
+  )
+
+  // Multiplex the stream
+  const multicastStream = multicast(simplifiedStream)
+
   void logger(`\n# Messages submitted:\n`)
   for (const { content, role } of messages)
     void logger(`\n## [${role}]:\n\`\`\`md\n${content}\`\`\`\n`)
   void logger(`\n# [assistant, latest response]:\n\`\`\`md\n`)
-
-  // Maybe we should move decoding up a level?
-  let currentContent = ''
-  const parsedPatchStream = from(stream).pipe(
-    mapAsync((part) => {
-      const delta = part.choices[0]?.delta?.content
-      if (!delta) return undefined
-
-      void logger(`${delta}`)
-
-      currentContent += delta
-
-      // Uncomment to see raw output in console
-      // process.stdout.write(delta)
-
-      // Try parsing the xml, even if it's complete it should still be able to apply the diffs
-      return tryParsePartial(currentContent)
-    }),
-    filterAsync((x): x is T => x !== undefined),
-  )
-
-  /**
-   * This is important! See the docstring
-   */
-  const multicastStream = multicast(parsedPatchStream)
 
   // Detect end of stream and free up the llm resource
   void last(multicastStream)
@@ -107,5 +101,5 @@ export async function streamLlm<T>(
       isStreamRunning = false
     })
 
-  return multicastStream
+  return [multicastStream, stream.controller]
 }

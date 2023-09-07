@@ -40,19 +40,6 @@ export async function findAndCollectBreadedFiles(
 }
 
 /**
- * Read all documents opened as tabs in vscode.
- * Useful when the setting suggests to include all open files in the workspace on performing tasks
- */
-export function getFileContextForOpenedTabs(): vscode.Uri[] {
-  const tabs = vscode.window.tabGroups.all.flatMap((tabGroup) => tabGroup.tabs)
-
-  return tabs.flatMap((tab) => {
-    if (tab.input instanceof vscode.TabInputText) return [tab.input.uri]
-    else return []
-  })
-}
-
-/**
  * Improvement ideas:
  * Find a package that does glob and respects .gitignore
  *

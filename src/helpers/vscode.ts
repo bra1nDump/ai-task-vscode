@@ -84,3 +84,19 @@ export async function queueAnAppendToDocument(
 
   await editPromise
 }
+/**
+ * Read all documents opened as tabs in vscode.
+ * Useful when the setting suggests to include all open files in the workspace on performing tasks
+ */
+
+export function openedTabs(): vscode.Uri[] {
+  const tabs = vscode.window.tabGroups.all.flatMap((tabGroup) => tabGroup.tabs)
+  return tabsToUris(tabs)
+}
+
+export function tabsToUris(tabs: readonly vscode.Tab[]): vscode.Uri[] {
+  return tabs.flatMap((tab) => {
+    if (tab.input instanceof vscode.TabInputText) return [tab.input.uri]
+    else return []
+  })
+}

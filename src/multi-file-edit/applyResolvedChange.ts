@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 import { AsyncIterableX, last as lastAsync } from 'ix/asynciterable'
-import { SessionContext } from 'execution/realtime-feedback'
+import { SessionContext } from 'session'
 import { queueAnAppendToDocument } from 'helpers/vscode'
 import { ResolvedChange } from './types'
 import { targetRangeHighlightingDecoration } from './targetRangeHighlightingDecoration'
@@ -58,28 +58,45 @@ async function highlightTargetRangesAsTheyBecomeAvailable(
   growingSetOfFileChanges: AsyncIterableX<ResolvedChange[]>,
   context: SessionContext,
 ) {
-  const processedChanges = new Set<number>()
+  const highlightedChanges = new Set<number>()
+  const finalizedChanges = new Set<number>()
+  const highlightingRemovalTimeouts = new Map<number, NodeJS.Timeout>()
   for await (const changesForMultipleFiles of growingSetOfFileChanges)
-    for (const [index, change] of changesForMultipleFiles.entries())
-      if (!processedChanges.has(index) && change.rangeToReplace) {
+    for (const [index, change] of changesForMultipleFiles.entries()) {
+      if (!finalizedChanges.has(index)) {
+        // Clear the timeout if it exists
+        const previousTimeout = highlightingRemovalTimeouts.get(index)
+        if (previousTimeout) clearTimeout(previousTimeout)
+
+        // Set a new timeout to clear the highlighting, this implementation also handles when we abort the session
+        // Assumption: LLM produces at least a token a second
+        const timeout = setTimeout(() => {
+          // Only dehighlight of the editor is visible
+          const editor = vscode.window.visibleTextEditors.find(
+            (editor) => editor.document.uri.path === change.fileUri.path,
+          )
+          editor?.setDecorations(targetRangeHighlightingDecoration, [])
+        }, 1000)
+        highlightingRemovalTimeouts.set(index, timeout)
+
+        // Mark as finalized only once the replacement stopped changing.
+        // This effectively starts the timer to remove the highlighting.
+        if (change.replacementIsFinal) finalizedChanges.add(index)
+      }
+
+      if (!highlightedChanges.has(index) && change.rangeToReplace) {
         const editor = await vscode.window.showTextDocument(change.fileUri)
 
-        // Set the decoration
+        // Set the decoration, vscode automatically keeps track of the decoration ranges
+        // so no need to keep them up to date, they will expand with the content
         editor.setDecorations(targetRangeHighlightingDecoration, [
           change.rangeToReplace,
         ])
-        // Since we update decorations multiple times for single change
-        // this needs additional logic to only print this out once
-        // void queueAnAppendToDocument(
-        //   context.sessionMarkdownHighLevelFeedbackDocument,
-        //   `- Highlighting range about to be edited in: ${vscode.workspace.asRelativePath(
-        //     change.fileUri,
-        //   )}\n`,
-        // )
 
         // Mark as processed only once the range stopped changing
-        if (change.rangeToReplaceIsFinal) processedChanges.add(index)
+        if (change.rangeToReplaceIsFinal) highlightedChanges.add(index)
       }
+    }
 }
 
 async function showFilesOnceWeKnowWeWantToModifyThem(

@@ -9,37 +9,21 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.unshift(
     vscode.commands.registerCommand('birds.chaseBread', chaseBreadCommand),
     vscode.commands.registerCommand('birds.chaseBugs', chaseBugsCommand),
-    vscode.window.onDidChangeActiveTextEditor(visibleTextEditorWatcher),
     vscode.window.onDidChangeTextEditorSelection(changedEditorSelection),
   )
-}
-
-// This method is called when your extension is deactivated
-export function deactivate() {
-  console.log('deactivating bread extension')
-}
-
-/*
-These fucntions are to keep track of the content in editor to use it as source of truth
-even when editors become invisible (aka become inactive tabs)
-
-ON a second though, I think that using tabs api you can get uris and you can call workspace.openDocument(uri)
-which will not do anything if its already opened - and say dirty in the editor. The point is you can get the 
-dirty text from it!
-
-So I need to stop using fs.readFile and open documents document.getText() instead
-*/
-export function visibleTextEditorWatcher(
-  editor: vscode.TextEditor | undefined,
-) {
-  // console.log('Visible text editor changed')
 }
 
 export function changedEditorSelection(
   event: vscode.TextEditorSelectionChangeEvent,
 ) {
-  const editorThatChanged = event.textEditor
-  const cachedContent = editorThatChanged.document.getText()
-
-  // console.log('editorSelectionChanged, new content: ', cachedContent)
+  // Remove any decorations that were added by the extension, potentially the user is interacting with the file
+  // we should remove the decorations to avoid any distractions
+  //
+  // Not so simple, selection gets changed when we use edit builder to apply changes produced by the LLM
+  // I think we should individually subscribe somewhere within the multi file edit code to the selection change event
+  // where we can only clear selection once the selection changes for the file which has already stopped editing
+  //
+  // Alternatively we can simply set a timeout to clear the highlight. I'm opting for the solution.
+  // Though this will not work for multiple options in the future
+  // event.textEditor.setDecorations(targetRangeHighlightingDecoration, [])
 }

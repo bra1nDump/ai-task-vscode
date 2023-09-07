@@ -5,8 +5,7 @@ import * as tsconfigPaths from 'tsconfig-paths'
 import { install } from 'source-map-support'
 
 // This allows us to easier jump to the location in source when a test fails
-// eslint-disable-next-line @typescript-eslint/no-unsafe-call
-install()
+void install()
 
 const projectRoot = path.resolve(__dirname, '../..')
 const outSrc = path.resolve(projectRoot, 'out')

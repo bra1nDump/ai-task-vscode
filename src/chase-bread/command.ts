@@ -1,11 +1,9 @@
 import * as vscode from 'vscode'
-import {
-  findAndCollectBreadedFiles,
-  getFileContextForOpenedTabs,
-} from 'document-helpers/file-context'
+import { findAndCollectBreadedFiles } from 'document-helpers/file-context'
+import { openedTabs } from 'helpers/vscode'
 import { getBreadIdentifier } from 'helpers/bread-identifier'
 import { queueAnAppendToDocument } from 'helpers/vscode'
-import { closeSession, startSession } from 'execution/realtime-feedback'
+import { closeSession, startSession } from 'session'
 import { startMultiFileEditing } from 'multi-file-edit/v1'
 
 /**
@@ -39,7 +37,7 @@ export async function chaseBreadCommand() {
     breadFileUris,
   )
 
-  const openTabsFileUris = getFileContextForOpenedTabs()
+  const openTabsFileUris = openedTabs()
 
   await sessionContext.documentManager.addDocuments(
     'Open tabs',

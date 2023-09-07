@@ -15,15 +15,7 @@
 
 ## Make user experience of the current features acceptable
 
-### Wednesday Gradually apply changes as they come in, while supporting multiple edits within the file
-
-- Finally gradually apply changes
-  - Use existing end to end test end to end.
-- Closing the session file should stop generation
-- Changing selection in the editor should clear the highlight
-- Provide token count on the input and provide approximate price
-
-### Wednesday Compilation Step
+### Thursday Compilation Step
 
 - Refactor chase bread and chase bugs commands to to use a virtual script with context provider mentions and prompt
 - Add context providers for
@@ -81,10 +73,11 @@ Will function calling help me getter faster? I would not need to deal with Xml p
 
 ## Uncategorized
 
+- Currently all edits push individually to the undue stack tremendously polluting it. Only have the final edit pushed to the undue stack
+- Provide token count on the input and provide approximate price
 - Improve new line character usage across the code base. This will suck because we print many logs relying on \n. For now I will just fix the code that has to do with line splitting for range calculation because that definitely needs to be robust.
 - Content based matching has bugged out when there were multiple matches within the same file of the same string
 - Prevent starting a debug session if compilation failed. It's really annoying to accidentally tried debugging a simple compile error during runtime and not knowing about the compile error
-- Support source maps to jump from test stack traces directly to the file https://www.npmjs.com/package/source-map-support
 - Remove plan craziness with custom list parsing and simply use <plan> tags
 - Typing @run should start executing
 - Add play button to @bread comments
@@ -105,6 +98,13 @@ Will function calling help me getter faster? I would not need to deal with Xml p
 - Create a company and apply for open eye credits
 
 # Done
+
+### Wednesday Gradually apply changes as they come in, while supporting multiple edits within the file
+
+- Finally gradually apply changes
+  - Use existing end to end test end to end.
+- Closing the session file should stop generation
+- Changing selection in the editor should clear the highlight
 
 - Deduplicate files with problems, generally deduplicate files?
 - Allow backdate edits using line range tracker - DocumentSnapshot

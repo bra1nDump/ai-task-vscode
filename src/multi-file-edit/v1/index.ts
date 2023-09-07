@@ -4,27 +4,27 @@ import {
 } from 'document-helpers/file-context'
 import { OpenAiMessage, streamLlm } from 'helpers/openai'
 import { from } from 'ix/asynciterable'
-import { map as mapAsync } from 'ix/asynciterable/operators'
+
 import { startInteractiveMultiFileApplication } from 'multi-file-edit/applyResolvedChange'
 import { parsePartialMultiFileEdit } from './parse'
 import { makeToResolvedChangesTransformer } from './resolveTargetRange'
-import { LlmGeneratedPatchXmlV1 } from './types'
 import { multiFileEditV1FormatSystemMessage } from './prompt'
-import { SessionContext } from 'execution/realtime-feedback'
+import { SessionContext } from 'session'
 import { queueAnAppendToDocument } from 'helpers/vscode'
+
+import { map as mapAsync } from 'ix/asynciterable/operators'
 
 export async function startMultiFileEditing(
   taskPrompt: string,
   breadIdentifier: string,
   sessionContext: SessionContext,
 ) {
-  const fileContexts = sessionContext.documentManager.getFileContexts()
   const outputFormatMessage =
     multiFileEditV1FormatSystemMessage(breadIdentifier)
+
+  const fileContexts = sessionContext.documentManager.getFileContexts()
   const fileContextMessage = fileContextSystemMessage(fileContexts)
-  // const fileContextFromOpenTabsMessage = fileContextSystemMessage(
-  //   fileContextFromOpenTabsNotInFileContexts,
-  // )
+
   const userTaskMessage: OpenAiMessage = {
     role: 'user',
     content: `Your task: ${taskPrompt}
@@ -35,12 +35,7 @@ You should first output a bullet list plan of action roughly describing each cha
 Next you should output changes as outlined by the format previously.
 `,
   }
-  const messages = [
-    outputFormatMessage,
-    // fileContextFromOpenTabsMessage,
-    fileContextMessage,
-    userTaskMessage,
-  ]
+  const messages = [outputFormatMessage, fileContextMessage, userTaskMessage]
 
   const highLevelLogger = (text: string) =>
     queueAnAppendToDocument(
@@ -64,10 +59,24 @@ Next you should output changes as outlined by the format previously.
   void highLevelLogger(`\n# Files submitted:\n`)
   for (const fileContext of fileContexts) logFilePath(fileContext)
 
-  const unresolvedChangeStream = await streamLlm<LlmGeneratedPatchXmlV1>(
+  const [rawLlmResponseStream, abortController] = await streamLlm(
     messages,
-    parsePartialMultiFileEdit,
     lowLevelLogger,
+  )
+
+  // Abort if requested
+  sessionContext.sessionAbortedEventEmitter.event(() => abortController.abort())
+
+  const parsedPatchStream = from(rawLlmResponseStream).pipe(
+    mapAsync(({ cumulativeResponse, delta }) => {
+      void lowLevelLogger(`${delta}`)
+
+      // Uncomment to see raw output in console
+      // process.stdout.write(delta)
+
+      // Try parsing the xml, even if it's complete it should still be able to apply the diffs
+      return parsePartialMultiFileEdit(cumulativeResponse)
+    }),
   )
 
   // Split the stream into stream with plan and changes to apply
@@ -75,9 +84,7 @@ Next you should output changes as outlined by the format previously.
   // Currently has an issue where I am unable to log the delta and am forced to wait until an item is fully generated
   // Refactor: Parsing should pass deltas or I need to implement local delta generation
   async function showPlanAsItBecomesAvailable() {
-    const planStream = from(unresolvedChangeStream).pipe(
-      mapAsync((x) => x.plan),
-    )
+    const planStream = parsedPatchStream.pipe(mapAsync((x) => x.plan))
     const loggedPlanIndexWithSuffix = new Set<string>()
     void highLevelLogger(`\n# Plan:\n`)
     for await (const plan of planStream)
@@ -99,7 +106,7 @@ Next you should output changes as outlined by the format previously.
 
   async function startApplication() {
     const patchSteam = from(
-      unresolvedChangeStream,
+      parsedPatchStream,
       makeToResolvedChangesTransformer(sessionContext.documentManager),
     )
     await startInteractiveMultiFileApplication(patchSteam, sessionContext)
