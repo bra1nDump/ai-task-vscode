@@ -1,3 +1,5 @@
+![Alt text](cool-vscode-icon.png)
+
 # September 5 - Finished simple and flawed DocumentSnapshot implementation for backdating edits
 
 

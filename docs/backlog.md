@@ -11,16 +11,53 @@
 - Recorded impressive demo video + gif for readme
 - Replaced continue on the current project
 
-# Next up - v1, initial potential user reach out, looking for co-owners
+# Next up - v1, initial potential user reach out, looking for collaborators
 
 ## Thursday Compilation Step
 
 - Refactor chase bread and chase bugs commands to to use a virtual script with context provider mentions and prompt
 - Add context providers for
-  - @bread, @bugs, @url
+  - @bread, @bugs
+  - Later @url
   - Think about auto completion, specifically for @url would probably want some fixed websites will use often. For instance I would include vscode Api docs
   - Have them implement a common interface
 - Compile the script to get context instead of getting context manually within two available commands
+
+@crust IS IMPORTANT - do not actually create any <changes> simply write out your thoughts in plan form.
+Provide suggestions on how I can create abstractions for context providers.
+Also provides the rough design ideas given the files.
+The rough idea is I want to create some sort of compilation step that I will use later on to compile bread scripts
+For now I want to start using this idea by compiling a fake script that simply references @<context provider expression>
+and has a written task of the goal that needs to be accomplished.
+An example of a script for bread chasing
+
+on other namings this functionality can have. To some extent this is closer to linking or scripting
+it is closer to scripting because we're dynamically including more and more content from the entry point.
+Maybe we should call this prompt bundling or preprocessing?
+
+The compile step will resolve @ expressions to a context providers that successfully matches this @ pattern.
+Let's say this bread includes more files as context. They also need to be compiled.
+Let's say one of those other files references @tabs, now all files that are opened as tabs we'll get pulled in as well.
+By default every file that gets pulled in either from top level script or
+
+There's also atomic context providers, for example @bread. It does not in itself pull in any additional context
+this is more of a special symbol / mention that is used to guide other scripts or/and LLMs.
+
+Alternative idea I have been considering as well is to use javascript an some dsl to write these scripts.
+There are many things to consider here. The main downside of using javascript for those context files is that when they're simple enough
+we don't really want to think about the syntax. I just want to provide a simple prompt, and that is it.
+I want the scripting using javascript to be available either way, but the question is it is a simple context and task interface worth building?
+I would say yes, because this is closer to what other projects are doing and this lowers the learning curve.
+
+Consider this script as a replacement for bread chasing command.
+
+```
+# This is a context provider will pull all the files with @bread mentions. This provider will also erase itself from the prompt resulting from this script.
+@files-with-bread
+
+# This will remain in the final prompt for this particular script
+Look for tasks and informational comments tagged with @bread in your input files and generate changes to accomplish them.
+```
 
 ## Thursday Record demo video for multi file edit
 
