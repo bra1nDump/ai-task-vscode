@@ -11,11 +11,9 @@
 - Recorded impressive demo video + gif for readme
 - Replaced continue on the current project
 
-# Next up (useful for getting the first user)
+# Next up - v1, initial potential user reach out, looking for co-owners
 
-## Make user experience of the current features acceptable
-
-### Thursday Compilation Step
+## Thursday Compilation Step
 
 - Refactor chase bread and chase bugs commands to to use a virtual script with context provider mentions and prompt
 - Add context providers for
@@ -50,16 +48,21 @@
 - Manually go over popular repositories in the space vscode extensions find top contributors
 - Send them an email from a personal email sending the GitHub page + Discord
 
-## Bugs
+# Later
 
+## UX
+
+- Preview for the high level oftentimes flickers. Not sure what causes itb but try larger outputs
+  - we rewriting the entire file. Workaround documented in append function
+- Currently all edits push individually to the undue stack tremendously polluting it. Only have the final edit pushed to the undue stack
+
+## Developer experience working on Birds
+
+- Prevent starting a debug session if compilation failed. It's really annoying to accidentally tried debugging a simple compile error during runtime and not knowing about the compile error
 - Logging is still kinda broken
   - \` appear in strange places (aka right after some </file> closes)
   - Files are not strictly ordered by timestamp, and the format all the title is to verbose
   - Running two sessions within the same minute concatenates the two files
-- Preview for the high level oftentimes flickers. Not sure what causes itb but try larger outputs
-  - we rewriting the entire file. Workaround documented in append function
-
-# Later
 
 ## Split target selection into a separate task - address speed, reliability and dumbness due to complex prompt
 
@@ -73,28 +76,18 @@ Will function calling help me getter faster? I would not need to deal with Xml p
 
 ## Uncategorized
 
-- Currently all edits push individually to the undue stack tremendously polluting it. Only have the final edit pushed to the undue stack
 - Provide token count on the input and provide approximate price
 - Improve new line character usage across the code base. This will suck because we print many logs relying on \n. For now I will just fix the code that has to do with line splitting for range calculation because that definitely needs to be robust.
 - Content based matching has bugged out when there were multiple matches within the same file of the same string
-- Prevent starting a debug session if compilation failed. It's really annoying to accidentally tried debugging a simple compile error during runtime and not knowing about the compile error
 - Remove plan craziness with custom list parsing and simply use <plan> tags
 - Typing @run should start executing
 - Add play button to @bread comments
 - Explore UIs
   - stop button up top
   - notebook interface
-- Refactor logging - try getting this to work automatically
 - Show input where you can augment the instructions with anything one off
-- Ability to stop the execution
-  - A command, so you can add a keybinding to it
-  - More intuitively you would just close the editor with the logs (it will probably be annoying because it will always need saving? Can I just save it all the time after writing)
 - Workspace changes
   - Adding a new file
-- Tokenizer - show request stats - people would be spending their hard earned money on this
-- Run on double enter ??
-- Instead of reading from the file system, read from opening a document since it might have more unsaved changes
-- Apply changes as a stream of text edits
 - Create a company and apply for open eye credits
 
 # Done
