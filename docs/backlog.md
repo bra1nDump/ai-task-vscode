@@ -81,6 +81,7 @@ Will function calling help me getter faster? I would not need to deal with Xml p
 
 ## Uncategorized
 
+- Improve new line character usage across the code base. This will suck because we print many logs relying on \n. For now I will just fix the code that has to do with line splitting for range calculation because that definitely needs to be robust.
 - Content based matching has bugged out when there were multiple matches within the same file of the same string
 - Prevent starting a debug session if compilation failed. It's really annoying to accidentally tried debugging a simple compile error during runtime and not knowing about the compile error
 - Support source maps to jump from test stack traces directly to the file https://www.npmjs.com/package/source-map-support

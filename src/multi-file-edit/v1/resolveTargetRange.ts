@@ -1,6 +1,5 @@
 import * as vscode from 'vscode'
 import { LlmGeneratedPatchXmlV1, TargetRange } from './types'
-import { LinesAndColumns } from 'document-helpers/lines-and-columns'
 import { ResolvedChange } from 'multi-file-edit/types'
 import { findSingleFileMatchingPartialPath } from 'helpers/vscode'
 import { SessionDocumentManager } from 'document-helpers/document-manager'
@@ -58,6 +57,7 @@ export const makeToResolvedChangesTransformer = (
             const rangeToReplace = findTargetRangeInFileWithContent(
               change.oldChunk,
               documentSnapshot.snapshotContext.content,
+              documentSnapshot.document.eol,
             )
 
             if (!rangeToReplace) return acc
@@ -102,10 +102,11 @@ export const makeToResolvedChangesTransformer = (
  */
 export function findTargetRangeInFileWithContent(
   oldChunk: TargetRange,
-  fileContent: string,
+  documentContent: string,
+  documentEndOfLine: vscode.EndOfLine,
 ): vscode.Range | undefined {
-  const fileLines = fileContent.split('\n')
-  const linesAndColumns = new LinesAndColumns(fileContent)
+  const eofString = documentEndOfLine === vscode.EndOfLine.CRLF ? '\r\n' : '\n'
+  const fileLines = documentContent.split(eofString)
 
   /**
    * Finds a line in the document that matches the given line, only if it is the only match
@@ -124,34 +125,29 @@ export function findTargetRangeInFileWithContent(
     return firstMatchIndex
   }
 
-  // Separately handle a case of very simple / empty files or where the content matches the entire file
-  // Search for entire content in the document
-  if (oldChunk.type === 'fullContentRange') {
-    const fullContentIndex = fileContent.indexOf(oldChunk.fullContent)
-    if (fullContentIndex !== -1) {
-      const fullContentLines = oldChunk.fullContent.split('\n')
-      const startLine = linesAndColumns.locationForIndex(fullContentIndex)!.line
-      const endLine = startLine + fullContentLines.length - 1
-      return new vscode.Range(
-        startLine,
-        0,
-        endLine,
-        linesAndColumns.lengthOfLine(endLine),
-      )
-    }
+  // Separately handle a case of very simple ranges (single line) or empty files
+  if (
+    oldChunk.type === 'fullContentRange' &&
+    oldChunk.fullContent.indexOf(eofString) === -1 &&
+    // There's a single match in the document
+    documentContent.indexOf(oldChunk.fullContent) ===
+      documentContent.lastIndexOf(oldChunk.fullContent)
+  ) {
+    const endLineIndex = fileLines.length - 1
+    return new vscode.Range(0, 0, endLineIndex, fileLines[endLineIndex].length)
   }
 
   // Get both range formats to a common format
   let prefixLines: string[]
   let suffixLines: string[]
   if (oldChunk.type === 'fullContentRange') {
-    const lines = oldChunk.fullContent.split('\n')
+    const lines = oldChunk.fullContent.split(eofString)
     const middleIndex = Math.floor(lines.length / 2)
     prefixLines = lines.slice(0, middleIndex)
     suffixLines = lines.slice(middleIndex)
   } else {
-    prefixLines = oldChunk.prefixContent.split('\n')
-    suffixLines = oldChunk.suffixContent.split('\n')
+    prefixLines = oldChunk.prefixContent.split(eofString)
+    suffixLines = oldChunk.suffixContent.split(eofString)
   }
 
   // Find the start and end of the range
@@ -174,13 +170,10 @@ export function findTargetRangeInFileWithContent(
     suffixIndex++
   }
 
-  if (start === -1 || end === -1 || start > end) {
-    console.error('Could not find range', start, end)
-    return undefined
-  }
+  if (start === -1 || end === -1 || start > end) return undefined
 
   start -= prefixIndex - 1
   end += suffixIndex - 1
 
-  return new vscode.Range(start, 0, end, linesAndColumns.lengthOfLine(end))
+  return new vscode.Range(start, 0, end, fileLines[end].length)
 }

@@ -3,6 +3,7 @@ import { AsyncIterableX, last as lastAsync } from 'ix/asynciterable'
 import { SessionContext } from 'execution/realtime-feedback'
 import { queueAnAppendToDocument } from 'helpers/vscode'
 import { ResolvedChange } from './types'
+import { targetRangeHighlightingDecoration } from './targetRangeHighlightingDecoration'
 
 /**
  * Currently top level extension command invokes this after applying v1
@@ -41,26 +42,17 @@ async function applyChangesAsTheyBecomeAvailable(
   const appliedChangesIndices = new Set<number>()
   for await (const changesForMultipleFiles of growingSetOfFileChanges)
     for (const [index, change] of changesForMultipleFiles.entries())
-      if (!appliedChangesIndices.has(index) && change.replacementIsFinal) {
-        const filePathRelativeToWorkspaceRoot = vscode.workspace.asRelativePath(
-          change.fileUri,
-        )
-        await queueAnAppendToDocument(
-          context.markdownHighLevelFeedbackDocument,
-          `\nApplying changes\n`,
-        )
+      if (
+        !appliedChangesIndices.has(index) &&
+        // We only want to start applying once we know the range we are replacing
+        change.rangeToReplaceIsFinal
+      ) {
         await applyResolvedChangesWhileShowingTheEditor(change)
 
-        // Add the index to the set of applied changes
-        appliedChangesIndices.add(index)
+        // Add the index to the set of applied changes once the change we applied is final
+        if (change.replacementIsFinal) appliedChangesIndices.add(index)
       }
 }
-
-// Create a new decoration
-const targetRangeHighlightingDecoration =
-  vscode.window.createTextEditorDecorationType({
-    backgroundColor: 'rgba(255,255,0,0.3)',
-  })
 
 async function highlightTargetRangesAsTheyBecomeAvailable(
   growingSetOfFileChanges: AsyncIterableX<ResolvedChange[]>,
@@ -147,6 +139,13 @@ export async function applyResolvedChangesWhileShowingTheEditor(
   Ideally we also want to prevent opening the same editor multiple times within the session.
   This most likely will require another abstraction to keep track of things we have already shown to the user.
   */
+
+  /*
+    Useful expressions to log or watch in the debugger:
+    document.getText(resolvedChange.rangeToReplace)
+    resolvedChange.replacement
+  */
+
   const isApplicationSuccessful = await editor.edit((editBuilder) => {
     editBuilder.replace(
       resolvedChange.rangeToReplace,
@@ -155,7 +154,7 @@ export async function applyResolvedChangesWhileShowingTheEditor(
   })
 
   // Give the user a chance to see the results
-  await new Promise((resolve) => setTimeout(resolve, 5_000))
+  // await new Promise((resolve) => setTimeout(resolve, 5_000))
 
   return isApplicationSuccessful
     ? 'appliedSuccessfully'

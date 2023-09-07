@@ -170,7 +170,7 @@ export class DocumentSnapshot {
    * Is it still accessible?
    * Maybe write a simple Unittest to test this similar to how I did with VSCode edit apis
    */
-  constructor(private document: TextDocument) {
+  constructor(public document: TextDocument) {
     this.snapshotContext = {
       filePathRelativeToWorkspace: workspace.asRelativePath(document.uri),
       content: document.getText(),
