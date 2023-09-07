@@ -32,7 +32,7 @@ export const makeToResolvedChangesTransformer = (
     const changesGroupedByFile = await Promise.all(
       multiFileChangeSet.changes.map(
         async ({
-          changes,
+          change,
           filePathRelativeToWorkspace,
           isStreamFinilized,
         }): Promise<ResolvedChange[]> => {
@@ -53,40 +53,37 @@ export const makeToResolvedChangesTransformer = (
             )
 
           // Collect all the result changes for this file so far
-          const resolvedChanges = changes.reduce((acc, change) => {
-            const rangeToReplace = findTargetRangeInFileWithContent(
-              change.oldChunk,
-              documentSnapshot.snapshotContext.content,
-              documentSnapshot.document.eol,
+
+          const rangeToReplace = findTargetRangeInFileWithContent(
+            change.oldChunk,
+            documentSnapshot.snapshotContext.content,
+            documentSnapshot.document.eol,
+          )
+
+          if (!rangeToReplace) return []
+
+          // Use the DocumentSnapshot to adjust the range to current time
+          const lineRangedToReplace = vscodeRangeToLineRange(rangeToReplace)
+          const rangeInCurrentDocument =
+            documentSnapshot.toCurrentDocumentRange(lineRangedToReplace)
+
+          // TODO: We really should not be throwing an error here.
+          // Instead we should somehow report this change as not resolved
+          if (rangeInCurrentDocument.type === 'error')
+            throw new Error(
+              `Range is out of bounds of the document ${fileUri.fsPath}\nError: ${rangeInCurrentDocument.error}`,
             )
 
-            if (!rangeToReplace) return acc
+          const resolvedChange: ResolvedChange = {
+            fileUri: fileUri,
+            descriptionForHuman: change.description,
+            rangeToReplace: rangeInCurrentDocument.value,
+            rangeToReplaceIsFinal: change.oldChunk.isStreamFinalized,
+            replacement: change.newChunk.content,
+            replacementIsFinal: isStreamFinilized,
+          }
 
-            // Use the DocumentSnapshot to adjust the range to current time
-            const lineRangedToReplace = vscodeRangeToLineRange(rangeToReplace)
-            const rangeInCurrentDocument =
-              documentSnapshot.toCurrentDocumentRange(lineRangedToReplace)
-
-            // TODO: We really should not be throwing an error here.
-            // Instead we should somehow report this change as not resolved
-            if (rangeInCurrentDocument.type === 'error')
-              throw new Error(
-                `Range is out of bounds of the document ${fileUri.fsPath}\nError: ${rangeInCurrentDocument.error}`,
-              )
-
-            const resolvedChange: ResolvedChange = {
-              fileUri: fileUri,
-              descriptionForHuman: change.description,
-              rangeToReplace: rangeInCurrentDocument.value,
-              rangeToReplaceIsFinal: change.oldChunk.isStreamFinalized,
-              replacement: change.newChunk.content,
-              replacementIsFinal: isStreamFinilized,
-            }
-
-            return [...acc, resolvedChange]
-          }, [] as ResolvedChange[])
-
-          return resolvedChanges
+          return [resolvedChange]
         },
       ),
     )
@@ -125,16 +122,24 @@ export function findTargetRangeInFileWithContent(
     return firstMatchIndex
   }
 
-  // Separately handle a case of very simple ranges (single line) or empty files
+  // Separately handle a case with four empty files - assume we're inserting into the first line
+  if (documentContent.trim() === '') return new vscode.Range(0, 0, 0, 0)
+
+  // Separately handle a case of very simple ranges (single line)
   if (
     oldChunk.type === 'fullContentRange' &&
-    oldChunk.fullContent.indexOf(eofString) === -1 &&
-    // There's a single match in the document
-    documentContent.indexOf(oldChunk.fullContent) ===
-      documentContent.lastIndexOf(oldChunk.fullContent)
+    // Were replacing a single line
+    oldChunk.fullContent.indexOf(eofString) === -1
   ) {
-    const endLineIndex = fileLines.length - 1
-    return new vscode.Range(0, 0, endLineIndex, fileLines[endLineIndex].length)
+    const lineIndex = searchLine(fileLines, oldChunk.fullContent)
+    if (lineIndex === -1) return undefined
+    else
+      return new vscode.Range(
+        lineIndex,
+        0,
+        lineIndex,
+        fileLines[lineIndex].length,
+      )
   }
 
   // Get both range formats to a common format
@@ -154,26 +159,22 @@ export function findTargetRangeInFileWithContent(
   let start = -1
   let end = -1
   // Keep track of these to adjust the start and end indices
-  let prefixIndex = 0
-  let suffixIndex = 0
+  let prefixIndex = -1
+  let suffixIndex = -1
 
-  while (start === -1 && prefixIndex < prefixLines.length) {
-    start = searchLine(fileLines, prefixLines[prefixIndex])
-    prefixIndex++
-  }
+  while (start === -1 && prefixIndex < prefixLines.length - 1)
+    start = searchLine(fileLines, prefixLines[++prefixIndex])
 
-  while (end === -1 && suffixIndex < suffixLines.length) {
+  while (end === -1 && suffixIndex < suffixLines.length - 1)
     end = searchLine(
       fileLines,
-      suffixLines[suffixLines.length - 1 - suffixIndex],
+      suffixLines[suffixLines.length - 1 - ++suffixIndex],
     )
-    suffixIndex++
-  }
 
   if (start === -1 || end === -1 || start > end) return undefined
 
-  start -= prefixIndex - 1
-  end += suffixIndex - 1
+  start -= prefixIndex
+  end += suffixIndex
 
   return new vscode.Range(start, 0, end, fileLines[end].length)
 }

@@ -8,8 +8,7 @@ import {
 } from 'ix/asynciterable/operators'
 import { multicast } from './ix-multicast'
 
-export type OpenAiMessage =
-  OpenAI.Chat.Completions.CreateChatCompletionRequestMessage
+export type OpenAiMessage = OpenAI.Chat.Completions.ChatCompletionMessageParam
 
 /**
  * To avoid 4000 request per minute limit like bug ... and a big bill ...
@@ -78,7 +77,9 @@ export async function streamLlm<T>(
       void logger(`${delta}`)
 
       currentContent += delta
-      process.stdout.write(delta)
+
+      // Uncomment to see raw output in console
+      // process.stdout.write(delta)
 
       // Try parsing the xml, even if it's complete it should still be able to apply the diffs
       return tryParsePartial(currentContent)

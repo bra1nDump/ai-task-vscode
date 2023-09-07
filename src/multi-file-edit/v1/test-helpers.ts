@@ -11,18 +11,17 @@ export async function resolveAndApplyChangesToSingleFile(
 ) {
   const sessionDocumentManager = new SessionDocumentManager()
   await sessionDocumentManager.addDocuments('test', [editor.document.uri])
-  const resolvedChanges = await makeToResolvedChangesTransformer(
-    sessionDocumentManager,
-  )({
-    changes: [
-      {
-        changes: changes,
-        isStreamFinilized: true,
-        filePathRelativeToWorkspace: vscode.workspace.asRelativePath(
-          editor.document.uri,
-        ),
-      },
-    ],
+
+  const resolver = makeToResolvedChangesTransformer(sessionDocumentManager)
+  const resolvedChanges = await resolver({
+    changes: changes.map((change) => ({
+      change,
+      isStreamFinilized: true,
+      filePathRelativeToWorkspace: vscode.workspace.asRelativePath(
+        editor.document.uri,
+      ),
+    })),
+
     // Doesn't matter what we put here, plan is only for informational purposes
     plan: [],
     isStreamFinalizedUnused: false,

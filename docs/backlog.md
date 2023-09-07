@@ -18,7 +18,7 @@
 ### Wednesday Gradually apply changes as they come in, while supporting multiple edits within the file
 
 - Finally gradually apply changes
-  - Use existing end to end test
+  - Use existing end to end test end to end.
 - Closing the session file should stop generation
 - Changing selection in the editor should clear the highlight
 - Provide token count on the input and provide approximate price

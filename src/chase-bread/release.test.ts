@@ -24,29 +24,23 @@ suite('VSCode Extension Command Tests', function () {
 
     assert.ok(releaseCommand, 'Command "birds.chaseBread" is not registered.')
 
-    try {
-      await vscode.commands.executeCommand('birds.chaseBread')
-      console.log('Command "birds.chaseBread" finished running')
+    await vscode.commands.executeCommand('birds.chaseBread')
+    console.log('Command "birds.chaseBread" finished running')
 
-      const helloWorldUri = vscode.Uri.joinPath(
-        vscode.workspace.workspaceFolders![0].uri,
-        'helloWorld.ts',
-      )
-      const helloWorldDocument =
-        await vscode.workspace.openTextDocument(helloWorldUri)
-      const helloWorldDocumentText = helloWorldDocument.getText()
-      assert.equal(
-        helloWorldDocumentText,
-        `// @bread Parametrize this function with a name
+    const helloWorldUri = vscode.Uri.joinPath(
+      vscode.workspace.workspaceFolders![0].uri,
+      'helloWorld.ts',
+    )
+    const helloWorldDocument =
+      await vscode.workspace.openTextDocument(helloWorldUri)
+    const helloWorldDocumentText = helloWorldDocument.getText()
+    assert.equal(
+      helloWorldDocumentText,
+      `// @bread Parametrize this function with a name
 export function helloWorld(name: string) {
   console.log(\`Hello \${name}!\`)
 }
-`,
-      )
-    } catch (error) {
-      assert.fail(
-        `Command "birds.chaseBread" could not be run: ${error as any}`,
-      )
-    }
+  `,
+    )
   })
 })

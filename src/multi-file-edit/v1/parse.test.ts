@@ -51,10 +51,8 @@ function hello(name: string) {
     assert.ok(fileChange)
     assert.ok(fileChange.filePathRelativeToWorkspace?.length ?? 0 > 0)
 
-    const changes = fileChange.changes
-
-    assert.equal(changes.length, 1)
-    assert.ok(changes[0].newChunk.content.length)
+    assert.ok(fileChange.change)
+    assert.ok(fileChange.change.newChunk.content.length)
   })
 
   test('Complex patch', () => {
@@ -93,14 +91,7 @@ hello(name);
     // console.log(JSON.stringify(patch, null, 2));
 
     assert.ok(patch)
-    const [
-      {
-        changes: [change1],
-      },
-      {
-        changes: [change2],
-      },
-    ] = patch.changes
+    const [{ change: change1 }, { change: change2 }] = patch.changes
 
     assert.equal(patch.changes.length, 2)
     assert.ok(change1.newChunk.content.length)
@@ -117,9 +108,9 @@ hello(name);
     const patch = parsePartialMultiFileEdit(almostEmptyPatch)
 
     assert.ok(patch)
-    const changes = patch.changes[0].changes
+    const firstChange = patch.changes[0].change
 
-    assert.equal(changes[0].description.length, 0)
+    assert.equal(firstChange.description.length, 0)
   })
 
   // We don't want the tag to stream in and get shown to the user
@@ -128,10 +119,10 @@ hello(name);
     const patch = parsePartialMultiFileEdit(patchWithPartialClosingTag)
 
     assert.ok(patch)
-    const changes = patch.changes[0].changes
+    const change = patch.changes[0].change
 
-    assert.equal(changes.length, 1)
-    const { oldChunk, newChunk } = changes[0]
+    assert.ok(change)
+    const { oldChunk, newChunk } = change
     assert.ok(oldChunk.isStreamFinalized === false)
     assert.ok(oldChunk.type === 'fullContentRange')
     assert.ok(oldChunk.fullContent === 'lol')
@@ -142,10 +133,10 @@ hello(name);
     const patch = parsePartialMultiFileEdit(patchWithPartialClosingTag)
 
     assert.ok(patch)
-    const changes = patch.changes[0].changes
+    const change = patch.changes[0].change
 
-    assert.equal(changes.length, 1)
-    const { oldChunk, newChunk } = changes[0]
+    assert.ok(change)
+    const { oldChunk, newChunk } = change
     assert.ok(oldChunk.isStreamFinalized === true)
     assert.ok(newChunk.isStreamFinalized === true)
   })
@@ -170,10 +161,10 @@ function hello(name: string) {
     // console.log(JSON.stringify(patch, null, 2));
 
     assert.ok(patch)
-    const changes = patch.changes[0].changes
+    const change = patch.changes[0].change
 
-    assert.equal(changes.length, 1)
-    assert.ok(changes[0].newChunk.content.length)
+    assert.ok(change)
+    assert.ok(change.newChunk.content.length)
   })
 
   test('Patch with truncated content gets parsed as having a prefix and the suffix', () => {
@@ -190,11 +181,10 @@ function helloWorld() {
     // console.log(JSON.stringify(patch, null, 2));
 
     assert.ok(patch)
-    const changes = patch.changes[0].changes
+    const change = patch.changes[0].change
 
-    assert.equal(changes.length, 1)
-
-    const { oldChunk, newChunk } = changes[0]
+    assert.ok(change)
+    const { oldChunk } = change
 
     // Ensure the start and end of the old chunk are present and have reasonable length
     assert.ok(oldChunk.type === 'prefixAndSuffixRange')

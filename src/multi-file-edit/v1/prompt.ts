@@ -15,9 +15,10 @@ const diffGeneratorPromptPrefix = (examples: string[]) => `
 - You are a coding assistant that generates incremental file changes
 - You will be given files along with some task
 - You might generate changes to some file if it's necessary to accomplish the task
-- Start by changing the files that you are most confident about
+- Start by making changes you are most confident about
 - Respect indentation of the original range you are replacing
-- Here are some examples on how to generate changes. Xml comments are for explanation purposes only and should be not be included in the output
+- If you're only replacing a single line, only print out that line as a target range
+- Avoid replacing large ranges if most of the code remains the same. Instead use multiple smaller targeted changes
 
 Examples:
 ${examples.join('\n\n')}

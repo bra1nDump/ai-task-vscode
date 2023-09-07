@@ -140,11 +140,14 @@ export async function applyResolvedChangesWhileShowingTheEditor(
   This most likely will require another abstraction to keep track of things we have already shown to the user.
   */
 
-  /*
-    Useful expressions to log or watch in the debugger:
-    document.getText(resolvedChange.rangeToReplace)
-    resolvedChange.replacement
-  */
+  debug('Applying change to editor')
+  debug('Document before replacement', document.getText())
+  const { start, end } = resolvedChange.rangeToReplace
+  debug(
+    `Replacing range: ${start.line}, ${start.character} - ${end.line}, ${end.character}`,
+  )
+  debug('Replacing content:', document.getText(resolvedChange.rangeToReplace))
+  debug('With:', resolvedChange.replacement)
 
   const isApplicationSuccessful = await editor.edit((editBuilder) => {
     editBuilder.replace(
@@ -153,10 +156,14 @@ export async function applyResolvedChangesWhileShowingTheEditor(
     )
   })
 
-  // Give the user a chance to see the results
-  // await new Promise((resolve) => setTimeout(resolve, 5_000))
+  debug('Document after replacement', document.getText())
 
   return isApplicationSuccessful
     ? 'appliedSuccessfully'
     : 'failedToApplyCanRetry'
+}
+
+function debug(...args: any[]) {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+  // console.log(...args)
 }

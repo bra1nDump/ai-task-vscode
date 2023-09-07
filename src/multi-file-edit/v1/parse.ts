@@ -4,7 +4,7 @@ import {
   trimUpToOneTrailingNewLine,
   trimUpToOneLeadingNewLine,
 } from 'xml/parser'
-import { TargetRange, LlmGeneratedPatchXmlV1 } from './types'
+import { TargetRange, LlmGeneratedPatchXmlV1, FileChange } from './types'
 
 /*
 For reference the new format is
@@ -45,7 +45,7 @@ export function parsePartialMultiFileEdit(xml: string): LlmGeneratedPatchXmlV1 {
 
   // TODO: Drop the new lines right after opening tags range-to-replace and replacement and right before closing tags
 
-  const fileChanges = fileChangeOutputs.map((fileChangeOutput) => {
+  const fileChanges = fileChangeOutputs.map((fileChangeOutput): FileChange => {
     const path = extractSingleXmlElement(fileChangeOutput.content, 'path')
     const description = extractSingleXmlElement(
       fileChangeOutput.content,
@@ -104,7 +104,7 @@ export function parsePartialMultiFileEdit(xml: string): LlmGeneratedPatchXmlV1 {
 
     return {
       filePathRelativeToWorkspace: path?.content,
-      changes: [singularChangeForAFile],
+      change: singularChangeForAFile,
       isStreamFinilized: fileChangeOutput.isClosed,
     }
   })

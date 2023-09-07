@@ -42,7 +42,7 @@ export interface FileChange {
   /** If not present - means its streaming.
    * We will use this field early to show the file targeted with a change */
   filePathRelativeToWorkspace?: string
-  changes: Change[]
+  change: Change
   isStreamFinilized: boolean
 }
 

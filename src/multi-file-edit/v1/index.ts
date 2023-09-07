@@ -64,12 +64,6 @@ Next you should output changes as outlined by the format previously.
   void highLevelLogger(`\n# Files submitted:\n`)
   for (const fileContext of fileContexts) logFilePath(fileContext)
 
-  // Log files from tabs
-  // if (fileContextFromOpenTabsNotInFileContexts.length > 0)
-  //   void highLevelLogger(`\n# Files from open tabs:\n`)
-  // for (const fileContext of fileContextFromOpenTabsNotInFileContexts)
-  //   logFilePath(fileContext)
-
   const unresolvedChangeStream = await streamLlm<LlmGeneratedPatchXmlV1>(
     messages,
     parsePartialMultiFileEdit,

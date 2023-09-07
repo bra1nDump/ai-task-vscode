@@ -179,7 +179,7 @@ suite('Apply Patch Tests', function () {
 
     await resolveAndApplyChangesToSingleFile(changes, editor)
 
-    assert.strictEqual(editor.document.getText(), 'Hello World')
+    assert.strictEqual(editor.document.getText(), 'Hello World\n\n')
   })
 
   test('Empty lines are not used to match target range', async () => {
@@ -271,7 +271,7 @@ export function helloWorld() {
 
     const editor = await setupEditorWithContent(initialContent)
 
-    const changes = parsedChange.changes[0].changes
+    const changes = parsedChange.changes.map((x) => x.change)
     await resolveAndApplyChangesToSingleFile(changes, editor)
 
     const finalContent = editor.document.getText()
@@ -304,9 +304,9 @@ export function getCurrentUserName() {
       'tmp/helloWorld.ts',
     )(`// @bread Parametrize this function with a name
 export function helloWorld() {
-  cosole.lo(\`Hello world!\`)
+  console.log(\`Hello world!\`)
 }
-    `)
+  `)
 
     const llmFinalResponse = `
 Plan:
@@ -319,34 +319,34 @@ Plan:
 
 Changes:
 <change>
-  <path>tmp/helloWorld.ts</path>
-  <description>Parametrising function with a name of the thing to be greeted</description>
-  <range-to-replace>
+<path>tmp/helloWorld.ts</path>
+<description>Parametrising function with a name of the thing to be greeted</description>
+<range-to-replace>
 export function helloWorld() {
   console.log(\`Hello world!\`)
 }
-  </range-to-replace>
-  <replacement>
+</range-to-replace>
+<replacement>
 export function helloWorld(name: string) {
   console.log(\`Hello \${name}!\`)
 }
-  </replacement>
+</replacement>
 </change>
 
 <change>
-  <path>tmp/main.ts</path>
-  <description>Implementing function to print out current user's name using helper functions</description>
-  <range-to-replace>
+<path>tmp/main.ts</path>
+<description>Implementing function to print out current user's name using helper functions</description>
+<range-to-replace>
 // @bread implement so it will print out current user's name using helper functions
-  </range-to-replace>
-  <replacement>
+</range-to-replace>
+<replacement>
 import { getCurrentUserName } from './environment';
 import { helloWorld } from './helloWorld';
 
 // @bread implement so it will print out current user's name using helper functions
 const userName = getCurrentUserName();
 helloWorld(userName);
-  </replacement>
+</replacement>
 </change>
 `
 
@@ -372,7 +372,7 @@ helloWorld(userName);
 export function helloWorld(name: string) {
   console.log(\`Hello \${name}!\`)
 }
-    `.replace(/ /g, '+'),
+  `.replace(/ /g, '+'),
       'helloWorld.ts',
     )
 
