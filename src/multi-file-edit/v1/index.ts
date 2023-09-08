@@ -67,13 +67,10 @@ Next you should output changes as outlined by the format previously.
   // Abort if requested
   sessionContext.sessionAbortedEventEmitter.event(() => abortController.abort())
 
+  // Design Shortcoming due to multi casting
+  // Parsing will be performed multiple times for the same payload, see openai.ts
   const parsedPatchStream = from(rawLlmResponseStream).pipe(
     mapAsync(({ cumulativeResponse, delta }) => {
-      void lowLevelLogger(`${delta}`)
-
-      // Uncomment to see raw output in console
-      // process.stdout.write(delta)
-
       // Try parsing the xml, even if it's complete it should still be able to apply the diffs
       return parsePartialMultiFileEdit(cumulativeResponse)
     }),

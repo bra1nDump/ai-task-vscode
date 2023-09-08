@@ -94,30 +94,55 @@ export async function closeSession(
   sessionContext.sessionAbortedEventEmitter.dispose()
 }
 
+async function findMostRecentSessionLogIndexPrefix(
+  sessionsDirectory: vscode.Uri,
+) {
+  // Check if directory exists before reading
+  const directoryExists = await vscode.workspace.fs
+    .stat(sessionsDirectory)
+    .then(
+      () => true,
+      () => false,
+    )
+  if (!directoryExists) return 0
+
+  const sessionLogFiles =
+    await vscode.workspace.fs.readDirectory(sessionsDirectory)
+  const sessionLogIndexPrefixes = sessionLogFiles.map(([fileName, _]) =>
+    Number(fileName.split('-')[0]),
+  )
+  const mostRecentSessionLogIndexPrefix = Math.max(
+    ...sessionLogIndexPrefixes,
+    0,
+  )
+  return mostRecentSessionLogIndexPrefix
+}
+
 async function createSessionLogDocuments() {
-  const prettyPrintedDateWithTimeShort = new Date()
-    .toLocaleString('en-US', {
-      dateStyle: 'short',
-      timeStyle: 'short',
-    })
-    // Replace : and / with - to make it a valid file name, otherwise it will create a bunch of nested directories
-    .replace(/[:/]/g, '-')
   const sessionsDirectory = vscode.Uri.joinPath(
     vscode.workspace.workspaceFolders![0].uri,
     '.bread/sessions',
   )
 
+  const nextIndex =
+    (await findMostRecentSessionLogIndexPrefix(sessionsDirectory)) + 1
+
+  const shortWeekday = new Date().toLocaleString('en-US', {
+    weekday: 'short',
+  })
+  const sessionNameBeforeAddingTopicSuffix = `${nextIndex}-${shortWeekday}`
+
   // High level feedback
   const sessionMarkdownHighLevelFeedbackDocument =
     await createAndOpenEmptyDocument(
       sessionsDirectory,
-      `${prettyPrintedDateWithTimeShort}.md`,
+      `${sessionNameBeforeAddingTopicSuffix}.md`,
     )
   // Low level feedback
   const sessionMarkdownLowLevelFeedbackDocument =
     await createAndOpenEmptyDocument(
       sessionsDirectory,
-      `${prettyPrintedDateWithTimeShort}.raw.md`,
+      `${sessionNameBeforeAddingTopicSuffix}.raw.md`,
     )
 
   return {

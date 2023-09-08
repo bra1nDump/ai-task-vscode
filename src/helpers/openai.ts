@@ -69,6 +69,16 @@ export async function streamLlm(
       // Refactor: These details should have stayed in openai.ts
       const delta = part.choices[0]?.delta?.content
       if (!delta) return undefined
+
+      // Design Shortcoming: Async iterable multi casting
+      // Due to multiplexing and iterating over the stream multiple times
+      // all the mappings are performed however many times there are for await loops
+      // This is 1. not performant 2. breaks stateful things like logging
+      // A potential solution is to multiplex the stream only after basic mapping is done
+      // But it is also nice to multiplex the stream early to for example catch errors and detect stream ending
+      // For now I will simply log the delta here
+      void logger(delta)
+
       currentContent += delta
       return {
         cumulativeResponse: currentContent,
@@ -83,7 +93,7 @@ export async function streamLlm(
 
   void logger(`\n# Messages submitted:\n`)
   for (const { content, role } of messages)
-    void logger(`\n## [${role}]:\n\`\`\`md\n${content}\`\`\`\n`)
+    void logger(`\n## [${role}]:\n\`\`\`md\n${content}\n\`\`\`\n`)
   void logger(`\n# [assistant, latest response]:\n\`\`\`md\n`)
 
   // Detect end of stream and free up the llm resource

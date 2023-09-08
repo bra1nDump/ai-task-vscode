@@ -23,7 +23,7 @@
   - Have them implement a common interface
 - Compile the script to get context instead of getting context manually within two available commands
 
-@crust IS IMPORTANT - do not actually create any <changes> simply write out your thoughts in plan form.
+@bread IS IMPORTANT - do not actually create any <changes> simply write out your thoughts in plan form.
 Provide suggestions on how I can create abstractions for context providers.
 Also provides the rough design ideas given the files.
 The rough idea is I want to create some sort of compilation step that I will use later on to compile bread scripts
@@ -59,6 +59,8 @@ Consider this script as a replacement for bread chasing command.
 Look for tasks and informational comments tagged with @bread in your input files and generate changes to accomplish them.
 ```
 
+@crust Provide a plan and your thoughts on the above in your output.
+
 ## Thursday Record demo video for multi file edit
 
 ## Thursday Type at cursor - allows me to replace continue
@@ -92,6 +94,8 @@ Look for tasks and informational comments tagged with @bread in your input files
 - Preview for the high level oftentimes flickers. Not sure what causes itb but try larger outputs
   - we rewriting the entire file. Workaround documented in append function
 - Currently all edits push individually to the undue stack tremendously polluting it. Only have the final edit pushed to the undue stack
+- When we make edits we do big replacements causing flicker due to language highlighter needing to parse the change.10
+  - A simple solution is to at the time of applying the change get the current text for the range we're trying to edit, if it is the prefix of the replacement, drop that prefix from the replacement and insert at end of original target range
 
 ## Developer experience working on Birds
 
