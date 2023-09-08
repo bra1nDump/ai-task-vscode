@@ -61,7 +61,7 @@ Next you should output changes if nessesary as outlined by the format previously
 
   // Provider pointer to low level log for debugging
   void highLevelLogger(
-    `## [Raw LLM input + response](./${sessionContext.markdownLowLevelFeedbackDocument.uri.path})\n`,
+    `## [Raw LLM input + response](${sessionContext.markdownLowLevelFeedbackDocument.uri.path})\n`,
   )
 
   const [rawLlmResponseStream, abortController] = await streamLlm(
@@ -90,19 +90,9 @@ Next you should output changes if nessesary as outlined by the format previously
     const loggedPlanIndexWithSuffix = new Set<string>()
     void highLevelLogger(`\n# Plan:\n`)
     for await (const plan of planStream)
-      for (const [index, item] of plan.entries()) {
-        // Find the last suffix that was logged
-        const latestVersion = `${index}: ${item}`
-        const lastLoggedVersion = [...loggedPlanIndexWithSuffix]
-          .filter((x) => x.startsWith(`${index}:`))
-          .sort((a, b) => b.length - a.length)[0]
-        // Only logged the delta or the first version including the item separator
-        if (lastLoggedVersion) {
-          const delta = latestVersion.slice(lastLoggedVersion.length)
-          void highLevelLogger(delta)
-        } else void highLevelLogger(`\n- ${item}`)
-
-        loggedPlanIndexWithSuffix.add(latestVersion)
+      for (const item of plan.split('\n')) {
+        void highLevelLogger(`\n- ${item}`)
+        loggedPlanIndexWithSuffix.add(item)
       }
   }
 

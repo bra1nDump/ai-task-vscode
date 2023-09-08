@@ -22,7 +22,7 @@ export async function chaseBugsCommand() {
   const sessionContext = await startSession()
   await queueAnAppendToDocument(
     sessionContext.markdownHighLevelFeedbackDocument,
-    "- Bugs is being chased by professional birds your bugs don't not stand a chance\n",
+    '> 🐦: Your bugs are being chased by the best in the flock\n',
   )
 
   const diagnosticsAlongWithTheirFileContexts =

@@ -19,7 +19,7 @@ export async function chaseBreadCommand() {
   const sessionContext = await startSession()
   void queueAnAppendToDocument(
     sessionContext.markdownHighLevelFeedbackDocument,
-    '> Bread is being chased by professional birds your bread does not stand the chance\n\n',
+    '> 🐦: Bread is being chased by professional crumbs elliminators\n',
   )
 
   // Functionality specific to bread mentions
