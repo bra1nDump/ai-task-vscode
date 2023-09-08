@@ -32,7 +32,7 @@ You should first output a bullet list plan of action roughly describing each cha
 - Plan item one
 - Item two
 
-Next you should output changes as outlined by the format previously.
+Next you should output changes if nessesary as outlined by the format previously.
 `,
   }
   const messages = [outputFormatMessage, fileContextMessage, userTaskMessage]
@@ -58,6 +58,11 @@ Next you should output changes as outlined by the format previously.
   // Log files that we are submitting as context
   void highLevelLogger(`\n# Files submitted:\n`)
   for (const fileContext of fileContexts) logFilePath(fileContext)
+
+  // Provider pointer to low level log for debugging
+  void highLevelLogger(
+    `## [Raw LLM input + response](./${sessionContext.markdownLowLevelFeedbackDocument.uri.path})\n`,
+  )
 
   const [rawLlmResponseStream, abortController] = await streamLlm(
     messages,

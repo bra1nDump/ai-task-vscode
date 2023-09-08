@@ -23,9 +23,6 @@
   - Have them implement a common interface
 - Compile the script to get context instead of getting context manually within two available commands
 
-@bread IS IMPORTANT - do not actually create any <changes> simply write out your thoughts in plan form.
-Provide suggestions on how I can create abstractions for context providers.
-Also provides the rough design ideas given the files.
 The rough idea is I want to create some sort of compilation step that I will use later on to compile bread scripts
 For now I want to start using this idea by compiling a fake script that simply references @<context provider expression>
 and has a written task of the goal that needs to be accomplished.
@@ -60,6 +57,66 @@ Look for tasks and informational comments tagged with @bread in your input files
 ```
 
 @crust Provide a plan and your thoughts on the above in your output.
+
+### Scripting requirements and types
+
+Also see [[scripting]]
+
+```ts
+type CompileUnit =
+  // This would be either a virtual script created by the command runner,
+  // or the .bread.md file, or chunk off text from within @bread comment
+  ScriptBlob
+
+type CompilationOutputUnit =
+  // Gets produced from either a script (usually the same content as the sript itself)
+  // or from some custom @url google.com/ @shell "git diff" command
+  //
+  // I should make other entries to have a type field so I can easily switch over them
+  | { type: 'Prompt'; value: Prompt }
+  // Currently unused, the idea is this will guide which top level tool will be selected
+  // Could be multi file edit (resulting in what additional prompts to inject and how the response is parsed and interpreted)
+  // | SessionConfiguration
+  // This is for example one of the @breaded files might contain other script blobs
+  | EditableFile
+
+// The compiler would output things that would eventually settle into a session
+// It might take a couple of rounds to settle into a session
+type Compiler = (input: CompileUnit) => {
+  processedScriptBlob: string // Will be included as message
+  files: EditableFile[] // files that got pulled in by the script, they are not nesseseraly editable
+  genericContextPrompts: string[] // Prompts from things like @shell, @url etc
+}
+
+// There might be more scripts in each of the files
+type ScriptExtractorFromComments = (input: EditableFile) => ScriptBlob[]
+
+type Session = {
+  // Different tasks might want different context but lets not worry about that
+  // Each of these will map to a standard function that takes in a session and interprets the reponse
+  // topLevelTaskId: Task
+  // This contains all editable files or files for reference
+  fileManager: FileManager
+
+  selection: Selection // This is useful for inline typing. I think we want to take this when we create a new session, should be done when FileManager captures the matching file as well. Maybe we can include this in the file snapshot data?
+
+  // Script / @url @shell @google providers
+  prompts: string[]
+}
+
+// I don't think we should use bread files to pick the top level task. I think the top level task should be selected by
+// running a particular vscode command or by special hardcoding in the extension, for example double enter after @bread comment.
+// It would be nice to to type @bread write me a function that does X @inline-typing "hit enter twice" and have it work.
+// To start I can just add the double enter thing without the complications and see how it goes.
+// type TaskId =
+//   | 'multi-file-edit'
+//   | 'single-file-rewrite'
+//   | 'inline-typing'
+//   | 'edit-selection'
+// type SessionConfiguration = {
+//   topLevelTaskId?: TaskId
+// }
+```
 
 ## Thursday Record demo video for multi file edit
 
@@ -196,3 +253,7 @@ Will function calling help me getter faster? I would not need to deal with Xml p
   - This sucks, the editor contents also need to be saved ... otherwise fs read will not be accurate. Hmm. Maybe I should just check if there is an editor opened for a given uri and if yes
   - Well this is a big problem, you cannot access editors that are not in focus. Task output is also considered an editor
   - The rough idea is to watch editors and when they change cache their content, store in a map. When we try reading a file - first try reading from the map, only after from fs
+
+```
+
+```
