@@ -9,7 +9,6 @@ The rich context is simply a string that can be expanded into more context + a p
 - Next run `Compiler` on each of the `ContextExpression` to get `ExpandedContext`
   - Optionally we can replace the original compiled context inline with compiled blob
   - Similar functionality would be useful for adding problem / type information inline to files
--
 
 ```ts
 // This would be either a virtual script created by the command runner,
@@ -27,6 +26,7 @@ type ExpandedContext = {
   plainBlobsPulledInByOtherContextProviders: string[]
 }
 
+// Lets ditch this for now
 interface ContextItem<T> {
   name: string
   sourceProviderName: string
@@ -46,25 +46,49 @@ interface ContextProvider<T> {
   aliases: string[]
 
   // We migtht not want to type @file hello.ts, instead we want to simply type @hello and should start getting autocomplete
-  waitForNameOrAliasToMatch: boolean
+  // Instead just pass the query with both including prefix and not including
+  // waitForNameOrAliasToMatch: boolean
   // This is for autocomplete
-  autoCompleteOnPrefix: (query: ContextQuery) => string[]
+  autoCompleteOnPrefix(query: ContextQuery): string[]
+
+  /**
+   * Converts an instance of a context item to someting that can be added into the llm session as context
+   */
+  async resolve(withParameter: string): Promise<ContextItem<T>>
 }
 
-type FilePath = string
-class FileContextProvider extends ContextProvider<FilePath> {
+class FileContextProvider extends ContextProvider<File> {
   name = 'file'
   aliases = ['files']
-  autoCompleteOnPrefix = (query: ContextQuery) => {}
+  autoCompleteOnPrefix(query: ContextQuery) {
+    // Assumes we have a file manager
+    const currentFilePaths = this.fileManager.relativeFilePathsInWorkspace()
+    return currentFilePaths.filter((filePath) =>
+      filePath.startsWith(query.prefixAfterMatchingAliasOrName),
+      || filePath.startsWith(query.fullPrefix)
+    )
+  }
+
+  async resolve(withParameter: string): Promise<ContextItem<File>> {
+    const filePath = withParameter
+    return await this.fileManager.getFile(filePath)
+  }
 }
 
 type PlainBlob = string
 class ShellContextProvider implements ContextProvider<PlainBlob> {
   name = 'shell'
   aliases = ['sh', 'cmd']
-  autoCompleteOnPrefix = (query: ContextQuery) => {
+  autoCompleteOnPrefix(query: ContextQuery) {
     // This is a shell command, so we don't really want to autocomplete it, its dynamic
     return []
+  }
+
+  async resolve(withParameter: string): Promise<ContextItem<PlainBlob>> {
+    // Run the shell command
+    const terminal = vscode.window.createTerminal('birds')
+    terminal.sendText(withParameter)
+    // ?? No idea how to get the response from the terminal! I think it is opend as a text editor so we can read it from there ??
   }
 }
 

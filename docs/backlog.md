@@ -13,29 +13,15 @@
 
 # Next up - v1, initial potential user reach out, looking for collaborators
 
-## Thursday Compilation Step
+## Friday Record demo video for multi file edit
 
-- Refactor chase bread and chase bugs commands to to use a virtual script with context provider mentions and prompt
-- Add context providers for
-  - @bread, @bugs
-  - Later @url
-  - Think about auto completion, specifically for @url would probably want some fixed websites will use often. For instance I would include vscode Api docs
-  - Have them implement a common interface
-- Compile the script to get context instead of getting context manually within two available commands
-
-## Thursday Record demo video for multi file edit
-
-## Thursday Type at cursor - allows me to replace continue
+## Friday Type at cursor - allows me to replace continue for personal use
 
 - For example current model does not support inserts only some sort of replacement
 - The simplest version is to keep reusing the multi file edit prompt and simply instruct to replace a single line with the comment /run
 - We can also get rid of the planning stage (maybe we should also inject at using /plan directive)
 
-## Friday Language server draft for @bread scripts (inline)
-
-- Reuse the context provider definitions to provide autocomplete
-
-## Friday Record Type at cursor
+## Saturday Record Type at cursor
 
 ## Saturday Release - REALLY DON'T WANT TO DO THIS, BUT THIS IS ESSENTIAL
 
@@ -48,6 +34,20 @@
 
 - Manually go over popular repositories in the space vscode extensions find top contributors
 - Send them an email from a personal email sending the GitHub page + Discord
+
+## Monday Compilation Step
+
+- Refactor chase bread and chase bugs commands to to use a virtual script with context provider mentions and prompt
+- Add context providers for
+  - @bread, @bugs
+  - Later @url
+  - Think about auto completion, specifically for @url would probably want some fixed websites will use often. For instance I would include vscode Api docs
+  - Have them implement a common interface
+- Compile the script to get context instead of getting context manually within two available commands
+
+## Tuesday Language server draft for @bread scripts (inline)
+
+- Reuse the context provider definitions to provide autocomplete
 
 # Later
 
