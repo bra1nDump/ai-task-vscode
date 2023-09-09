@@ -1,6 +1,7 @@
 # Formats
 
 ## Format v1 - old chunk / new chunk
+
 <file path="">
 <change summary="Updating imports to account for previous change">
 <range-to-replace>
@@ -13,13 +14,17 @@ import { useMutation } from 'react-query';
 </change>
 
 ## Improvements / issues
-- I should not have nested another element which is changes in the file. Much better to just generate a separate file change is another element. Sure this is one more step but this is one less thing to pay attention to when generating the results for the LLM. Let's stick to this for now but I need to reward thus soon.
-  - It will be a pain to rework all the data structures. Maybe I should wait until I have compilation errors in place
+
+### Main issue - shitty code is produced
+
+- Play with the prompt - have it generate a longer more detailed plan
+
 - Alt+select allows to select multiple ranges in vscode. This is very useful when you want to make multi edits
   - They can also be parallelized
 - Indentation should ideally be taken into account when generating diffs to match the indentation preferred by the user. This is low priority since type script does not care about it
 
 ## Old improvements
+
 - When deleting or overriding big portions of the code range-to-replace will be large. And it gets printed out before the replacement so the perceived delay is large.
 - With truncation it basically is the same as providing prefix / suffix context.
 - I feel like its better to name the old chunk as range, and the new chunk as replacement.
@@ -36,6 +41,7 @@ import { useMutation } from 'react-query';
 - Got error: `command failed with error code 2: error parsing glob '**/${': unclosed alternate group; missing '}' (maybe escape '{' with '[{]'?)`
 
 ## Format v2 - open ai function calling
+
 Instead of xml encoding, we can use function calling fomat to encode the changes.
 Can we use lang chain for this?
 
@@ -49,18 +55,21 @@ Function calling is used in the agents, but how? I don't think it will structuri
 https://github.com/hwchase17/langchainjs/blob/65e59d669889ef07a564c5ec8fd23e21ed1aa68a/langchain/src/agents/initialize.ts#L177
 
 How would streaming work?
+
 - Again seems like we need to write a custom parser
 - There is one that looks promising but requires more digging into to acomplish the task compared to having chat gpt write the parser for us https://github.com/uhop/stream-json/tree/master
 
 # Generally useful ideas
+
 - How do we help it 'plan' what it will do?
   - Which classes / functions will it modify?
-- Best change location encoding approach 
+- Best change location encoding approach
   - Line numbers?
   - Infer line numbers from function names?
 - Its useful to say where the change is made - header, function body, for loop, etc
 
 # Benchmarking
+
 - Create the best ever diff prompt
 - Create a dataset of commits (single file commits?, with smaller files?)
 - For each proposed format Vi create a function `encodeChangeVi(oldFile, newFile) -> LLMUnderstoodDiffFormatVi`
@@ -72,16 +81,17 @@ How would streaming work?
     - Compute the correct output by running `encodeChangeVi(oldFile, newFile)` on the commit
     - Compute the loss between the two outputs - probably need to ask gpt to do this too - promptfoo?
 
-
 # Handle indentation
+
 We can format the file after the fact, but thats just ugly as the response is streaming.
 I want to get the indentation right the first time.
 
-We should infer based on the indentation of the file after the context prefix. 
+We should infer based on the indentation of the file after the context prefix.
 Simply look at last line.
 Adjust each line's indentation to match.
 
 # Demand, Cursor, someone posted:
+
 First off, cursor has been really great to use so far!
 When trying to write frontend , I love asking cursor to write my css. However, it's slightly annoying since I have to ask it to create the css first (passing in my component file) where it then generates some class names and then i have to do the reverse where I pass in the css and ask it to fill in the class names on my component file. It would be great if this could be done in one go where I just pass in my component file and a css file and ask it to generate some styles.
 

@@ -11,29 +11,16 @@
 - Recorded impressive demo video + gif for readme
 - Replaced continue on the current project
 
-# Next up - v1, initial potential user reach out, looking for collaborators
+# Next up - v1 (type-inline + multi-file-edit), initial potential user reach out, looking for collaborators
 
-## Friday Record demo video for multi file edit
-
-## Friday Type at cursor - allows me to replace continue for personal use
+## Sat Type at cursor - allows me to replace continue for personal use
 
 - For example current model does not support inserts only some sort of replacement
 - The simplest version is to keep reusing the multi file edit prompt and simply instruct to replace a single line with the comment /run
 - We can also get rid of the planning stage (maybe we should also inject at using /plan directive)
+- Maybe also take into account the @bread files + diagnostics
 
-## Saturday Record Type at cursor
-
-## Saturday Release - REALLY DON'T WANT TO DO THIS, BUT THIS IS ESSENTIAL
-
-- Make repository public on GitHub
-- Create issues for some of my todos here
-- Style discord server, add basic documentation
-- Ping friends asking to try it
-
-## Sunday Promote, Recruit Cofounders - REALLY DON'T WANT TO DO THIS, BUT THIS IS ESSENTIAL
-
-- Manually go over popular repositories in the space vscode extensions find top contributors
-- Send them an email from a personal email sending the GitHub page + Discord
+## Record Type at cursor
 
 ## Monday Compilation Step
 
@@ -49,10 +36,23 @@
 
 - Reuse the context provider definitions to provide autocomplete
 
+## Release - REALLY DON'T WANT TO DO THIS, BUT THIS IS ESSENTIAL
+
+- Make repository public on GitHub
+- Create issues for some of my todos here
+- Style discord server, add basic documentation
+- Ping friends asking to try it
+
+## Promote, Recruit Cofounders - REALLY DON'T WANT TO DO THIS, BUT THIS IS ESSENTIAL
+
+- Manually go over popular repositories in the space vscode extensions find top contributors
+- Send them an email from a personal email sending the GitHub page + Discord
+
 # Later
 
 ## UX
 
+- Scroll into view when editing - very annoying to look for it
 - Preview also scrolls up all the time as we are re-writing the document. I wonder if we were to append to the document instead of write to fs scroll would be preserved
 - Preview for the high level oftentimes flickers. Not sure what causes itb but try larger outputs
   - we rewriting the entire file. Workaround documented in append function
@@ -79,6 +79,21 @@ This is a complex task that will require rewriting roughly 1/3 of the code base 
 Will function calling help me getter faster? I would not need to deal with Xml parsing, but I will have to deal with new apis and parsing partial JSON
 
 ## Bug fixes - need to have editor opened for this to work currently
+
+- Run tsc oursleves instead of relying on the language server
+  - Problem matcher is super simple, so just re-implement it and run tsc
+  - tsc is 40mb, lets not bundle typescript into the extnesion :D
+  - https://chat.openai.com/share/f1d8b474-6d84-4c2a-86f6-91a5a3317aeb
+- Only provide errors, not warnings from the compiler
+- Provide a better prompt for fixing refactors. Example:
+
+```
+- You should not revert the refactor of plan: string back to string[] to fix the problem
+- You should output only 3 ways you can think of fixing the problem
+- Keep in mind that when something breaks due to a refactor, you should usually avoid trying to fix the problem right there and think about implications of the refactor and how to fix the problem in a way that will be inline with what the refactor was trying to achieve
+```
+
+### Problem matchers
 
 Use tsc directly with a problem matcher to get the errors?
 How to get problem matcher to work?
