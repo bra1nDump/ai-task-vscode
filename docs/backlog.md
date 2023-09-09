@@ -7,11 +7,15 @@
 # Next milestones
 
 - [done] Published extension
-- Found a single demo user
+- Have a novel feature - probably working multi file edits
 - Recorded impressive demo video + gif for readme
+- Release project on GitHub
+- Found a single demo user
 - Replaced continue on the current project
 
-# Next up - v1 (type-inline + multi-file-edit), initial potential user reach out, looking for collaborators
+# Next up
+
+## Play with prompts for multi file edits, try improving the planning stage
 
 ## Sat Type at cursor - allows me to replace continue for personal use
 
@@ -53,6 +57,7 @@
 ## UX
 
 - Scroll into view when editing - very annoying to look for it
+- Indentation should ideally be taken into account when generating diffs to match the indentation preferred by the user. This is low priority since type script does not care about it
 - Preview also scrolls up all the time as we are re-writing the document. I wonder if we were to append to the document instead of write to fs scroll would be preserved
 - Preview for the high level oftentimes flickers. Not sure what causes itb but try larger outputs
   - we rewriting the entire file. Workaround documented in append function

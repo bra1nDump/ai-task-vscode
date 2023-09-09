@@ -11,13 +11,23 @@ import { OpenAiMessage } from 'helpers/openai'
  * and bread is simply one way of giving the task to a multi file editing program
  */
 
-const diffGeneratorPromptPrefix = (examples: string[]) => `
+/*
 - You are a coding assistant that generates incremental file changes
 - You will be given files along with some task
 - You might generate changes to some file if it's necessary to accomplish the task
 - Start by making changes you are most confident about
 - Respect indentation of the original range you are replacing
 - If you're only replacing a single line, only print out that line as a target range
+- Avoid replacing large ranges if most of the code remains the same. Instead use multiple smaller targeted changes
+*/
+
+const diffGeneratorPromptPrefix = (examples: string[]) =>
+  `This message describes how to make file changes.
+
+Suggestions:
+- Only make changes based on your task, don't try to fix other issues you see
+- It is okay do not produce any changes at all, as long as it's aligned with the task
+- Respect indentation of the original range you are replacing
 - Avoid replacing large ranges if most of the code remains the same. Instead use multiple smaller targeted changes
 
 Examples:

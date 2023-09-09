@@ -21,23 +21,32 @@ export async function startMultiFileEditing(
   breadIdentifier: string,
   sessionContext: SessionContext,
 ) {
-  const outputFormatMessage =
+  const multiFileEditPrompt =
     multiFileEditV1FormatSystemMessage(breadIdentifier)
 
   const fileContexts = sessionContext.documentManager.getFileContexts()
-  const fileContextMessage = fileContextSystemMessage(fileContexts)
+  const fileContext = fileContextSystemMessage(fileContexts)
+
+  const outputFormat: OpenAiMessage = {
+    role: 'system',
+    content: `First output your understanding of the task and explain how you want to accomplish it. If you decide to make any file changes provide detailed explanations for the changes you are about to make. Output your thoughts in the following format: 
+<thoughts>
+{{Your thoughts here}}
+</thoughts>
+
+Next output any file changes following the suggestions and format provided previously.`,
+  }
 
   const userTaskMessage: OpenAiMessage = {
     role: 'user',
-    content: `Your task: ${taskPrompt}
-You should first output a bullet list plan of action roughly describing each change you want to make. The format should be:
-- Plan item one
-- Item two
-
-Next you should output changes if nessesary as outlined by the format previously.
-`,
+    content: `Your task: ${taskPrompt}`,
   }
-  const messages = [outputFormatMessage, fileContextMessage, userTaskMessage]
+  const messages = [
+    multiFileEditPrompt,
+    fileContext,
+    userTaskMessage,
+    outputFormat,
+  ]
 
   const highLevelLogger = (text: string) =>
     queueAnAppendToDocument(

@@ -21,7 +21,6 @@ import { useMutation } from 'react-query';
 
 - Alt+select allows to select multiple ranges in vscode. This is very useful when you want to make multi edits
   - They can also be parallelized
-- Indentation should ideally be taken into account when generating diffs to match the indentation preferred by the user. This is low priority since type script does not care about it
 
 ## Old improvements
 
