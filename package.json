@@ -25,10 +25,6 @@
       {
         "command": "birds.chaseBread",
         "title": "Code Birds: Chase @bread-ed files and apply requested changes"
-      },
-      {
-        "command": "birds.chaseBugs",
-        "title": "Code Birds: Chase files with problems and fix them"
       }
     ],
     "configuration": {

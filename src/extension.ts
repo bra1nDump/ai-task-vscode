@@ -1,5 +1,4 @@
 import { chaseBreadCommand } from 'chase-bread/command'
-import { chaseBugsCommand } from 'chase-bugs/command'
 import * as vscode from 'vscode'
 
 export function activate(context: vscode.ExtensionContext) {
@@ -8,7 +7,9 @@ export function activate(context: vscode.ExtensionContext) {
   // Commands also need to be defined in package.json
   context.subscriptions.unshift(
     vscode.commands.registerCommand('birds.chaseBread', chaseBreadCommand),
-    vscode.commands.registerCommand('birds.chaseBugs', chaseBugsCommand),
+    // WARNING: The command was deprecated because it is overlapping with the chasing bread too much
+    // I have decided to include the compile errors in the chasing bread command to consolidate the code
+    // vscode.commands.registerCommand('birds.chaseBugs', chaseBugsCommand),
     vscode.window.onDidChangeTextEditorSelection(changedEditorSelection),
   )
 }

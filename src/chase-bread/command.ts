@@ -5,6 +5,7 @@ import { getBreadIdentifier } from 'helpers/bread-identifier'
 import { queueAnAppendToDocument } from 'helpers/vscode'
 import { closeSession, startSession } from 'session'
 import { startMultiFileEditing } from 'multi-file-edit/v1'
+import { projectDiagnosticEntriesWithAffectedFileContext } from 'chase-bugs/diagnostics'
 
 /**
  * Generates and applies diffs to files in the workspace containing @bread mention.
@@ -44,17 +45,57 @@ export async function chaseBreadCommand() {
     openTabsFileUris,
   )
 
+  // Provide problems context
+  const diagnosticsAlongWithTheirFileContexts =
+    projectDiagnosticEntriesWithAffectedFileContext()
+  const fileUrisWithProblems = diagnosticsAlongWithTheirFileContexts.map(
+    (x) => x.uri,
+  )
+  await sessionContext.documentManager.addDocuments(
+    'Files with problems',
+    fileUrisWithProblems,
+  )
+
   console.log('fileManager', sessionContext.documentManager.dumpState())
 
-  // I imagine chasing bugs will be almost simply calling this code
-  // The main issue is in enriching the files with comments, or line numbers
-  // Actually passing the breaded identifier should be replaced with passing the entire task prompt
-  // this is currently generated within this function.
-  //
-  // To begin with I can simply dump all the compilation errs into a separate file!
-  // as well as update the prompt to not pay attention to breaded files but instead try to fix compilation errors
+  // Provide optional problem context + prompt
+  const problemContext = diagnosticsAlongWithTheirFileContexts
+    .flatMap(({ uri, diagnostic }) => {
+      if (diagnostic.severity !== vscode.DiagnosticSeverity.Error) return []
+      const filePathRelativeToWorkspace = vscode.workspace.asRelativePath(uri)
+
+      return [
+        `File: ${filePathRelativeToWorkspace}
+Error message: ${diagnostic.message}
+Range:
+- Line start ${diagnostic.range.start.line}
+- Line end ${diagnostic.range.end.line}
+${
+  diagnostic.relatedInformation
+    ?.map((info) => `Related info: ${info.message}`)
+    .join('\n') ?? ''
+}
+`,
+      ]
+    })
+    .join('\n')
+
+  const compilationErrorContextAndPrompt =
+    problemContext.length === 0
+      ? undefined
+      : `Here's a list of compilation errors in some of the files:
+${problemContext}
+
+Most likely this is due to a refactor user has started but not finished.
+Based on @${breadIdentifier} mentions, and the errors you should first infer what was the refactor in the first place.
+Collect all relevant information about the refactor that might help you fix the errors.
+Keep in mind oftentimes the location of the error is not the place that you want to make changes to, but rather it is a hint another part of the code needs changing to accommodate the refactor.
+`
+
   await startMultiFileEditing(
-    `Look for tasks and informational comments tagged with ${breadIdentifier} in your input files and generate changes to accomplish them.`,
+    `${
+      compilationErrorContextAndPrompt ?? ''
+    }Your task is spread out across multiple files and usually tagged with @${breadIdentifier}. First collect all of the information relevant to the tasks. It can be anywhere within the files. Output your understanding of the task to be accomplished as part of your thoughts. It's essential you understand the task and any suggestions the user gives you about how to accomplish the task`,
     breadIdentifier,
     sessionContext,
   )

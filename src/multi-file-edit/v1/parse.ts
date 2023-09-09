@@ -54,8 +54,6 @@ export function parsePartialMultiFileEdit(xml: string): LlmGeneratedPatchXmlV1 {
 
   const fileChangeOutputs = extractXmlElementsForTag(xml, 'change')
 
-  // TODO: Drop the new lines right after opening tags range-to-replace and replacement and right before closing tags
-
   const fileChanges = fileChangeOutputs.map((fileChangeOutput): FileChange => {
     const path = extractSingleXmlElement(fileChangeOutput.content, 'path')
     const description = extractSingleXmlElement(
