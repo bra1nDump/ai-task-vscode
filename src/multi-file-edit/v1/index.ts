@@ -1,3 +1,5 @@
+import * as vscode from 'vscode'
+
 import {
   FileContext,
   fileContextSystemMessage,
@@ -59,10 +61,14 @@ Next you should output changes if nessesary as outlined by the format previously
   void highLevelLogger(`\n# Files submitted:\n`)
   for (const fileContext of fileContexts) logFilePath(fileContext)
 
-  // Provider pointer to low level log for debugging
-  void highLevelLogger(
-    `## [Raw LLM input + response](${sessionContext.markdownLowLevelFeedbackDocument.uri.path})\n`,
+  // Provider pointer to low level log for debugging, it wants a relative to workspace path for some reason
+  // The document path is .bread/sessions/<id>-<weekday>.raw.md, so we need to go up two levels since the
+  // markdown file we are outputing to is in .bread/sessions as well
+  // Likely not windows friendly as it uses /
+  const relativePath = vscode.workspace.asRelativePath(
+    sessionContext.markdownLowLevelFeedbackDocument.uri.path,
   )
+  void highLevelLogger(`## [Raw LLM input + response](../../${relativePath})\n`)
 
   const [rawLlmResponseStream, abortController] = await streamLlm(
     messages,

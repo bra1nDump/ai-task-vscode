@@ -12,38 +12,31 @@
 				"reveal": "never",
 				"group": "watchers"
 			},
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			}
+			"group": "build"
 		},
 		{
 			"type": "npm",
-			"script": "watch-tests",
+			"script": "watch-tsc",
 			"problemMatcher": "$tsc-watch",
 			"isBackground": true,
 			"presentation": {
-				"reveal": "never",
+				"revealProblems": "onProblem",
 				"group": "watchers"
 			},
 			"group": "build"
 		},
 		{
-			"label": "tasks: watch-tests",
+			"label": "watch-tsc-and-rebundle",
 			"dependsOn": [
 				"npm: watch",
-				"npm: watch-tests"
+				"npm: watch-tsc"
 			],
-			"problemMatcher": []
+			"problemMatcher": [],
+			"group": {
+				"isDefault": true,
+				"kind": "build",
+			}
 		},
-		// Having trouble setting those one up, ignoring for now
-		// {
-		// 	"label": "clean: out-directory",
-		// 	"type": "shell",
-		// 	"command": [
-		// 		"rm -rfd out"
-		// 	]
-		// },
 		{
 			"label": "Build and Install Locally",
 			"type": "npm",
