@@ -1,9 +1,10 @@
 import * as vscode from 'vscode'
-import { startMultiFileEditing } from 'multi-file-edit/v1'
 import { projectDiagnosticEntriesWithAffectedFileContext } from './diagnostics'
-import { getBreadIdentifier } from 'helpers/bread-identifier'
 import { closeSession, startSession } from 'session'
-import { queueAnAppendToDocument } from 'helpers/vscode'
+import { openedTabs, queueAnAppendToDocument } from 'helpers/vscode'
+import { startMultiFileEditing } from 'multi-file-edit/v1'
+import { getBreadIdentifier } from 'helpers/bread-identifier'
+import { findAndCollectBreadedFiles } from 'document-helpers/file-context'
 
 /**
  * Gathered the problems in the code base
@@ -19,6 +20,7 @@ import { queueAnAppendToDocument } from 'helpers/vscode'
 export async function chaseBugsCommand() {
   console.log('Bird watch is on the way for those pesky bugs')
 
+  const breadIdentifier = getBreadIdentifier()
   const sessionContext = await startSession()
   await queueAnAppendToDocument(
     sessionContext.markdownHighLevelFeedbackDocument,
@@ -56,7 +58,31 @@ ${
     fileUrisWithProblems,
   )
 
-  const breadIdentifier = getBreadIdentifier()
+  // We also want to add all files with bread + all open tabs (copied over from chase bread command)
+  const breadFileUris = await findAndCollectBreadedFiles(breadIdentifier)
+  if (!breadFileUris) {
+    void vscode.window.showErrorMessage(
+      'No bread found, birds are getting hungry. Remember to add @bread mention to at least one file in the workspace.',
+    )
+    return
+  }
+
+  await sessionContext.documentManager.addDocuments(
+    'Bread files',
+    breadFileUris,
+  )
+
+  const openTabsFileUris = openedTabs()
+
+  await sessionContext.documentManager.addDocuments(
+    'Open tabs',
+    openTabsFileUris,
+  )
+
+  console.log('diagnosticsPromptParts', diagnosticsPromptParts)
+  console.log('fileUrisWithProblems', fileUrisWithProblems)
+  console.log('fileManager', sessionContext.documentManager.dumpState())
+
   await startMultiFileEditing(
     `Fix these problems: ${diagnosticsPromptParts.join('\n')}}`,
     breadIdentifier,
@@ -65,7 +91,7 @@ ${
 
   await queueAnAppendToDocument(
     sessionContext.markdownHighLevelFeedbackDocument,
-    '> You snitching on your bugs was appreciated by the birds, pleasure doing business with you - Bird representative\n',
+    '\n> You snitching on your bugs was appreciated by the birds, pleasure doing business with you - Bird representative\n',
   )
 
   await closeSession(sessionContext)

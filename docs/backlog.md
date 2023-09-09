@@ -53,6 +53,7 @@
 
 ## UX
 
+- Preview also scrolls up all the time as we are re-writing the document. I wonder if we were to append to the document instead of write to fs scroll would be preserved
 - Preview for the high level oftentimes flickers. Not sure what causes itb but try larger outputs
   - we rewriting the entire file. Workaround documented in append function
 - Currently all edits push individually to the undue stack tremendously polluting it. Only have the final edit pushed to the undue stack
@@ -76,6 +77,13 @@
 
 This is a complex task that will require rewriting roughly 1/3 of the code base if not more
 Will function calling help me getter faster? I would not need to deal with Xml parsing, but I will have to deal with new apis and parsing partial JSON
+
+## Bug fixes - need to have editor opened for this to work currently
+
+Use tsc directly with a problem matcher to get the errors?
+How to get problem matcher to work?
+Can I run tsc using a javascript, so from the extension code itself? .. probably a bad idea
+https://github.com/microsoft/vscode/blob/41e940f76f5deda197bc5930b044c55607ba1cbc/extensions/typescript-language-features/package.json#L1520-L1550
 
 ## Uncategorized
 

@@ -9,8 +9,19 @@ import { TargetRange, LlmGeneratedPatchXmlV1, FileChange } from './types'
 /*
 For reference the new format is
 
-- Item 1 of the plan
+@crust Notice the new format of the plan.
+Old format relied on having a markdown list of items, which is not very flexible.
+
+Old format:
+- Item 1
 - Item 2
+
+New format supports any content within the tags:
+<plan>
+Some free thoughts without particular structure
+
+- Plan item one
+</plan>
 
 <change>
   <path>src/hello-world.ts</path>

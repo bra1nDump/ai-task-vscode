@@ -42,18 +42,16 @@ async function main() {
       execSync(`${vscodeBinary} --uninstall-extension ${extensionId}`, {
         stdio: 'inherit',
       })
-
-      // Pretty sure I need to reload the window for this to have any effect. I think otherwise we are keeping the old version
     } catch (err) {
       console.log('Extension not installed, continuing...')
-
-      console.log('Installing extension...')
-
-      // Install the extension in VS Code Insiders
-      execSync(`${vscodeBinary} --install-extension ${vsixFileName}`, {
-        stdio: 'inherit',
-      })
     }
+
+    console.log('Installing extension...')
+
+    // Install the extension in VS Code Insiders
+    execSync(`${vscodeBinary} --install-extension ${vsixFileName} --force`, {
+      stdio: 'inherit',
+    })
   } catch (err) {
     console.error(err)
   }
