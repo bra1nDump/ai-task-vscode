@@ -44,6 +44,8 @@ export async function chaseBreadCommand() {
     openTabsFileUris,
   )
 
+  console.log('fileManager', sessionContext.documentManager.dumpState())
+
   // I imagine chasing bugs will be almost simply calling this code
   // The main issue is in enriching the files with comments, or line numbers
   // Actually passing the breaded identifier should be replaced with passing the entire task prompt

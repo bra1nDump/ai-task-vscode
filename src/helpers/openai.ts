@@ -4,6 +4,7 @@ import * as vscode from 'vscode'
 import { AsyncIterableX, from, last } from 'ix/asynciterable'
 import { filter, map as mapAsync } from 'ix/asynciterable/operators'
 import { multicast } from './ix-multicast'
+import { promiseToResult } from './catchAsync'
 
 export type OpenAiMessage = OpenAI.Chat.Completions.ChatCompletionMessageParam
 
@@ -56,12 +57,20 @@ export async function streamLlm(
 
   // Compare AsyncGenerators / AsyncIterators: https://javascript.info/async-iterators-generators
   // Basically openai decided to not return AsyncGenerator, which is more powerful (compare type definitions) but instead return an AsyncIteratable for stream
-  const stream = await openai.chat.completions.create({
-    model: process.env.OPENAI_DEFAULT_MODEL ?? 'gpt-4',
-    temperature: 0.6,
-    messages,
-    stream: true,
-  })
+  const streamResult = await promiseToResult(
+    openai.chat.completions.create({
+      model: process.env.OPENAI_DEFAULT_MODEL ?? 'gpt-4',
+      temperature: 0.6,
+      messages,
+      stream: true,
+    }),
+  )
+
+  if (streamResult.kind === 'failure') {
+    isStreamRunning = false
+    throw streamResult.error
+  }
+  const stream = streamResult.value
 
   let currentContent = ''
   const simplifiedStream = from(stream).pipe(
