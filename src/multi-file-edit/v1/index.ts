@@ -29,13 +29,14 @@ export async function startMultiFileEditing(
 
   const outputFormat: OpenAiMessage = {
     role: 'system',
-    content: `First output your understanding of the task and explain how you will accomplish it in detail.
-Output your thoughts in the following format: 
+    content: `First collect all of the information relevant to the task the user is trying to accomplish and restate the task. The task can be spread out across the input. Next explain how you will accomplish it in detail.
+
 <thoughts>
-{{Your thoughts here}}
+{{Your detailed understanding of you the task the user is trying to accomplish}}
+{{Your detailed plan on how to accomplish the task}}
 </thoughts>
 
-Next output any file changes right after yourt houghts in the format described in "How to make a multi file change".`,
+Next output any file changes right after your <thoughts> in the format described in "How to make a multi file change".`,
   }
 
   const userTaskMessage: OpenAiMessage = {
@@ -106,19 +107,9 @@ Next output any file changes right after yourt houghts in the format described i
     const loggedPlanIndexWithSuffix = new Set<string>()
     void highLevelLogger(`\n# Plan:\n`)
     for await (const plan of planStream)
-      for (const [index, item] of plan.entries()) {
-        // Find the last suffix that was logged
-        const latestVersion = `${index}: ${item}`
-        const lastLoggedVersion = [...loggedPlanIndexWithSuffix]
-          .filter((x) => x.startsWith(`${index}:`))
-          .sort((a, b) => b.length - a.length)[0]
-        // Only logged the delta or the first version including the item separator
-        if (lastLoggedVersion) {
-          const delta = latestVersion.slice(lastLoggedVersion.length)
-          void highLevelLogger(delta)
-        } else void highLevelLogger(`\n- ${item}`)
-
-        loggedPlanIndexWithSuffix.add(latestVersion)
+      if (plan !== lastPlanVersion) {
+        void highLevelLogger(`\n ${plan}`)
+        lastPlanVersion = plan
       }
   }
 

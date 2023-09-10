@@ -86,17 +86,19 @@ ${
       : `Here's a list of compilation errors in some of the files:
 ${problemContext}
 
-Most likely this is due to a refactor user has started but not finished.
-Based on @${breadIdentifier} mentions, and the errors you should first infer what was the refactor in the first place.
-Collect all relevant information about the refactor that might help you fix the errors.
-Keep in mind oftentimes the location of the error is not the place that you want to make changes to. 
-You should strive to accommodate the refactor with probably logical changes that will be aligned with the refactor rather than just making sure the code compiles
+- Most likely this is due to a refactor user has started but not finished.
+- Based on @${breadIdentifier} mentions and the errors you should guess what was the refactor in the first place.
+- Collect all relevant information about the refactor that might help you fix the errors.
+
+Addressing errors:
+- Often the location of the error is not the place that you want to make changes to
+- Make sure you're not masking the compile error, but rather making required changes to the logic of the program
 `
 
   await startMultiFileEditing(
     `${compilationErrorContextAndPrompt ?? ''}
 
-Your task is spread out across multiple files and usually tagged with @${breadIdentifier}. First collect all of the information relevant to the task. It can be anywhere within the files. Restate the task as you understand it as part of your thoughts. It's essential you understand the task and any suggestions the user gives you about how to accomplish the task. Restating the task in your own words`,
+Your task is spread out across multiple files with main goals tagged with @${breadIdentifier}`,
     breadIdentifier,
     sessionContext,
   )
