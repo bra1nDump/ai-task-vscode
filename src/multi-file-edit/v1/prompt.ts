@@ -25,6 +25,8 @@ Before it would replace too big over chunk, now it has gone too granular and I t
 
 It has continuously used a string that does not exist in scope and did not declare it.
 When declaring variables it would oftentimes place them too far from when they're used.
+
+Maybe I am being overly harsh on the multi file editing. I have asked continue some more question and it has failed to  make the change I wanted.
 */
 
 const diffGeneratorPromptPrefix = (examples: string[]) =>
@@ -36,8 +38,7 @@ Suggestions:
   - A body of small function
   - A block of code surrounded with new lines
   - A for loop and some variables defined right before it
-- Avoid replacing too big of a chunk of code. Instead use multiple smaller targeted changes
-- Make sure symbols you're using and your new code art available in scope or to find them yourself
+- Make sure symbols you are using are available in scope or define them yourself
 
 Examples:
 ${examples.join('\n\n')}
