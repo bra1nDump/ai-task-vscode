@@ -107,9 +107,19 @@ Next output any file changes right after your <thoughts> in the format described
     const loggedPlanIndexWithSuffix = new Set<string>()
     void highLevelLogger(`\n# Plan:\n`)
     for await (const plan of planStream)
-      if (plan !== lastPlanVersion) {
-        void highLevelLogger(`\n ${plan}`)
-        lastPlanVersion = plan
+      for (const [index, item] of plan.entries()) {
+        // Find the last suffix that was logged
+        const latestVersion = `${index}: ${item}`
+        const lastLoggedVersion = [...loggedPlanIndexWithSuffix]
+          .filter((x) => x.startsWith(`${index}:`))
+          .sort((a, b) => b.length - a.length)[0]
+        // Only logged the delta or the first version including the item separator
+        if (lastLoggedVersion) {
+          const delta = latestVersion.slice(lastLoggedVersion.length)
+          void highLevelLogger(delta)
+        } else void highLevelLogger(`\n- ${item}`)
+
+        loggedPlanIndexWithSuffix.add(latestVersion)
       }
   }
 
