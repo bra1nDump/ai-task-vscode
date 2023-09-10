@@ -86,9 +86,9 @@ ${
       : `Here's a list of compilation errors in some of the files:
 ${problemContext}
 
-- Most likely this is due to a refactor user has started but not finished.
-- Based on @${breadIdentifier} mentions and the errors you should guess what was the refactor in the first place.
-- Collect all relevant information about the refactor that might help you fix the errors.
+- Most likely this is due to a refactor user has started but not finished
+- Based on @${breadIdentifier} mentions and the errors you should guess what was the refactor in the first place
+- Collect all relevant information about the refactor that might help you fix the errors
 
 Addressing errors:
 - Often the location of the error is not the place that you want to make changes to

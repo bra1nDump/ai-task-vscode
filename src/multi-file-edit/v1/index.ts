@@ -29,7 +29,7 @@ export async function startMultiFileEditing(
 
   const outputFormat: OpenAiMessage = {
     role: 'system',
-    content: `First collect all of the information relevant to the task the user is trying to accomplish and restate the task. The task can be spread out across the input. Next explain how you will accomplish it in detail.
+    content: `First collect all of the information relevant to the task the user is trying to accomplish and restate the task. The task can be spread out across the input. Next explain how you will accomplish it in detail. Sometimes part of the task is already accomplished, clearly state so and consider it stale instructions.
 
 <thoughts>
 {{Your detailed understanding of you the task the user is trying to accomplish}}

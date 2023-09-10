@@ -16,19 +16,28 @@ import { OpenAiMessage } from 'helpers/openai'
 - You will be given files along with some task
 - You might generate changes to some file if it's necessary to accomplish the task
 - Start by making changes you are most confident about
-- Respect indentation of the original range you are replacing
+- Respect indentation of the original range you are replacing (does not really replace indentation)
 - If you're only replacing a single line, only print out that line as a target range
-- Avoid replacing large ranges if most of the code remains the same. Instead use multiple smaller targeted changes
+- Avoid replacing large ranges if most of the code remains the same. Instead use multiple smaller targeted change
+
+I'm playing around with the scope that should be replaced.
+Before it would replace too big over chunk, now it has gone too granular and I think it's causing issues.
+
+It has continuously used a string that does not exist in scope and did not declare it.
+When declaring variables it would oftentimes place them too far from when they're used.
 */
 
 const diffGeneratorPromptPrefix = (examples: string[]) =>
-  `This message describes how to make file changes.
+  `How to make a multi file change.
 
 Suggestions:
-- Only make changes based on your task, don't try to fix other issues you see
-- It is okay do not produce any changes at all, as long as it's aligned with the task
-- Respect indentation of the original range you are replacing
-- Avoid replacing large ranges if most of the code remains the same. Instead use multiple smaller targeted changes
+- Only make changes based on your task
+- Only replace logically complete chunks of code. Avoid replacing sub expressions. Examples:
+  - A body of small function
+  - A block of code surrounded with new lines
+  - A for loop and some variables defined right before it
+- Avoid replacing too big of a chunk of code. Instead use multiple smaller targeted changes
+- Make sure symbols you're using and your new code art available in scope or to find them yourself
 
 Examples:
 ${examples.join('\n\n')}
@@ -107,15 +116,27 @@ Given a task to refactor the code to use a single div instead of a list, the fol
 <path>counter.ts</path>
 <description>Use a single div simply showing the count instead of showing a list element with values from 0 to count</description>
 <range-to-replace>
+  return (
+    <div>
+      <button onClick={() => count > 0 && setCount(count - 1)}>-</button>
+      <button onClick={() => setCount(count + 1)}>+</button>
       <ul>
         {Array.from({ length: count }, 
           (_, i) => 
             <li key={i}>Item {i + 1}</li>)
         }
       </ul>
+    </div>
+  );
 </range-to-replace>
 <replacement>
+  return (
+    <div>
+      <button onClick={() => count > 0 && setCount(count - 1)}>-</button>
+      <button onClick={() => setCount(count + 1)}>+</button>
       <div>{count}</div>
+    </div>
+  );
 </replacement>
 </change>
 `
