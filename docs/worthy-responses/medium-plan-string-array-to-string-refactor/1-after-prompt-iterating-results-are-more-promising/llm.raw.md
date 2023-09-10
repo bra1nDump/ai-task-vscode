@@ -1,0 +1,593 @@
+
+# Messages submitted:
+
+## [system]:
+```md
+This message describes how to make file changes.
+
+Suggestions:
+- Only make changes based on your task, don't try to fix other issues you see
+- It is okay do not produce any changes at all, as long as it's aligned with the task
+- Respect indentation of the original range you are replacing
+- Avoid replacing large ranges if most of the code remains the same. Instead use multiple smaller targeted changes
+
+Examples:
+
+Given two files (omitted for brevity) and a task to make changes based on crust mentions. The following are acceptable changes to generate.
+<change>
+<path>src/hello-world.ts</path>
+<description>Parametrising function with a name of the thing to be greeted</description>
+<range-to-replace>
+function helloWorld() {
+    // crust pass name to be greeted
+    console.log('Hello World');
+}
+</range-to-replace>
+<replacement>
+function hello(name: string) {
+    console.log(`Hello ${name}`);
+}
+</replacement>
+</change>
+<change>
+<path>src/main.ts</path>
+<description>Use hello world from a helper module and use environment variable to get the user name</description>
+<range-to-replace>
+// crust use hello world from a helper module and use environment variable to get the user name
+</range-to-replace>
+<replacement>
+import { hello } from './helper';
+const name = process.env.USER_NAME || 'World';
+hello(name);
+</replacement>
+</change>
+
+
+
+Given two files (omitted for brevity) and a task to make changes based on crust mentions. The following are acceptable changes to generate.
+<change>
+<path>src/hello-world.ts</path>
+<description>Parametrising function with a name of the thing to be greeted</description>
+<range-to-replace>
+function helloWorld() {
+    // crust pass name to be greeted
+    console.log('Hello World');
+}
+</range-to-replace>
+<replacement>
+function hello(name: string) {
+    console.log(`Hello ${name}`);
+}
+</replacement>
+</change>
+<change>
+<path>src/main.ts</path>
+<description>Use hello world from a helper module and use environment variable to get the user name</description>
+<range-to-replace>
+// crust use hello world from a helper module and use environment variable to get the user name
+</range-to-replace>
+<replacement>
+import { hello } from './helper';
+const name = process.env.USER_NAME || 'World';
+hello(name);
+</replacement>
+</change>
+
+
+
+Given this file:
+<file>
+<path>src/quicksort.py</path>
+<content>
+# @crust Refactor thus using recursion
+def partition(array, low, high):
+  i = (low-1)
+  pivot = array[high]
+  for j in range(low, high):
+    if array[j] <= pivot:
+      i = i+1
+      array[i], array[j] = array[j], array[i]
+  array[i+1], array[high] = array[high], array[i+1]
+  return (i+1)
+
+def quicksort(array, low, high):
+  if len(array) == 1:
+    return array
+  if low < high:
+    pi = partition(array, low, high)
+    quicksort(array, low, pi-1)
+    quicksort(array, pi+1, high)
+
+data = [10, 7, 8, 9, 1, 5]
+n = len(data)
+quicksort(data, 0, n-1)
+print("Sorted array is:", data)
+</content>
+</file>
+
+Given a task to address @crust comments, the following is a reasonable change to make. Notice the use of </truncated>. Use it when the range you were replacing is large. Ranges over 5 lines long should be truncated.
+<change>
+<path>src/quicksortpy</path>
+<description>Replacing the existing quicksort implementation with a more efficient one</description>
+<range-to-replace>
+def partition(array, low, high):
+  i = (low-1)
+</truncated>
+    quicksort(array, low, pi-1)
+    quicksort(array, pi+1, high)
+</range-to-replace>
+<replacement>
+def quicksort(arr):
+  if len(arr) <= 1:
+    return arr
+  pivot = arr[len(arr) // 2]
+  left = [x for x in arr if x < pivot]
+  middle = [x for x in arr if x == pivot]
+  right = [x for x in arr if x > pivot]
+  return quicksort(left) + middle + quicksort(right)
+</replacement>
+</change>
+
+
+```
+
+## [system]:
+```md
+Given files:
+<file>
+<path>src/multi-file-edit/v1/types.ts</path>
+<content>
+/*
+  Created a new interface
+  interface Streamed {
+    isStreamFinalized: boolean
+  }
+  I will later extend Change RangeToReplace to be Streamed
+  I will also create a custom string container that will be Streamed
+
+  I'm delaying this abstraction right now in favor off actually writing code into the files.
+
+  Workaround
+  - I will require old chunk to be fully completed before trying to write to a file, 
+  this is because we want to know the range and the file we're writing to before we start writing.
+  - I will also make nu chunk optional that will signal that the old chunk is finally complete 
+*/
+
+export type TargetRange =
+  | {
+      type: 'fullContentRange'
+      isStreamFinalized: boolean
+      fullContent: string
+    }
+  | {
+      type: 'prefixAndSuffixRange'
+      isStreamFinalized: boolean
+      prefixContent: string
+      suffixContent: string
+    }
+
+export interface Replacement {
+  isStreamFinalized: boolean
+  content: string
+}
+
+export interface Change {
+  description: string
+  oldChunk: TargetRange
+  newChunk: Replacement
+}
+
+export interface FileChange {
+  /** If not present - means its streaming.
+   * We will use this field early to show the file targeted with a change */
+  filePathRelativeToWorkspace?: string
+  change: Change
+  isStreamFinilized: boolean
+}
+
+export interface LlmGeneratedPatchXmlV1 {
+  /**
+   * @crust
+   * - I have updated the type to be a string instead of a string array, make changes acordingly across the files\
+   *   to account for this change, including the fixes to address the compilation errors due to this refactor.
+   * - First You should update the parsing code to support it. Now you should parse the plan using the helper to extract xml elements for a tag <plan>. You should get rid of regex matching in that parsing code.
+   * - Next update the code where we print out the plan to use the new format.
+   *   Currently we are processing a stream of different versions of the parsed LlmGeneratedPatchXmlV1.
+   *   As the time goes on the stream will have more and more content within the plan. We have a for
+   *   loop that iterates over the plan items - get rid of the for lop but keep the set to keep track of
+   *   last printed plan version. We also don't need to find the matching plan anymore.
+   *   And we don't need the set anymore actually. Replace it with a let lastPlanVersion = ''
+   */
+  plan: string
+  changes: FileChange[]
+  /** Not used now, but it's much easier to add a new field to an object type versus an array */
+  isStreamFinalizedUnused: boolean
+}
+
+export const isChangeFinalized = (change: Change) =>
+  change.newChunk.isStreamFinalized && change.oldChunk.isStreamFinalized
+
+</content>
+</file>
+<file>
+<path>src/multi-file-edit/v1/parse.ts</path>
+<content>
+import {
+  extractXmlElementsForTag,
+  extractSingleXmlElement,
+  trimUpToOneTrailingNewLine,
+  trimUpToOneLeadingNewLine,
+} from 'xml/parser'
+import { TargetRange, LlmGeneratedPatchXmlV1, FileChange } from './types'
+
+/*
+For reference the new format is
+
+@crust Notice the new format of the plan.
+Old format relied on having a markdown list of items, which is not very flexible.
+
+Old format:
+- Item 1
+- Item 2
+
+New format supports any content within the tags:
+<plan>
+Some free thoughts without particular structure
+
+- Plan item one
+</plan>
+
+<change>
+  <path>src/hello-world.ts</path>
+  <description>Parametrising function with a name of the thing to be greeted</description>
+  <range-to-replace>
+function helloWorld() {
+    // ${breadIdentifier} pass name to be greeted
+    console.log('Hello World');
+}
+</range-to-replace>
+  <!-- The new content to replace the old content between the prefix and suffix -->
+  <replacement>
+function hello(name: string) {
+    console.log(\`Hello \${name}\`);
+}
+  </replacement>
+</change>
+*/
+export function parsePartialMultiFileEdit(xml: string): LlmGeneratedPatchXmlV1 {
+  // Plan is encoded using - as a bullet point for each item
+  // Extract the plan before the first change tag
+  const planItems: string[] = []
+  const [planSection] = xml.split('<change>')
+  // Extract plan items using regex,
+  // account for first item being in the beginning of the string or on a new line
+  const planItemsRegex = /(?:^|\n)- (.*)/g
+  let match: RegExpExecArray | null
+  while ((match = planItemsRegex.exec(planSection)) !== null)
+    planItems.push(match[1])
+
+  const fileChangeOutputs = extractXmlElementsForTag(xml, 'change')
+
+  const fileChanges = fileChangeOutputs.map((fileChangeOutput): FileChange => {
+    const path = extractSingleXmlElement(fileChangeOutput.content, 'path')
+    const description = extractSingleXmlElement(
+      fileChangeOutput.content,
+      'description',
+    )
+    const oldChunk = extractSingleXmlElement(
+      fileChangeOutput.content,
+      'range-to-replace',
+    )
+
+    // Handle case where old chunk is truncated
+    // Warning: Partial truncated printing out will still show
+    const oldChunkParts = oldChunk?.content.split('</truncated>') ?? []
+    let oldChunkContent: TargetRange
+
+    if (!oldChunk)
+      oldChunkContent = {
+        type: 'fullContentRange',
+        isStreamFinalized: false,
+        fullContent: '',
+      }
+    else if (oldChunkParts.length === 2) {
+      // Similar logic to the one embedded in the Xml parsing for regular tags
+      const prefixContent = trimUpToOneTrailingNewLine(oldChunkParts[0])
+      const suffixContent = trimUpToOneLeadingNewLine(oldChunkParts[1])
+      oldChunkContent = {
+        type: 'prefixAndSuffixRange',
+        prefixContent,
+        suffixContent,
+        isStreamFinalized: oldChunk.isClosed,
+      }
+    } else if (oldChunkParts.length === 1)
+      oldChunkContent = {
+        type: 'fullContentRange',
+        fullContent: oldChunk.content,
+        isStreamFinalized: oldChunk.isClosed,
+      }
+    else throw new Error('Unexpected number of old chunk parts')
+
+    const newChunk = extractSingleXmlElement(
+      fileChangeOutput.content,
+      'replacement',
+    )
+
+    // Strange code due to switching the encoding from multiple changes within a single file tag
+    // to a more flat xml encoding but keeping the old data structure
+    // Ideally we want to group the changes by file, but the hell with it for now
+    const singularChangeForAFile = {
+      description: description?.content ?? '',
+      oldChunk: oldChunkContent,
+      newChunk: {
+        content: newChunk?.content ?? '',
+        isStreamFinalized: newChunk?.isClosed ?? false,
+      },
+    }
+
+    return {
+      filePathRelativeToWorkspace: path?.content,
+      change: singularChangeForAFile,
+      isStreamFinilized: fileChangeOutput.isClosed,
+    }
+  })
+
+  return {
+    changes: fileChanges,
+    isStreamFinalizedUnused: false,
+    plan: planItems,
+  }
+}
+
+</content>
+</file>
+<file>
+<path>.crust.md</path>
+<content>
+This project is a VSCode extension that invokes LLMs to help users edit their code files using natural language.
+All the code is in typescript and nothing should have an any type.
+
+</content>
+</file>
+<file>
+<path>src/multi-file-edit/v1/index.ts</path>
+<content>
+import * as vscode from 'vscode'
+
+import {
+  FileContext,
+  fileContextSystemMessage,
+} from 'document-helpers/file-context'
+import { OpenAiMessage, streamLlm } from 'helpers/openai'
+import { from } from 'ix/asynciterable'
+
+import { startInteractiveMultiFileApplication } from 'multi-file-edit/applyResolvedChange'
+import { parsePartialMultiFileEdit } from './parse'
+import { makeToResolvedChangesTransformer } from './resolveTargetRange'
+import { multiFileEditV1FormatSystemMessage } from './prompt'
+import { SessionContext } from 'session'
+import { queueAnAppendToDocument } from 'helpers/vscode'
+
+import { map as mapAsync } from 'ix/asynciterable/operators'
+
+export async function startMultiFileEditing(
+  taskPrompt: string,
+  breadIdentifier: string,
+  sessionContext: SessionContext,
+) {
+  const multiFileEditPrompt =
+    multiFileEditV1FormatSystemMessage(breadIdentifier)
+
+  const fileContexts = sessionContext.documentManager.getFileContexts()
+  const fileContext = fileContextSystemMessage(fileContexts)
+
+  const outputFormat: OpenAiMessage = {
+    role: 'system',
+    content: `First output your understanding of the task and explain how you want to accomplish it. If you decide to make any file changes provide detailed explanations for the changes you are about to make. Output your thoughts in the following format: 
+<thoughts>
+{{Your thoughts here}}
+</thoughts>
+
+Next output any file changes following the suggestions and format provided previously.`,
+  }
+
+  const userTaskMessage: OpenAiMessage = {
+    role: 'user',
+    content: `Your task: ${taskPrompt}`,
+  }
+  const messages = [
+    multiFileEditPrompt,
+    fileContext,
+    userTaskMessage,
+    outputFormat,
+  ]
+
+  const highLevelLogger = (text: string) =>
+    queueAnAppendToDocument(
+      sessionContext.markdownHighLevelFeedbackDocument,
+      text,
+    )
+
+  const lowLevelLogger = (text: string) =>
+    queueAnAppendToDocument(
+      sessionContext.markdownLowLevelFeedbackDocument,
+      text,
+    )
+
+  const logFilePath = (fileContext: FileContext) => {
+    const path = fileContext.filePathRelativeToWorkspace
+    // Assumes we are in .bread/sessions
+    void highLevelLogger(`- [${path}](../../${path})\n`)
+  }
+
+  // Log files that we are submitting as context
+  void highLevelLogger(`\n# Files submitted:\n`)
+  for (const fileContext of fileContexts) logFilePath(fileContext)
+
+  // Provider pointer to low level log for debugging, it wants a relative to workspace path for some reason
+  // The document path is .bread/sessions/<id>-<weekday>.raw.md, so we need to go up two levels since the
+  // markdown file we are outputing to is in .bread/sessions as well
+  // Likely not windows friendly as it uses /
+  const relativePath = vscode.workspace.asRelativePath(
+    sessionContext.markdownLowLevelFeedbackDocument.uri.path,
+  )
+  void highLevelLogger(`## [Raw LLM input + response](../../${relativePath})\n`)
+
+  const [rawLlmResponseStream, abortController] = await streamLlm(
+    messages,
+    lowLevelLogger,
+  )
+
+  // Abort if requested
+  sessionContext.sessionAbortedEventEmitter.event(() => abortController.abort())
+
+  // Design Shortcoming due to multi casting
+  // Parsing will be performed multiple times for the same payload, see openai.ts
+  const parsedPatchStream = from(rawLlmResponseStream).pipe(
+    mapAsync(({ cumulativeResponse, delta }) => {
+      // Try parsing the xml, even if it's complete it should still be able to apply the diffs
+      return parsePartialMultiFileEdit(cumulativeResponse)
+    }),
+  )
+
+  // Split the stream into stream with plan and changes to apply
+  // Process in parallell
+  // Currently has an issue where I am unable to log the delta and am forced to wait until an item is fully generated
+  // Refactor: Parsing should pass deltas or I need to implement local delta generation
+  async function showPlanAsItBecomesAvailable() {
+    const planStream = parsedPatchStream.pipe(mapAsync((x) => x.plan))
+    const loggedPlanIndexWithSuffix = new Set<string>()
+    void highLevelLogger(`\n# Plan:\n`)
+    for await (const plan of planStream)
+      for (const [index, item] of plan.entries()) {
+        // Find the last suffix that was logged
+        const latestVersion = `${index}: ${item}`
+        const lastLoggedVersion = [...loggedPlanIndexWithSuffix]
+          .filter((x) => x.startsWith(`${index}:`))
+          .sort((a, b) => b.length - a.length)[0]
+        // Only logged the delta or the first version including the item separator
+        if (lastLoggedVersion) {
+          const delta = latestVersion.slice(lastLoggedVersion.length)
+          void highLevelLogger(delta)
+        } else void highLevelLogger(`\n- ${item}`)
+
+        loggedPlanIndexWithSuffix.add(latestVersion)
+      }
+  }
+
+  async function startApplication() {
+    const patchSteam = from(
+      parsedPatchStream,
+      makeToResolvedChangesTransformer(sessionContext.documentManager),
+    )
+    await startInteractiveMultiFileApplication(patchSteam, sessionContext)
+  }
+
+  await Promise.all([showPlanAsItBecomesAvailable(), startApplication()])
+}
+
+</content>
+</file>
+```
+
+## [user]:
+```md
+Your task: Here's a list of compilation errors in some of the files:
+File: src/multi-file-edit/v1/index.ts
+Error message: Property 'entries' does not exist on type 'string'.
+Range:
+- Line start 107
+- Line end 107
+
+
+File: src/multi-file-edit/v1/index.ts
+Error message: Unsafe call of an `any` typed value.
+Range:
+- Line start 107
+- Line end 107
+
+
+File: src/multi-file-edit/v1/parse.ts
+Error message: Type 'string[]' is not assignable to type 'string'.
+Range:
+- Line start 123
+- Line end 123
+Related info: The expected type comes from property 'plan' which is declared here on type 'LlmGeneratedPatchXmlV1'
+
+
+Most likely this is due to a refactor user has started but not finished.
+Based on @crust mentions, and the errors you should first infer what was the refactor in the first place.
+Collect all relevant information about the refactor that might help you fix the errors.
+Keep in mind oftentimes the location of the error is not the place that you want to make changes to. 
+You should strive to accommodate the refactor with probably logical changes that will be aligned with the refactor rather than just making sure the code compiles
+Your task is spread out across multiple files and usually tagged with @crust. First collect all of the information relevant to the tasks. It can be anywhere within the files. Output your understanding of the task to be accomplished as part of your thoughts. It's essential you understand the task and any suggestions the user gives you about how to accomplish the task
+```
+
+## [system]:
+```md
+First output your understanding of the task and explain how you want to accomplish it. If you decide to make any file changes provide detailed explanations for the changes you are about to make. Output your thoughts in the following format: 
+<thoughts>
+{{Your thoughts here}}
+</thoughts>
+
+Next output any file changes following the suggestions and format provided previously.
+```
+
+# [assistant, latest response]:
+```md
+<thoughts>
+The task involves addressing a refactor that the user has started but not finished. The refactor is related to the property 'plan' in the interface 'LlmGeneratedPatchXmlV1' in the file 'src/multi-file-edit/v1/types.ts'. The user has changed the type of 'plan' from 'string[]' to 'string'. 
+
+The refactor has caused compilation errors in two files: 'src/multi-file-edit/v1/index.ts' and 'src/multi-file-edit/v1/parse.ts'. In 'src/multi-file-edit/v1/index.ts', the property 'entries' does not exist on type 'string' and there's an unsafe call of an 'any' typed value. In 'src/multi-file-edit/v1/parse.ts', the type 'string[]' is not assignable to type 'string'.
+
+To address these errors, I will need to update the parsing code in 'src/multi-file-edit/v1/parse.ts' to support the new 'plan' format. Currently, the parsing code attempts to parse 'plan' as an array of strings, but now 'plan' is a single string. I need to get rid of regex matching in the parsing code and instead parse the 'plan' using a helper function to extract XML elements for the tag 'plan'. 
+
+In 'src/multi-file-edit/v1/index.ts', I need to update the code that prints out the 'plan'. Currently, it uses a for loop to iterate over the 'plan' items, which is no longer appropriate since 'plan' is now a single string. I should replace the for loop with a simple print statement. I also need to replace the set that keeps track of the last printed plan version with a simple string variable 'lastPlanVersion'.
+
+After making these changes, I will need to check the rest of the code to ensure that it aligns with the refactor and doesn't cause any other compilation errors.
+</thoughts>
+
+<change>
+<path>src/multi-file-edit/v1/parse.ts</path>
+<description>Update the parsing code to support the new 'plan' format as a single string</description>
+<range-to-replace>
+const planItems: string[] = []
+  const [planSection] = xml.split('<change>')
+  // Extract plan items using regex,
+  // account for first item being in the beginning of the string or on a new line
+  const planItemsRegex = /(?:^|\n)- (.*)/g
+  let match: RegExpExecArray | null
+  while ((match = planItemsRegex.exec(planSection)) !== null)
+    planItems.push(match[1])
+</range-to-replace>
+<replacement>
+const plan = extractSingleXmlElement(xml, 'plan')?.content || '';
+</replacement>
+</change>
+<change>
+<path>src/multi-file-edit/v1/index.ts</path>
+<description>Update the code that prints out the 'plan' to use the new format as a single string</description>
+<range-to-replace>
+for (const [index, item] of plan.entries()) {
+        // Find the last suffix that was logged
+        const latestVersion = `${index}: ${item}`
+        const lastLoggedVersion = [...loggedPlanIndexWithSuffix]
+          .filter((x) => x.startsWith(`${index}:`))
+          .sort((a, b) => b.length - a.length)[0]
+        // Only logged the delta or the first version including the item separator
+        if (lastLoggedVersion) {
+          const delta = latestVersion.slice(lastLoggedVersion.length)
+          void highLevelLogger(delta)
+        } else void highLevelLogger(`\n- ${item}`)
+
+        loggedPlanIndexWithSuffix.add(latestVersion)
+      }
+</range-to-replace>
+<replacement>
+let lastPlanVersion = '';
+if(plan !== lastPlanVersion){
+    void highLevelLogger(`\n- ${plan}`);
+    lastPlanVersion = plan;
+}
+</replacement>
+</change>

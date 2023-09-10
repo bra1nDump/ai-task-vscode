@@ -60,7 +60,7 @@ export async function streamLlm(
   const streamResult = await promiseToResult(
     openai.chat.completions.create({
       model: process.env.OPENAI_DEFAULT_MODEL ?? 'gpt-4',
-      temperature: 0.6,
+      temperature: 0.8,
       messages,
       stream: true,
     }),

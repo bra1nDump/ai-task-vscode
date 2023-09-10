@@ -21,6 +21,10 @@ export class SessionDocumentManager {
       (uri) => !this.uriToDocumentsSnapshots.has(uri.path),
     )
 
+    console.log(
+      `From ${source} adding [${newUris.map((x) => x.path).join(', ')}]`,
+    )
+
     const tasks = newUris.map(async (uri) => {
       const document = await vscode.workspace.openTextDocument(uri)
       const documentSnapshot = new DocumentSnapshot(document)

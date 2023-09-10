@@ -29,12 +29,13 @@ export async function startMultiFileEditing(
 
   const outputFormat: OpenAiMessage = {
     role: 'system',
-    content: `First output your understanding of the task and explain how you want to accomplish it. If you decide to make any file changes provide detailed explanations for the changes you are about to make. Output your thoughts in the following format: 
+    content: `First output your understanding of the task and explain how you will accomplish it in detail.
+Output your thoughts in the following format: 
 <thoughts>
 {{Your thoughts here}}
 </thoughts>
 
-Next output any file changes following the suggestions and format provided previously.`,
+Next output any file changes right after yourt houghts in the format described in "How to make a multi file change".`,
   }
 
   const userTaskMessage: OpenAiMessage = {

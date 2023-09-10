@@ -89,13 +89,14 @@ ${problemContext}
 Most likely this is due to a refactor user has started but not finished.
 Based on @${breadIdentifier} mentions, and the errors you should first infer what was the refactor in the first place.
 Collect all relevant information about the refactor that might help you fix the errors.
-Keep in mind oftentimes the location of the error is not the place that you want to make changes to, but rather it is a hint another part of the code needs changing to accommodate the refactor.
+Keep in mind oftentimes the location of the error is not the place that you want to make changes to. 
+You should strive to accommodate the refactor with probably logical changes that will be aligned with the refactor rather than just making sure the code compiles
 `
 
   await startMultiFileEditing(
-    `${
-      compilationErrorContextAndPrompt ?? ''
-    }Your task is spread out across multiple files and usually tagged with @${breadIdentifier}. First collect all of the information relevant to the tasks. It can be anywhere within the files. Output your understanding of the task to be accomplished as part of your thoughts. It's essential you understand the task and any suggestions the user gives you about how to accomplish the task`,
+    `${compilationErrorContextAndPrompt ?? ''}
+
+Your task is spread out across multiple files and usually tagged with @${breadIdentifier}. First collect all of the information relevant to the task. It can be anywhere within the files. Restate the task as you understand it as part of your thoughts. It's essential you understand the task and any suggestions the user gives you about how to accomplish the task. Restating the task in your own words`,
     breadIdentifier,
     sessionContext,
   )
