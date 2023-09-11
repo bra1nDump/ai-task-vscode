@@ -54,7 +54,7 @@ export interface LlmGeneratedPatchXmlV1 {
    * - First You should update the parsing code to support it. The new desired format is to have the plan printed out within <thoughts>...</thoughts> tags.
    * - Next update the code where we print out the plan to use the new format. Use a simple string variable to keep track of the current plan already printed and compute the delta to be printed next
    */
-  plan: string
+  plan: string[]
   changes: FileChange[]
   /** Not used now, but it's much easier to add a new field to an object type versus an array */
   isStreamFinalizedUnused: boolean

@@ -9,7 +9,7 @@ I am able to get much better results when I trim the context down to just the fu
 
 ## Still record the video to showcase the potential
 - Try on miro repository (url provider would be really nice here because I can just give the lint to the review)
-- Over specify the task
+- Over specify the task and get the video working
 
 ## Improve chain of thought prompt before creating the more work fix. 
 
