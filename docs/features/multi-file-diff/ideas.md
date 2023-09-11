@@ -1,3 +1,49 @@
+# Overview
+
+The quality of the code produced is poor
+
+# Shitty code is produced
+
+Hypotheses - model gets distracted simply buy too much context.
+I am able to get much better results when I trim the context down to just the function that I am trying to change p.
+
+## Still record the video to showcase the potential
+- Try on miro repository (url provider would be really nice here because I can just give the lint to the review)
+- Over specify the task
+
+## Improve chain of thought prompt before creating the more work fix. 
+
+Questions we can ask of the model:
+- Which function should we change? (helps model target)
+- Can we change a smaller scope to accomplish the task?
+- Are there any helper functions we can reuse?
+
+We can also provide examples of how this chain of thought.
+
+## Split up the generation
+Step 1
+- Extract the task that we are trying to accomplish
+- Locate the functions (with a chain of reasoning zoom in to a code block) that need to be changed
+  - Code blocks are preferred to functions because sometimes functions are too long
+- Locate possible dependencies: like imports, helper functions, entire files
+
+Step 2, for each code block to update
+- Include the high level task, the dependencies, as context
+- Print out the code block to change right before we ask for the updated block
+
+### Considerations
+- It is tough to get the dependencies right, it is much easier to simply include all of the code
+- The models will get better and this will be redundant work
+- Parallelization has good side effects, and can be presented as a novel feature
+
+### 
+
+### Ideas
+
+- I have always been testing on the same example, let's find other ones
+- Play with the prompt - have it generate a longer more detailed plan
+
+
 # Formats
 
 ## Format v1 - old chunk / new chunk
@@ -12,15 +58,6 @@ import { useQuery } from 'react-query';
 import { useMutation } from 'react-query';
 </replacement>
 </change>
-
-## Improvements / issues
-
-### Main issue - shitty code is produced
-
-- Play with the prompt - have it generate a longer more detailed plan
-
-- Alt+select allows to select multiple ranges in vscode. This is very useful when you want to make multi edits
-  - They can also be parallelized
 
 ## Old improvements
 

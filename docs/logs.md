@@ -1,3 +1,10 @@
+# September 9 - Prompt engineering for a typical refactor
+https://platform.openai.com/playground/p/teFt8UDSIlrreBJlEMJmCG7P?model=gpt-4
+
+Realizing that not only the Xml change format distracts the model, but sheer amount of code distracts it.
+When being asked to narrow down to the functions that need to be changed, and then follow up with asking for the exact changes, the model is able to produce a much better result.
+
+# Random the sin inspiration
 ![Alt text](cool-vscode-icon.png)
 
 # September 5 - Finished simple and flawed DocumentSnapshot implementation for backdating edits
