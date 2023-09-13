@@ -104,21 +104,22 @@ Line 5
           editBuilder.replace(currentTargetRange.value, content)
         })
 
-        /*
-         * console.log(
-         *   `\n\nDocument after replacing line range ${lineRangeToBeReplaced.start}-${lineRangeToBeReplaced.end} with '${content}':`,
-         * )
-         * console.log(editor.document.getText())
-         */
+        /* console.log(
+         * `\n\nDocument after replacing line range
+         * ${lineRangeToBeReplaced.start}-${lineRangeToBeReplaced.end} with
+         * '${content}':`,
+           )
+           console.log(editor.document.getText()) */
       }
     }
 
     assert.equal(editor.document.getText(), expectedContentAfterEdits)
   })
 
-  /*
-   * We first replace it with the line with different content. Next we insert a new line character and the content for the next line. Asserted the original line range 0-0 expanded to include the second line because the insert extended the range.
-   */
+  /* We first replace it with the line with different content. Next we insert a
+     new line character and the content for the next line. Asserted the
+     original line range 0-0 expanded to include the second line because the
+     insert extended the range. */
   test('Inserts at the end of the track range extend it', async function () {
     const initialContent = `Original Line`
     const expectedContentAfterEdits = `New Line\nAdded Line Dummy`
@@ -140,10 +141,12 @@ Line 5
         rangeInCurrentDocumentBeforeApplying: { start: 0, end: 0 },
         content: 'New Line\nAdded Line',
       },
-      // This loss change is simply to assert the range after applying the previous change
+      /* This loss change is simply to assert the range after applying the
+         previous change */
       {
         rangeInSnapshot: { start: 0, end: 0 },
-        // The range is expanded to include the second line because the insert extended the range.
+        /* The range is expanded to include the second line because the insert
+           extended the range. */
         rangeInCurrentDocumentBeforeApplying: { start: 0, end: 1 },
         content: 'New Line\nAdded Line Dummy',
       },
@@ -168,8 +171,12 @@ Line 5
           lineRangeToBeReplaced,
           change.rangeInCurrentDocumentBeforeApplying,
         )
-        // Check if the current text within the range we are replacing is a suffix of the new content. If that is the case find the delta and insert it at the end of the range instead of replacing the full range.
-        // We are emulating the optimization we're doing on the apply edits where we convert a replacement to an insertat
+        /* Check if the current text within the range we are replacing is a
+         * suffix of the new content. If that is the case find the delta and
+         * insert it at the end of the range instead of replacing the full
+         * range. We are emulating the optimization we're doing on the apply
+         * edits where we convert a replacement to an insertat
+         */
         await editor.edit((editBuilder) => {
           const currentContent = editor.document.getText(
             currentTargetRange.value,

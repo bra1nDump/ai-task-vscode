@@ -1,16 +1,24 @@
 /*
 The problem this is solving:
 On we're submitting files to the LLM we're submitting a snapshot.
-As the LLM responds with the changes to be applied to the file, the file might have already changed due to user actions or other LLM edits.
-The format that the LLM responds with is a line range in the old file.
-Once the LLM picks range to change, it streams in the new content to be used as a replacement for the original range. The way the changes are applied is we replace the full range with the new content every time the new content is updated.
+ * As the LLM responds with the changes to be applied to the file, the file
+ * might have already changed due to user actions or other LLM edits. The
+ * format that the LLM responds with is a line range in the old file.
+ * Once the LLM picks range to change, it streams in the new content to be used
+ * as a replacement for the original range. The way the changes are applied is
+ * we replace the full range with the new content every time the new content is
+ * updated.
 
-The idea is to take a snapshot of a document, while doing so subscribe to the onDidChangeTextDocument event.
-Continuously collect all contentChanges that happen to the document.
-Provide a method toCurrentDocumentRange(rangeInSnapshot: LineRange) to convert the line range from the original snapshot to the range in the current document.
+ * The idea is to take a snapshot of a document, while doing so subscribe to
+ * the onDidChangeTextDocument event. Continuously collect all contentChanges
+ * that happen to the document.
+ * Provide a method toCurrentDocumentRange(rangeInSnapshot: LineRange) to
+ * convert the line range from the original snapshot to the range in the
+ * current document.
 
 Consider this example usage of the API:
 
+```
 const documentSnapshot = new DocumentSnapshot(document)
 const originalDocumentText = fileSnapshot.getSnapshotText
 
@@ -22,7 +30,9 @@ Line 3
 Line 4
 Line 5
 `
+```
 
+```ts
 // The outer loop is responsible for getting the next range to replace
 for await (const changeStream = await llm.changeSet()) {
     const rangeInSnapshot = changeStream.rangeInSnapshotToReplace
@@ -41,7 +51,9 @@ for await (const changeStream = await llm.changeSet()) {
         })
     }
 }
+```
 
+```
 Line ranges are encoded in the following way:
 LineRange Ls, Le - Represents the range of Range(Ls, 0, Le, lengthOfLine(Le))
 
@@ -130,7 +142,7 @@ Added Line 4
 Line 4
 Line 5
 `
-
+```
 */
 
 import {
@@ -168,7 +180,8 @@ export class DocumentSnapshot {
    * We are keeping the document as reference which might be risky
    * because I'm not sure what happens if the document is closed.
    * Is it still accessible?
-   * Maybe write a simple Unittest to test this similar to how I did with VSCode edit apis
+   * Maybe write a simple Unittest to test this similar to how I did with
+   * VSCode edit apis
    */
   constructor(public document: TextDocument) {
     this.snapshotContext = {
@@ -186,32 +199,54 @@ export class DocumentSnapshot {
   toCurrentDocumentLineRange(
     rangeInSnapshot: LineRange,
   ): Result<LineRange, string> {
-    // We need to continuously update the range as we apply the changes
-    // since the changes that have arrived are valid for the newest version of the document at the time
+    /* We need to continuously update the range as we apply the changes
+     * since the changes that have arrived are valid for the newest version of
+     * the document at the time
+     */
     const currentRange: LineRange = { ...rangeInSnapshot }
 
     /*
-      There are 3 cases we need to handle:
-|
-      1. The contentChange is strictly before the range we're looking to adjust
-        - Most likely this isn't edit by hand in a different part of the file or this is an LLM changing a different part of the file for cases when we're changing multiple ranges.
+     * There are 3 cases we need to handle:
+     * 1. The contentChange is strictly before the range we're looking to
+     * adjust
+     * - Most likely this isn't edit by hand in a different part of the file or
+     * this is an LLM changing a different part of the file for cases when
+     * we're changing multiple ranges.
 
-        - We need to find line displacement (difference from new line count to old line count for a given content change). We might need to record this information at the time of the change, since it might need us to access the document.
-        - We need to adjust the range by the line displacement by adding the displacement to the start and end of the currentRangeb
+     * - We need to find line displacement (difference from new line count to
+     * old line count for a given content change). We might need to record this
+     * information at the time of the change, since it might need us to access
+     * the document. - We need to adjust the range by the line displacement by
+     * adding the displacement to the start and end of the currentRangeb
 
-      2. The contentChange is strictly after the range we're looking to adjust
-        - This will not effect the range we're looking to adjust, so we can ignore it
+     * 2. The contentChange is strictly after the range we're looking to adjust
+     * - This will not effect the range we're looking to adjust, so we can
+     * ignore it
 
-      3. The contentChange exactly matches the range we're looking to adjust
-        - The most common case. This will constantly happen as the LLM updates the same range with more and more content as it becomes available.
-        - Idea to simplify: I'm now thinking applying only deltas instead of the entire content because we would only need to keep track of a single position where to insert the text. Is will also allow us to edit the code that LLM has already printed out and we might want to change by hand already while it's still working on the rest of that same change.
+     * 3. The contentChange exactly matches the range we're looking to adjust
+     * - The most common case. This will constantly happen as the LLM updates
+     * the same range with more and more content as it becomes available. -
+     * Idea to simplify: I'm now thinking applying only deltas instead of the
+     * entire content because we would only need to keep track of a single
+     * position where to insert the text. Is will also allow us to edit the
+     * code that LLM has already printed out and we might want to change by
+     * hand already while it's still working on the rest of that same change.
 
-        - This is kind of similar to the first case because we also need to find the line displacement. The only differences we only add thus to the end range, because the range is strictly expanding or staying the same when we are simply adding more characters to the last line in the range.
+     * - This is kind of similar to the first case because we also need to find
+     * the line displacement. The only differences we only add thus to the end
+     * range, because the range is strictly expanding or staying the same when
+     * we are simply adding more characters to the last line in the range.
 
-      4. @crust This is an additional case when the change is an insert in the end of the tracked range. In this case we want to extend the range by an extra line if necessary. Please explain this case similar to the cases above. Please add another case to the if statements below to handle this case. 
+     * 4. @crust This is an additional case when the change is an insert in the
+     * end of the tracked range. In this case we want to extend the range by an
+     * extra line if necessary. Please explain this case similar to the cases
+     * above. Please add another case to the if statements below to handle this
+     * case.
 
-      default. The contentChange is partially overlapping the range we're looking to adjust.
-        - This is a complex case that we should not encounter with basic usage. Simply return and error.
+     * default. The contentChange is partially overlapping the range we're
+     * looking to adjust.
+     * - This is a complex case that we should not encounter with basic usage.
+     * Simply return and error.
       */
     for (const contentChange of this.contentChanges) {
       const lineDisplacement =
@@ -230,8 +265,9 @@ export class DocumentSnapshot {
         // Case 2: contentChange is strictly after the range
         continue
       else if (
-        // Not using isEqual because for it to work we would need to know the length
-        // of the last line in the range at the time that this contentChange was applied
+        /* Not using isEqual because for it to work we would need to know the
+           length of the last line in the range at the time that this
+           contentChange was applied */
         contentChange.range.start.isEqual(
           new Position(currentRange.start, 0),
         ) &&
@@ -241,11 +277,15 @@ export class DocumentSnapshot {
         currentRange.end += lineDisplacement
       else if (
         contentChange.range.start.line === currentRange.end
-        // We don't store document stayed at that point and time, so we can't check this. Let's just assume it's true for now. The assumption is broken if the user edits the overlapping ranch within document while the LLM is running.
-        //  && contentChange.range.start.character === document.lineAt(currentRange.end).text.length
+        /* We don't store document stayed at that point and time,
+         * so we can't check this. Let's just assume it's true for now. The
+         * assumption is broken if the user edits the overlapping ranch within
+         * document while the LLM is running.
+           && contentChange.range.start.character ===
+           document.lineAt(currentRange.end).text.length */
       )
-        // Case 4: contentChange is an insert in the end of the tracked range
-        // Extend the range by an extra line if necessary
+        /* Case 4: contentChange is an insert in the end of the tracked range
+           Extend the range by an extra line if necessary */
         currentRange.end += lineDisplacement
       // Default: contentChange is partially overlapping the range
       else return { type: 'error', error: 'Range is partially overlapping' }
@@ -263,7 +303,8 @@ export class DocumentSnapshot {
 }
 
 /**
- * Translation requires document because we need to 1 how long the last line in the range is
+ * Translation requires document because we need to 1 how long the last line in
+ * the range is
  */
 export function lineRangeToVscodeRange(
   lineRange: LineRange,
@@ -280,7 +321,8 @@ export function lineRangeToVscodeRange(
 /**
  * Lossy translation to line range.
  * I'm not sure when we would want to use this, but it's here if we need it.
- * I anticipate we might want to use this when we process the text document change events to converting the line ranges.
+ * I anticipate we might want to use this when we process the text document
+ * change events to converting the line ranges.
  */
 export function vscodeRangeToLineRange(range: Range): LineRange {
   return { start: range.start.line, end: range.end.line }

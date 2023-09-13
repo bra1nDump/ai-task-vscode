@@ -186,7 +186,8 @@ function helloWorld() {
     assert.ok(change)
     const { oldChunk } = change
 
-    // Ensure the start and end of the old chunk are present and have reasonable length
+    /* Ensure the start and end of the old chunk are present and have
+       reasonable length */
     assert.ok(oldChunk.type === 'prefixAndSuffixRange')
     assert.equal(oldChunk.prefixContent, 'function helloWorld() {')
     assert.equal(oldChunk.suffixContent, '    console.log')

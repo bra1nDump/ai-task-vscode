@@ -8,17 +8,20 @@ import { findAndCollectBreadedFiles } from 'document-helpers/file-context'
 
 /**
  * Gathered the problems in the code base
- * [Probably more accurate results] Inline comments with the diagnostic errors within the files
+ * [Probably more accurate results] Inline comments with the diagnostic errors
+ * within the files
  *   (will mess up target range matching algorithm though)
  *   We can strip out those lines from the old chunks after they are returned
  * [Current approach] Alternatively we can use line ranges as the target range
  *   This we'll need refactoring to happen in the multi file edit module.
  *
  * We can use a special id for the bug fixes - @bread:compile-error
- * and strip them out before trying to find target range based on line content matching algorithm
+ * and strip them out before trying to find target range based on line content
+ * matching algorithm
  *
- * WARNING: I have decided to deprecate the command for the time being, because I also want to use guidance
- * from bread mentions one fixing these compile errors and the command is mostly duplicative of the bread command
+ * WARNING: I have decided to deprecate the command for the time being, because
+ * I also want to use guidance from bread mentions one fixing these compile
+ * errors and the command is mostly duplicative of the bread command
  *
  * Removed from the package.json
  * {
@@ -39,8 +42,8 @@ export async function chaseBugsCommand() {
   const diagnosticsAlongWithTheirFileContexts =
     projectDiagnosticEntriesWithAffectedFileContext()
 
-  // Construct a user message similar to the one in the bread command
-  // This time include whole compilation errors
+  /* Construct a user message similar to the one in the bread command
+     This time include whole compilation errors */
   const diagnosticsPromptParts = diagnosticsAlongWithTheirFileContexts.flatMap(
     ({ uri, diagnostic }) => {
       if (diagnostic.severity !== vscode.DiagnosticSeverity.Error) return []
@@ -70,7 +73,8 @@ ${
     fileUrisWithProblems,
   )
 
-  // We also want to add all files with bread + all open tabs (copied over from chase bread command)
+  /* We also want to add all files with bread + all open tabs (copied over from
+     chase bread command) */
   const breadFileUris = await findAndCollectBreadedFiles(breadIdentifier)
   await sessionContext.documentManager.addDocuments(
     'Bread files',
@@ -88,10 +92,12 @@ ${
   console.log('fileUrisWithProblems', fileUrisWithProblems)
   console.log('fileManager', sessionContext.documentManager.dumpState())
 
-  // Let's create a new context provider similar to document manager to provide the diagnostic errors
-  // I don't really like mixing in the errors and the user task itself.
-  // I will also need a separate system message to show things like other non editable context files (.md)
-  // as well as webpage content and terminal outputs
+  /* Let's create a new context provider similar to document manager to provide
+   * the diagnostic errors I don't really like mixing in the errors and the
+   * user task itself. I will also need a separate system message to show
+   * things like other non editable context files (.md) as well as webpage
+   * content and terminal outputs
+   */
   await startMultiFileEditing(
     `Here's a list of compilation errors:
 ${diagnosticsPromptParts.join('\n')}

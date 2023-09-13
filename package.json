@@ -67,6 +67,7 @@
     "@vscode/vsce": "^2.20.1",
     "eslint": "^8.41.0",
     "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-comment-length": "^1.6.1",
     "eslint-plugin-prettier": "^5.0.0",
     "eslint-plugin-unused-imports": "^3.0.0",
     "glob": "^8.1.0",

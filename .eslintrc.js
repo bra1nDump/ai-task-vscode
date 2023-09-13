@@ -13,6 +13,8 @@ module.exports = {
     'plugin:@typescript-eslint/recommended-type-checked',
     'plugin:@typescript-eslint/stylistic-type-checked',
     'plugin:prettier/recommended',
+    // This is a plugin splitting up long comments into multiple lines
+    'plugin:comment-length/recommended',
   ],
   rules: {
     // Add your custom rules here
@@ -22,11 +24,20 @@ module.exports = {
     // Currently annoying as we have a lot of bootstraping code, lets fix later
     '@typescript-eslint/no-unused-vars': 'off',
 
-    // Allow single line if statemtns without curly, Removes rule is very annoying. I would only wanted for returning from a function or throwing early
-    curly: ['error', 'multi'],
-
-    // npm i --save-dev eslint-plugin-comment-length seems like a better fit because it will also break up the long lines
-    // 'multiline-comment-style': ['error', 'starred-block'],
+    // This is the native rule that enforces multiline comments to be wrapped in a block
+    'multiline-comment-style': ['error', 'bare-block'],
+    // This is a plugin splitting up long comments into multiple lines
+    'comment-length/limit-single-line-comments': [
+      'warn',
+      {
+        mode: 'overflow-only',
+        maxLength: 80,
+        logicalWrap: true,
+        ignoreUrls: true,
+        ignoreCommentsWithCode: true,
+        tabSize: 2,
+      },
+    ],
   },
 
   ignorePatterns: [

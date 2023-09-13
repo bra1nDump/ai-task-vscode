@@ -3,34 +3,40 @@ import * as vscode from 'vscode'
 
 export interface SessionContext {
   /**
-   * This will be open to the side to show real time feedback of what is happening in the session.
+   * This will be open to the side to show real time feedback of what is
+   * happening in the session.
    */
   markdownHighLevelFeedbackDocument: vscode.TextDocument
 
   /**
-   * This is the document where raw LLM request is logged. This is mostly for development.
+   * This is the document where raw LLM request is logged. This is mostly for
+   * development.
    */
   markdownLowLevelFeedbackDocument: vscode.TextDocument
 
   documentManager: SessionDocumentManager
 
   /**
-   * When the user closes the editor with high level feedback this is our signal to abort the session.
-   * Once LLM is running this will be set to a function that will abort it.
+   * When the user closes the editor with high level feedback this is our
+   * signal to abort the session. Once LLM is running this will be set to a
+   * function that will abort it.
    *
-   * In the future we will have additional controls, such a suspending, aborting subtasks, etc.
+   * In the future we will have additional controls, such a suspending,
+   * aborting subtasks, etc.
    */
   sessionAbortedEventEmitter: vscode.EventEmitter<void>
 
   /**
-   * Will fire when the session has ended, if the session was aborted is expected to be called after it.
-   * If it is not called, that means the command most likely has a bug related to aborting.
-   * Will be disposed right after.
+   * Will fire when the session has ended, if the session was aborted is
+   * expected to be called after it. If it is not called, that means the
+   * command most likely has a bug related to aborting. Will be disposed right
+   * after.
    */
   sessionEndedEventEmitter: vscode.EventEmitter<void>
 
   /**
-   * This is a list of subscriptions that will be disposed when the session is closed.
+   * This is a list of subscriptions that will be disposed when the session is
+   * closed.
    */
   subscriptions: vscode.Disposable[]
 }
@@ -56,21 +62,24 @@ export async function startSession(): Promise<SessionContext> {
       cachedActiveEditor.viewColumn,
     )
 
-  // Create document manager that will help us backdate edits throughout this sessiong
+  /* Create document manager that will help us backdate edits throughout this
+     sessiong */
   const documentManager = new SessionDocumentManager()
 
   // Create an event emitter to notify anyone interested in session aborts
   const sessionAbortedEventEmitter = new vscode.EventEmitter<void>()
-  // Another emitter for when session ends no matter if it was aborted or it has run its course
+  /* Another emitter for when session ends no matter if it was aborted or it
+     has run its course */
   const sessionEndedEventEmitter = new vscode.EventEmitter<void>()
 
   const textDocumentCloseSubscription = vscode.window.tabGroups.onDidChangeTabs(
     ({ closed: closedTabs }) => {
-      // input contains viewType key: 'mainThreadWebview-markdown.preview'
-      // Label has the format 'Preview <name of the file>'
+      /* input contains viewType key: 'mainThreadWebview-markdown.preview'
+         Label has the format 'Preview <name of the file>' */
       if (
         closedTabs.find((tab) => {
-          // Trying to be mindful of potential internationalization of the word 'Preview'
+          /* Trying to be mindful of potential internationalization of the word
+             'Preview' */
           const abortSignalDocumentName =
             sessionMarkdownHighLevelFeedbackDocument.uri.path.split('/').at(-1)!
           return tab.label.includes(abortSignalDocumentName)

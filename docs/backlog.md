@@ -17,7 +17,7 @@
 
 ## Play with prompts for multi file edits, try improving the planning stage
 
-## Sat Type at cursor - allows me to replace continue for personal use
+## Tuesday Type at cursor - allows me to replace continue for personal use
 
 - For example current model does not support inserts only some sort of replacement
 - The simplest version is to keep reusing the multi file edit prompt and simply instruct to replace a single line with the comment /run
@@ -26,7 +26,7 @@
 
 ## Record Type at cursor
 
-## Monday Compilation Step
+## Compilation Step
 
 - Refactor chase bread and chase bugs commands to to use a virtual script with context provider mentions and prompt
 - Add context providers for
@@ -36,7 +36,7 @@
   - Have them implement a common interface
 - Compile the script to get context instead of getting context manually within two available commands
 
-## Tuesday Language server draft for @bread scripts (inline)
+## Language server draft for @bread scripts (inline)
 
 - Reuse the context provider definitions to provide autocomplete
 

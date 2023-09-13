@@ -22,13 +22,16 @@ export interface LlmPartialResponse {
  *
  * Returns AsyncIterableX to support nifty features like mapping.
  *
- * IMPORTANT: The iterable returned is multiplexed, meaning every time you get an iterator
- * usually using await for of loop, it will start iterating from the very beginning.
+ * IMPORTANT: The iterable returned is multiplexed, meaning every time you get
+ * an iterator usually using await for of loop, it will start iterating from
+ * the very beginning.
  *
- * This is a desired behavior, since oftentimes we want to run different stateful operations on the stream.
- * This is similar to an observer / listener model of RxJS, accept we can use await for loops :D
+ * This is a desired behavior, since oftentimes we want to run different
+ * stateful operations on the stream. This is similar to an observer / listener
+ * model of RxJS, accept we can use await for loops :D
  *
- * The reason why the LLM stream is multiplexed is because is the stream that kicks off most of the processes.
+ * The reason why the LLM stream is multiplexed is because is the stream that
+ * kicks off most of the processes.
  */
 export async function streamLlm(
   messages: OpenAiMessage[],
@@ -46,8 +49,9 @@ export async function streamLlm(
     })
   if (!key) throw new Error('No OpenAI API key provided')
 
-  // Ensure we are not already running a stream,
-  // we want to avoid large bills if there's a bug and we start too many streams at once
+  /* Ensure we are not already running a stream,
+     we want to avoid large bills if there's a bug and we start too many
+     streams at once */
   if (isStreamRunning) throw new Error('Stream is already running')
   isStreamRunning = true
 
@@ -55,8 +59,10 @@ export async function streamLlm(
     apiKey: key,
   })
 
-  // Compare AsyncGenerators / AsyncIterators: https://javascript.info/async-iterators-generators
-  // Basically openai decided to not return AsyncGenerator, which is more powerful (compare type definitions) but instead return an AsyncIteratable for stream
+  /* Compare AsyncGenerators / AsyncIterators: https://javascript.info/async-iterators-generators
+     Basically openai decided to not return AsyncGenerator,
+     which is more powerful (compare type definitions) but instead return an
+     AsyncIteratable for stream */
   const streamResult = await promiseToResult(
     openai.chat.completions.create({
       model: process.env.OPENAI_DEFAULT_MODEL ?? 'gpt-4',
@@ -79,13 +85,15 @@ export async function streamLlm(
       const delta = part.choices[0]?.delta?.content
       if (!delta) return undefined
 
-      // Design Shortcoming: Async iterable multi casting
-      // Due to multiplexing and iterating over the stream multiple times
-      // all the mappings are performed however many times there are for await loops
-      // This is 1. not performant 2. breaks stateful things like logging
-      // A potential solution is to multiplex the stream only after basic mapping is done
-      // But it is also nice to multiplex the stream early to for example catch errors and detect stream ending
-      // For now I will simply log the delta here
+      /* Design Shortcoming: Async iterable multi casting
+       * Due to multiplexing and iterating over the stream multiple times all
+       * the mappings are performed however many times there are for await
+       * loops This is 1. not performant 2.
+       * breaks stateful things like logging A potential solution is to
+       * multiplex the stream only after basic mapping is done But it is also
+       * nice to multiplex the stream early to for example catch errors and
+       * detect stream ending For now I will simply log the delta here
+       */
       void logger(delta)
 
       currentContent += delta

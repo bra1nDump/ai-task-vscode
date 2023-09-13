@@ -1,7 +1,8 @@
 import * as vscode from 'vscode'
 
 /**
- * Previously we were reading from the file system which caused the contents to be stale.
+ * Previously we were reading from the file system which caused the contents to
+ * be stale.
  */
 export async function getDocumentText(uri: vscode.Uri): Promise<string> {
   const document = await vscode.workspace.openTextDocument(uri)
@@ -49,8 +50,9 @@ export async function findSingleFileMatchingPartialPath(
 }
 
 /**
- * Guarantees that the text will be appended to the document in the order it was called.
- * Usually should not be awaited, use void operator to explicitly not await.
+ * Guarantees that the text will be appended to the document in the order it
+ * was called. Usually should not be awaited, use void operator to explicitly
+ * not await.
  */
 const pendingEdits = new Map<string, Promise<void>>()
 const documentContents = new Map<string, string>()
@@ -70,12 +72,14 @@ export async function queueAnAppendToDocument(
     documentContents.set(path, newContent)
     const data = new TextEncoder().encode(newContent)
 
-    // Pretty sure this causes a flicker
-    // Previously we were using workplace edits but that has caused unnecessary tabs to open.
-    // Potential workaround is to right to the file system for the detailed log file
-    // and workplace edits for high level markdown file while also opening it in the same tab group as the preview
-    // ? We do want to keep the same queue abstraction to avoid races for both
-    //   Honestly just duplicate the code, it's super small
+    /* Pretty sure this causes a flicker
+     * Previously we were using workplace edits but that has caused unnecessary
+     * tabs to open. Potential workaround is to right to the file system for
+     * the detailed log file and workplace edits for high level markdown file
+     * while also opening it in the same tab group as the preview ? We do want
+     * to keep the same queue abstraction to avoid races for both Honestly just
+     * duplicate the code, it's super small
+     */
     await vscode.workspace.fs.writeFile(document.uri, data)
   }
 
@@ -86,7 +90,8 @@ export async function queueAnAppendToDocument(
 }
 /**
  * Read all documents opened as tabs in vscode.
- * Useful when the setting suggests to include all open files in the workspace on performing tasks
+ * Useful when the setting suggests to include all open files in the workspace
+ * on performing tasks
  */
 
 export function openedTabs(): vscode.Uri[] {

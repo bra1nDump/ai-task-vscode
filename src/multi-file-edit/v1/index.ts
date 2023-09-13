@@ -81,10 +81,12 @@ First output thoughts, then changes`,
   void highLevelLogger(`\n# Files submitted:\n`)
   for (const fileContext of fileContexts) logFilePath(fileContext)
 
-  // Provider pointer to low level log for debugging, it wants a relative to workspace path for some reason
-  // The document path is .bread/sessions/<id>-<weekday>.raw.md, so we need to go up two levels since the
-  // markdown file we are outputing to is in .bread/sessions as well
-  // Likely not windows friendly as it uses /
+  /* Provider pointer to low level log for debugging,
+   * it wants a relative to workspace path for some reason The document path is
+   * .bread/sessions/<id>-<weekday>.raw.md,
+   * so we need to go up two levels since the markdown file we are outputing to
+   * is in .bread/sessions as well Likely not windows friendly as it uses /
+   */
   const relativePath = vscode.workspace.asRelativePath(
     sessionContext.markdownLowLevelFeedbackDocument.uri.path,
   )
@@ -98,19 +100,23 @@ First output thoughts, then changes`,
   // Abort if requested
   sessionContext.sessionAbortedEventEmitter.event(() => abortController.abort())
 
-  // Design Shortcoming due to multi casting
-  // Parsing will be performed multiple times for the same payload, see openai.ts
+  /* Design Shortcoming due to multi casting
+     Parsing will be performed multiple times for the same payload,
+     see openai.ts */
   const parsedPatchStream = from(rawLlmResponseStream).pipe(
     mapAsync(({ cumulativeResponse, delta }) => {
-      // Try parsing the xml, even if it's complete it should still be able to apply the diffs
+      /* Try parsing the xml, even if it's complete it should still be able to
+         apply the diffs */
       return parsePartialMultiFileEdit(cumulativeResponse)
     }),
   )
 
-  // Split the stream into stream with plan and changes to apply
-  // Process in parallell
-  // Currently has an issue where I am unable to log the delta and am forced to wait until an item is fully generated
-  // Refactor: Parsing should pass deltas or I need to implement local delta generation
+  /* Split the stream into stream with plan and changes to apply
+     Process in parallell
+   * Currently has an issue where I am unable to log the delta and am forced to
+   * wait until an item is fully generated Refactor:
+   * Parsing should pass deltas or I need to implement local delta generation
+   */
   async function showPlanAsItBecomesAvailable() {
     const planStream = parsedPatchStream.pipe(mapAsync((x) => x.plan))
     const loggedPlanIndexWithSuffix = new Set<string>()
@@ -122,7 +128,8 @@ First output thoughts, then changes`,
         const lastLoggedVersion = [...loggedPlanIndexWithSuffix]
           .filter((x) => x.startsWith(`${index}:`))
           .sort((a, b) => b.length - a.length)[0]
-        // Only logged the delta or the first version including the item separator
+        /* Only logged the delta or the first version including the item
+           separator */
         if (lastLoggedVersion) {
           const delta = latestVersion.slice(lastLoggedVersion.length)
           void highLevelLogger(delta)

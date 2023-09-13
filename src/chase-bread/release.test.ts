@@ -14,8 +14,9 @@ suite('VSCode Extension Command Tests', function () {
     }
     `
 
-    There's also other files in the workspace that need to be modified but we're not going to assert it. 
-    This is good enough of a test that the most basic functionality works. The rest should be unit tested.
+     * There's also other files in the workspace that need to be modified but
+     * we're not going to assert it. This is good enough of a test that the
+     * most basic functionality works. The rest should be unit tested.
     */
 
     const releaseCommand = await vscode.commands

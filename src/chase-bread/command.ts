@@ -8,7 +8,8 @@ import { startMultiFileEditing } from 'multi-file-edit/v1'
 import { projectDiagnosticEntriesWithAffectedFileContext } from 'chase-bugs/diagnostics'
 
 /**
- * Generates and applies diffs to files in the workspace containing @bread mention.
+ * Generates and applies diffs to files in the workspace containing @bread
+ * mention.
  *
  * Collect all files in workspace with @bread mention
  * Pack the files along with the diff generation prompts

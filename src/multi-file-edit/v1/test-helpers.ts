@@ -50,7 +50,8 @@ export async function resolveAndApplyChangesToMultipleFiles(
     sessionDocumentManager,
   )(patch)
 
-  // Need to apply serially to hold the application assumption that only a single editor is open at the same time
+  /* Need to apply serially to hold the application assumption that only a
+     single editor is open at the same time */
   for (const resolvedChange of resolvedChanges)
     await applyResolvedChangesWhileShowingTheEditor(resolvedChange)
 }
@@ -66,7 +67,8 @@ export const makeTemporaryFileWriterAndOpener = (temporaryFileName: string) => {
       temporaryFileUri,
       new TextEncoder().encode(content),
     )
-    // TODO: This is a hack to make sure the file is saved to disk before we read it
+    /* TODO: This is a hack to make sure the file is saved to disk before we
+       read it */
     await new Promise((resolve) => setTimeout(resolve, 200))
     const document = await vscode.workspace.openTextDocument(temporaryFileUri)
     const editor = await vscode.window.showTextDocument(document)

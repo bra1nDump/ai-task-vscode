@@ -13,15 +13,15 @@ import { TargetRange, LlmGeneratedPatchXmlV1, FileChange } from './types'
 
 <change>
   <path>src/hello-world.ts</path>
-  <description>Parametrising function with a name of the thing to be greeted</description>
-  <range-to-replace>
+ * <description>Parametrising function with a name of the thing to be
+ * greeted</description> <range-to-replace>
 function helloWorld() {
     // ${breadIdentifier} pass name to be greeted
     console.log('Hello World');
 }
 </range-to-replace>
-  <!-- The new content to replace the old content between the prefix and suffix -->
-  <replacement>
+ * <!-- The new content to replace the old content between the prefix and
+ * suffix --> <replacement>
 function hello(name: string) {
     console.log(\`Hello \${name}\`);
 }
@@ -29,12 +29,13 @@ function hello(name: string) {
 </change>
 */
 export function parsePartialMultiFileEdit(xml: string): LlmGeneratedPatchXmlV1 {
-  // Plan is encoded using - as a bullet point for each item
-  // Extract the plan before the first change tag
+  /* Plan is encoded using - as a bullet point for each item
+     Extract the plan before the first change tag */
   const planItems: string[] = []
   const [planSection] = xml.split('<change>')
-  // Extract plan items using regex,
-  // account for first item being in the beginning of the string or on a new line
+  /* Extract plan items using regex,
+     account for first item being in the beginning of the string or on a new
+     line */
   const planItemsRegex = /(?:^|\n)- (.*)/g
   let match: RegExpExecArray | null
   while ((match = planItemsRegex.exec(planSection)) !== null)
@@ -53,8 +54,8 @@ export function parsePartialMultiFileEdit(xml: string): LlmGeneratedPatchXmlV1 {
       'range-to-replace',
     )
 
-    // Handle case where old chunk is truncated
-    // Warning: Partial truncated printing out will still show
+    /* Handle case where old chunk is truncated
+       Warning: Partial truncated printing out will still show */
     const oldChunkParts = oldChunk?.content.split('</truncated>') ?? []
     let oldChunkContent: TargetRange
 
@@ -87,9 +88,10 @@ export function parsePartialMultiFileEdit(xml: string): LlmGeneratedPatchXmlV1 {
       'replacement',
     )
 
-    // Strange code due to switching the encoding from multiple changes within a single file tag
-    // to a more flat xml encoding but keeping the old data structure
-    // Ideally we want to group the changes by file, but the hell with it for now
+    /* Strange code due to switching the encoding from multiple changes within
+     * a single file tag to a more flat xml encoding but keeping the old data
+     * structure Ideally we want to group the changes by file,
+       but the hell with it for now */
     const singularChangeForAFile = {
       description: description?.content ?? '',
       oldChunk: oldChunkContent,

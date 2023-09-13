@@ -3,30 +3,36 @@ import { OpenAiMessage } from 'helpers/openai'
 /**
  * Diff generation with these proms has been kind of underwhelming
  * I have attributed thus to the approach itself
- * I have suggested the alternative of splitting the target code location into a separate task
- * And only then generating the new codes. I think that is still a more promising.
- * I can squeeze out more performance from thus with better prompts - [better prompts attempted].
+ * I have suggested the alternative of splitting the target code location into
+ * a separate task And only then generating the new codes. I think that is
+ * still a more promising. I can squeeze out more performance from thus with
+ * better prompts - [better prompts attempted].
  *
  * Given that I now want multi file editing to work outside of the bread idea
- * and bread is simply one way of giving the task to a multi file editing program
+ * and bread is simply one way of giving the task to a multi file editing
+ * program
  */
 
 /*
 - You are a coding assistant that generates incremental file changes
 - You will be given files along with some task
-- You might generate changes to some file if it's necessary to accomplish the task
-- Start by making changes you are most confident about
-- Respect indentation of the original range you are replacing (does not really replace indentation)
-- If you're only replacing a single line, only print out that line as a target range
-- Avoid replacing large ranges if most of the code remains the same. Instead use multiple smaller targeted change
+ * - You might generate changes to some file if it's necessary to accomplish
+ * the task - Start by making changes you are most confident about
+ * - Respect indentation of the original range you are replacing (does not
+ * really replace indentation) - If you're only replacing a single line, only
+ * print out that line as a target range - Avoid replacing large ranges if most
+ * of the code remains the same. Instead use multiple smaller targeted change
 
 I'm playing around with the scope that should be replaced.
-Before it would replace too big over chunk, now it has gone too granular and I think it's causing issues.
+ * Before it would replace too big over chunk, now it has gone too granular and
+ * I think it's causing issues.
 
-It has continuously used a string that does not exist in scope and did not declare it.
-When declaring variables it would oftentimes place them too far from when they're used.
+ * It has continuously used a string that does not exist in scope and did not
+ * declare it. When declaring variables it would oftentimes place them too far
+ * from when they're used.
 
-Maybe I am being overly harsh on the multi file editing. I have asked continue some more question and it has failed to  make the change I wanted.
+ * Maybe I am being overly harsh on the multi file editing. I have asked
+ * continue some more question and it has failed to  make the change I wanted.
 */
 
 const diffGeneratorPromptPrefix = (examples: string[]) =>
@@ -81,11 +87,14 @@ hello(name);
 `
 
 /**
- * I anticipate jsx generation will be tough as the model will probably get confused
- * on whether it's the output format or the actual content of code blocks.
+ * I anticipate jsx generation will be tough as the model will probably get
+ * confused on whether it's the output format or the actual content of code
+ * blocks.
  *
- * Things will actually break if people use the same tags within their code such as file (I believe a legitimate Html tag)
- * For instance this file will probably not get edited correctly. I should probably use more esoteric tag names.
+ * Things will actually break if people use the same tags within their code
+ * such as file (I believe a legitimate Html tag) For instance this file will
+ * probably not get edited correctly. I should probably use more esoteric tag
+ * names.
  */
 export const editMiddleOfAJsxExpressionEnsureIndentIsPreserved = (
   breadIdentifier: string,
@@ -201,7 +210,8 @@ export const allDiffV1Examples = (breadIdentifier: string) => [
  *
  * Refactor: Probably should create a separate function for each message:
  * - file context (universal)
- * - diff generation prompt (version dependent) (examples and format explanation)
+ * - diff generation prompt (version dependent) (examples and format
+ * explanation)
  *   assuming this will be changed to function calling eventually
  * - task (should be passed from the top level command)
  *

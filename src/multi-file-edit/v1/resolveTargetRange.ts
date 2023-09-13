@@ -8,18 +8,21 @@ import { vscodeRangeToLineRange } from 'document-helpers/document-snapshot'
 /**
  * Data structure limitation:
  * Right now we are silently dropping the things that were not resolved.
- * Instead we should be returning a resolved change that is actually not resolved.
- * so return MayBeResolved type+
+ * Instead we should be returning a resolved change that is actually not
+ * resolved. so return MayBeResolved type+
  *
  * Design decision notes:
  * I'm taking a slightly different approach than I was thinking before.
- * I thought the mapper to resolve changes was going to be independent from version specific logic.
- * It can still be done and probably is a better way of doing this, but I'm going to start with a simpler approach.
- * Original approach would involve having two mappers.
- * The first one is version specific that will map to a resolved outdated range give the file snapshots.
- * The second mapper would adjust the ranges to the current file content.
+ * I thought the mapper to resolve changes was going to be independent from
+ * version specific logic. It can still be done and probably is a better way of
+ * doing this, but I'm going to start with a simpler approach. Original
+ * approach would involve having two mappers.
+ * The first one is version specific that will map to a resolved outdated range
+ * give the file snapshots. The second mapper would adjust the ranges to the
+ * current file content.
  *
- * I think this is a path to introduced more abstractions prematurely without understanding the problem well enough.
+ * I think this is a path to introduced more abstractions prematurely without
+ * understanding the problem well enough.
  */
 export const makeToResolvedChangesTransformer = (
   sessionDocumentManager: SessionDocumentManager,
@@ -27,8 +30,10 @@ export const makeToResolvedChangesTransformer = (
   async function (
     multiFileChangeSet: LlmGeneratedPatchXmlV1,
   ): Promise<ResolvedChange[]> {
-    // Refactor: xml generator is already better represented with a flat set of changes
-    // let's update the rest of the code including this function to reflect that
+    /* Refactor: xml generator is already better represented with a flat set of
+     * changes let's update the rest of the code including this function to
+     * reflect that
+     */
     const changesGroupedByFile = await Promise.all(
       multiFileChangeSet.changes.map(
         async ({
@@ -36,7 +41,9 @@ export const makeToResolvedChangesTransformer = (
           filePathRelativeToWorkspace,
           isStreamFinilized,
         }): Promise<ResolvedChange[]> => {
-          // Find the matching document snapshot, we need those to perform an edit with an outdated range
+          /* Find the matching document snapshot,
+           * we need those to perform an edit with an outdated range
+           */
           if (!filePathRelativeToWorkspace) return []
           const fileUri = await findSingleFileMatchingPartialPath(
             filePathRelativeToWorkspace,
@@ -67,8 +74,9 @@ export const makeToResolvedChangesTransformer = (
           const rangeInCurrentDocument =
             documentSnapshot.toCurrentDocumentRange(lineRangedToReplace)
 
-          // TODO: We really should not be throwing an error here.
-          // Instead we should somehow report this change as not resolved
+          /* TODO: We really should not be throwing an error here.
+           * Instead we should somehow report this change as not resolved
+           */
           if (rangeInCurrentDocument.type === 'error')
             throw new Error(
               `Range is out of bounds of the document ${fileUri.fsPath}\nError: ${rangeInCurrentDocument.error}`,
@@ -106,7 +114,8 @@ export function findTargetRangeInFileWithContent(
   const fileLines = documentContent.split(eofString)
 
   /**
-   * Finds a line in the document that matches the given line, only if it is the only match
+   * Finds a line in the document that matches the given line, only if it is
+   * the only match
    */
   const searchLine = (lines: string[], line: string) => {
     const trimmedLine = line.trim()
@@ -122,7 +131,8 @@ export function findTargetRangeInFileWithContent(
     return firstMatchIndex
   }
 
-  // Separately handle a case with four empty files - assume we're inserting into the first line
+  /* Separately handle a case with four empty files - assume we're inserting
+     into the first line */
   if (documentContent.trim() === '') return new vscode.Range(0, 0, 0, 0)
 
   // Separately handle a case of very simple ranges (single line)

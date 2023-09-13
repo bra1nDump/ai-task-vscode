@@ -21,8 +21,8 @@ suite('Apply Patch Tests', function () {
       'tmp',
     )
 
-    // delete temporary directory using regular node file system command
-    // as workspace does not have directory deletion
+    /* delete temporary directory using regular node file system command
+       as workspace does not have directory deletion */
     if (fs.existsSync(temporaryFolder))
       fs.rmSync(temporaryFolder, {
         recursive: true,
@@ -31,9 +31,10 @@ suite('Apply Patch Tests', function () {
 
   // This setup code is clunky
   beforeEach(async () => {
-    // We need to close the editor, otherwise when we reopen it from the same ur I
-    // it will ignore the contents of the file on disk and use the contents from the editor
-    // which are dirty after the last test
+    /* We need to close the editor, otherwise when we reopen it from the same
+     * ur I it will ignore the contents of the file on disk and use the
+     * contents from the editor which are dirty after the last test
+     */
     await vscode.commands.executeCommand('workbench.action.closeAllEditors')
 
     cleanTmpDirectory()
@@ -132,8 +133,10 @@ suite('Apply Patch Tests', function () {
       },
     ]
 
-    // Application results does not even show because the rangers failed to resolve
-    // Ideally would return some sort of failure but it's currently not doing this
+    /* Application results does not even show because the rangers failed to
+     * resolve Ideally would return some sort of failure but it's currently not
+     * doing this
+     */
     const applicationResults = await resolveAndApplyChangesToSingleFile(
       changes,
       editor,
@@ -185,8 +188,8 @@ suite('Apply Patch Tests', function () {
   test('Empty lines are not used to match target range', async () => {
     const editor = await setupEditorWithContent('line1\nline2\n\nline3\n')
 
-    // empty first line, will match many characters in the document and should be ignored
-    // the matching should happen based on the second line
+    /* empty first line, will match many characters in the document and should
+       be ignored the matching should happen based on the second line */
     const changes: Change[] = [
       {
         description: 'Change line2 to Hello World',

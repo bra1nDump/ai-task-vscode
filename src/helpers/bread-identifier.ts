@@ -5,8 +5,9 @@ export function getBreadIdentifier(): string {
     .getConfiguration('birds')
     .get('at-bread-mention')
 
-  // We are using the environment override for simplified manual and automated testingbecause
-  // As we might be opening single files instead off full workspace with settings.json.
+  /* We are using the environment override for simplified manual and automated
+     testingbecause As we might be opening single files instead off full
+     workspace with settings.json. */
   const atBreadIdentifierOverride: any =
     process.env.AT_BREAD_IDENTIFIER_OVERRIDE ?? breadIdentifierFromWorkspace
 

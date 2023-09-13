@@ -6,9 +6,11 @@ export interface XmlElement {
 }
 /**
  * Extracts all xml elements with the given tag from the given xml string.
- * If the tag is not closed, the content will be the content up to the end of the string.
+ * If the tag is not closed, the content will be the content up to the end of
+ * the string.
  *
- * THIS IS NOT A PROPER XML PARSER - it does not parse attributes, comments and many many other things
+ * THIS IS NOT A PROPER XML PARSER - it does not parse attributes, comments and
+ * many many other things
  *   Using to overcome the issues with partial xml from llm parsing,
  *   not to mention annoying fast-xml-parser bugs related to stopNodes
  *
@@ -20,14 +22,16 @@ export interface XmlElement {
  *    C
  *    </cha
  *    ```
- *    will return 3 elements with content `A, B and C`. Notice that the last element is not closed
+ *    will return 3 elements with content `A, B and C`. Notice that the last
+ *    element is not closed
  *
  * @param shouldTrimUpToOneLeadingAndTrailingNewLine If true, will remove leading and trailing new lines from the content
- *   this is useful when streaming from an llm to make it easier for humans to read.
+ *   this is useful when streaming from an llm to make it easier for humans to
+ *   read.
  *
- *   It will also remove empty lines from the end of the content. This happens due to indentation.
- *   In the following example the content of the change will be `lol` and not `lol\n++`
- *   ```xml
+ *   It will also remove empty lines from the end of the content. This happens
+ *   due to indentation. In the following example the content of the change
+ *   will be `lol` and not `lol\n++` ```xml
  *   <file>
  *   ++<change>
  *   lol
@@ -75,16 +79,19 @@ export function extractXmlElementsForTag(
         searchStartIndexForNextOpeningTag,
       )
     } else if (shouldYieldPartialXml) {
-      // If end index is not found, assume we are streaming and the end tag is not there yet
-      // So just return the content from the start tag to the end of the string
+      /* If end index is not found, assume we are streaming and the end tag is
+       * not there yet So just return the content from the start tag to the end
+       * of the string
+       */
       const partialContent = xml.substring(
         lastDiscoveredOpenTag + openTagString.length,
       )
 
-      // We might have started printing out the closing tag.
-      // Remove any prefix of the tag that appear as a suffix of the content.
-      // We need to generate all possible prefixes of the end tag (including an empty string)
-      //   and check if they are a suffix of the content
+      /* We might have started printing out the closing tag.
+       * Remove any prefix of the tag that appear as a suffix of the content.
+       * We need to generate all possible prefixes of the end tag (including an
+       * empty string) and check if they are a suffix of the content
+       */
       for (let i = closeTagString.length; i >= 0; i--) {
         const partiallyPrintedEndTag = closeTagString.substring(0, i)
         if (partialContent.endsWith(partiallyPrintedEndTag)) {
@@ -94,8 +101,8 @@ export function extractXmlElementsForTag(
             partialContent.length - partiallyPrintedEndTag.length,
           )
 
-          // Even tho the new line here might be legit - still lets delay
-          //  adding it to the content until we know for sure
+          /* Even tho the new line here might be legit - still lets delay
+              adding it to the content until we know for sure */
           const normalizedContent = shouldTrimUpToOneLeadingAndTrailingNewLine
             ? trimUpToOneLeadingAndTrailingNewLine(content)
             : content
@@ -108,7 +115,8 @@ export function extractXmlElementsForTag(
         }
       }
 
-      // If we are in this branch, that means the closing tag was not found, so there is no
+      /* If we are in this branch, that means the closing tag was not found,
+         so there is no */
       break
     }
   }
@@ -120,8 +128,9 @@ export function trimUpToOneLeadingNewLine(content: string) {
   return content.startsWith('\n') ? content.substring(1) : content
 }
 /**
- * Removes the last new line from the content if it exists, including any whitespace on the final line.
- * Helpful to remove indentation due to xml pretty printing.
+ * Removes the last new line from the content if it exists, including any
+ * whitespace on the final line. Helpful to remove indentation due to xml
+ * pretty printing.
  *
  * - Given `lol\n` will return `lol`
  * - Given `lol\n++` will return `lol`

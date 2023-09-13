@@ -17,10 +17,11 @@ tsconfigPaths.register({
   },
 })
 
-/*
-  Nice to have: I would love to override the time out globally if a special environment variable is set set for all tests for easier debugging with breakpoints. 
-  As a workaround I can remove the local time outs and set the global one to a high common value, and completely remove it when I want to debug.
-*/
+/* Nice to have: I would love to override the time out globally if a special
+   environment variable is set set for all tests for easier debugging with
+   breakpoints. As a workaround I can remove the local time outs and set the
+   global one to a high common value, and completely remove it when I want to
+   debug. */
 export function run(): Promise<void> {
   // Create the mocha test
   const mocha = new Mocha({

@@ -9,7 +9,8 @@ export interface FileContext {
 }
 
 /**
- * Find all files in the workspace with @breadIdentifier mention or with bread sub-extension
+ * Find all files in the workspace with @breadIdentifier mention or with bread
+ * sub-extension
  */
 export async function findAndCollectBreadedFiles(
   breadIdentifier: string,
@@ -45,15 +46,18 @@ export async function findAndCollectBreadedFiles(
  *
  * Uggh, it will be kinda tough to create the correct glob pattern
  * Tests for this functionality https://github.com/microsoft/vscode/blob/69b2435e14e5dbd442df58efcc72c28ad81e1ac2/extensions/configuration-editing/src/test/completion.test.ts#L204
- * On top of that finding findFiles only accepts a single negative glob pattern, which is not enough for us
- * Glob pattern docs https://code.visualstudio.com/api/references/vscode-api#GlobPattern
- * Note findFiles does not respect the exclude search.exclude, only filesexclude by default
- * this has caused node_modules to be included in the search :(
+ * On top of that finding findFiles only accepts a single negative glob
+ * pattern, which is not enough for us Glob pattern docs
+ * https://code.visualstudio.com/api/references/vscode-api#GlobPattern
+ * Note findFiles does not respect the exclude search.exclude, only
+ * filesexclude by default this has caused node_modules to be included in the
+ * search :(
  *
  * Relative path match https://code.visualstudio.com/api/references/vscode-api#RelativePattern
  * Do so for each folder in the workspace
  * For now lets just hardcode the src folder
- * I probably should just use a different finder at this point - ignore files in .gitignore
+ * I probably should just use a different finder at this point - ignore files
+ * in .gitignore
  *   this also needs recursive search so ... later
  */
 async function safeWorkspaceQueryAllFiles(): Promise<vscode.Uri[]> {
