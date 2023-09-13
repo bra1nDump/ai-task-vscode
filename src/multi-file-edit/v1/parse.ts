@@ -6,27 +6,30 @@ import {
 } from 'xml/parser'
 import { TargetRange, LlmGeneratedPatchXmlV1, FileChange } from './types'
 
-/*
+/**
+ * Example payload thus would parse:
+```xml
 <thoughts>
 {{Thoughts in free form}}
 </thoughts>
 
 <change>
-  <path>src/hello-world.ts</path>
- * <description>Parametrising function with a name of the thing to be
- * greeted</description> <range-to-replace>
+<path>src/hello-world.ts</path>
+<description>Parametrising function with a name of the thing to be
+greeted</description> 
+<range-to-replace>
 function helloWorld() {
     // ${breadIdentifier} pass name to be greeted
     console.log('Hello World');
 }
 </range-to-replace>
- * <!-- The new content to replace the old content between the prefix and
- * suffix --> <replacement>
+<replacement>
 function hello(name: string) {
     console.log(\`Hello \${name}\`);
 }
-  </replacement>
+</replacement>
 </change>
+```
 */
 export function parsePartialMultiFileEdit(xml: string): LlmGeneratedPatchXmlV1 {
   /* Plan is encoded using - as a bullet point for each item
@@ -38,8 +41,9 @@ export function parsePartialMultiFileEdit(xml: string): LlmGeneratedPatchXmlV1 {
      line */
   const planItemsRegex = /(?:^|\n)- (.*)/g
   let match: RegExpExecArray | null
-  while ((match = planItemsRegex.exec(planSection)) !== null)
+  while ((match = planItemsRegex.exec(planSection)) !== null) {
     planItems.push(match[1])
+  }
 
   const fileChangeOutputs = extractXmlElementsForTag(xml, 'change')
 
@@ -59,13 +63,13 @@ export function parsePartialMultiFileEdit(xml: string): LlmGeneratedPatchXmlV1 {
     const oldChunkParts = oldChunk?.content.split('</truncated>') ?? []
     let oldChunkContent: TargetRange
 
-    if (!oldChunk)
+    if (!oldChunk) {
       oldChunkContent = {
         type: 'fullContentRange',
         isStreamFinalized: false,
         fullContent: '',
       }
-    else if (oldChunkParts.length === 2) {
+    } else if (oldChunkParts.length === 2) {
       // Similar logic to the one embedded in the Xml parsing for regular tags
       const prefixContent = trimUpToOneTrailingNewLine(oldChunkParts[0])
       const suffixContent = trimUpToOneLeadingNewLine(oldChunkParts[1])
@@ -75,13 +79,15 @@ export function parsePartialMultiFileEdit(xml: string): LlmGeneratedPatchXmlV1 {
         suffixContent,
         isStreamFinalized: oldChunk.isClosed,
       }
-    } else if (oldChunkParts.length === 1)
+    } else if (oldChunkParts.length === 1) {
       oldChunkContent = {
         type: 'fullContentRange',
         fullContent: oldChunk.content,
         isStreamFinalized: oldChunk.isClosed,
       }
-    else throw new Error('Unexpected number of old chunk parts')
+    } else {
+      throw new Error('Unexpected number of old chunk parts')
+    }
 
     const newChunk = extractSingleXmlElement(
       fileChangeOutput.content,

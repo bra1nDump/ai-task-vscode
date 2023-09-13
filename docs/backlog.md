@@ -36,7 +36,7 @@
   - Have them implement a common interface
 - Compile the script to get context instead of getting context manually within two available commands
 
-## Language server draft for @bread scripts (inline)
+## Language server draft for @bread context, and target ranges @function, @block
 
 - Reuse the context provider definitions to provide autocomplete
 

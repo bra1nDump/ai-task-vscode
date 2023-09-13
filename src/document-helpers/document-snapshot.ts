@@ -167,9 +167,11 @@ export function resultMap<Value, NewValue, Error>(
   f: (value: Value) => NewValue,
   result: Result<Value, Error>,
 ): Result<NewValue, Error> {
-  if (result.type === 'success')
+  if (result.type === 'success') {
     return { type: 'success', value: f(result.value) }
-  else return result
+  } else {
+    return result
+  }
 }
 
 export class DocumentSnapshot {
@@ -190,7 +192,9 @@ export class DocumentSnapshot {
     }
 
     workspace.onDidChangeTextDocument((change) => {
-      if (change.document !== document) return
+      if (change.document !== document) {
+        return
+      }
 
       this.contentChanges.push(...change.contentChanges)
     })
@@ -237,11 +241,10 @@ export class DocumentSnapshot {
      * range, because the range is strictly expanding or staying the same when
      * we are simply adding more characters to the last line in the range.
 
-     * 4. @crust This is an additional case when the change is an insert in the
-     * end of the tracked range. In this case we want to extend the range by an
-     * extra line if necessary. Please explain this case similar to the cases
-     * above. Please add another case to the if statements below to handle this
-     * case.
+     * 4. Change is an insert in the end of the tracked range. In this case we
+     * want to extend the range by an extra line if necessary. Please explain
+     * this case similar to the cases above. Please add another case to the if
+     * statements below to handle this case.
 
      * default. The contentChange is partially overlapping the range we're
      * looking to adjust.
@@ -261,10 +264,10 @@ export class DocumentSnapshot {
         // Case 1: contentChange is strictly before the range
         currentRange.start += lineDisplacement
         currentRange.end += lineDisplacement
-      } else if (contentChange.range.start.line > currentRange.end)
+      } else if (contentChange.range.start.line > currentRange.end) {
         // Case 2: contentChange is strictly after the range
         continue
-      else if (
+      } else if (
         /* Not using isEqual because for it to work we would need to know the
            length of the last line in the range at the time that this
            contentChange was applied */
@@ -272,10 +275,10 @@ export class DocumentSnapshot {
           new Position(currentRange.start, 0),
         ) &&
         contentChange.range.end.line === currentRange.end
-      )
+      ) {
         // Case 3: contentChange exactly matches the range
         currentRange.end += lineDisplacement
-      else if (
+      } else if (
         contentChange.range.start.line === currentRange.end
         /* We don't store document stayed at that point and time,
          * so we can't check this. Let's just assume it's true for now. The
@@ -283,12 +286,15 @@ export class DocumentSnapshot {
          * document while the LLM is running.
            && contentChange.range.start.character ===
            document.lineAt(currentRange.end).text.length */
-      )
+      ) {
         /* Case 4: contentChange is an insert in the end of the tracked range
            Extend the range by an extra line if necessary */
         currentRange.end += lineDisplacement
+      }
       // Default: contentChange is partially overlapping the range
-      else return { type: 'error', error: 'Range is partially overlapping' }
+      else {
+        return { type: 'error', error: 'Range is partially overlapping' }
+      }
     }
 
     return { type: 'success', value: currentRange }

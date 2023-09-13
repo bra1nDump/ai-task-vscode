@@ -62,7 +62,9 @@ export async function chaseBreadCommand() {
   // Provide optional problem context + prompt
   const problemContext = diagnosticsAlongWithTheirFileContexts
     .flatMap(({ uri, diagnostic }) => {
-      if (diagnostic.severity !== vscode.DiagnosticSeverity.Error) return []
+      if (diagnostic.severity !== vscode.DiagnosticSeverity.Error) {
+        return []
+      }
       const filePathRelativeToWorkspace = vscode.workspace.asRelativePath(uri)
 
       return [

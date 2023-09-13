@@ -19,13 +19,15 @@ export function projectDiagnosticEntriesWithAffectedFileContext(): DiagnosticEnt
   const diagnostics = vscode.languages.getDiagnostics()
   const diagnosticEntries: DiagnosticEntry[] = []
 
-  for (const [uri, fileDiagnostics] of diagnostics)
-    for (const fileDiagnostic of fileDiagnostics)
+  for (const [uri, fileDiagnostics] of diagnostics) {
+    for (const fileDiagnostic of fileDiagnostics) {
       diagnosticEntries.push({
         uri,
         diagnostic: fileDiagnostic,
         // suggestedEditTargetRange: getFullFileRange(fileContent),
       })
+    }
+  }
 
   return diagnosticEntries
 }

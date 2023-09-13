@@ -46,7 +46,9 @@ export async function chaseBugsCommand() {
      This time include whole compilation errors */
   const diagnosticsPromptParts = diagnosticsAlongWithTheirFileContexts.flatMap(
     ({ uri, diagnostic }) => {
-      if (diagnostic.severity !== vscode.DiagnosticSeverity.Error) return []
+      if (diagnostic.severity !== vscode.DiagnosticSeverity.Error) {
+        return []
+      }
       const filePathRelativeToWorkspace = vscode.workspace.asRelativePath(uri)
 
       return [

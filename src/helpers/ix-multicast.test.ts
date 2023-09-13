@@ -22,10 +22,14 @@ suite('Multiplex function', () => {
     const consumerBOutput: number[] = []
 
     // Consumer A
-    for await (const item of multicastedSource) consumerAOutput.push(item)
+    for await (const item of multicastedSource) {
+      consumerAOutput.push(item)
+    }
 
     // Consumer B
-    for await (const item of multicastedSource) consumerBOutput.push(item)
+    for await (const item of multicastedSource) {
+      consumerBOutput.push(item)
+    }
 
     assert.deepEqual(consumerAOutput, [1, 2, 3, 4])
     assert.deepEqual(consumerBOutput, [1, 2, 3, 4])
@@ -53,10 +57,14 @@ suite('Multiplex function', () => {
     // Consumer A and B in parallel
     await Promise.all([
       (async () => {
-        for await (const item of multicastedSource) consumerAOutput.push(item)
+        for await (const item of multicastedSource) {
+          consumerAOutput.push(item)
+        }
       })(),
       (async () => {
-        for await (const item of multicastedSource) consumerBOutput.push(item)
+        for await (const item of multicastedSource) {
+          consumerBOutput.push(item)
+        }
       })(),
     ])
 
@@ -87,10 +95,14 @@ suite('Multiplex function', () => {
     // Consumer A and B in parallel
     await Promise.all([
       (async () => {
-        for await (const item of mappedSource) consumerAOutput.push(item)
+        for await (const item of mappedSource) {
+          consumerAOutput.push(item)
+        }
       })(),
       (async () => {
-        for await (const item of mappedSource) consumerBOutput.push(item)
+        for await (const item of mappedSource) {
+          consumerBOutput.push(item)
+        }
       })(),
     ])
 

@@ -34,7 +34,9 @@ export function run(): Promise<void> {
 
   return new Promise((resolve, reject) => {
     glob('out/**/*.test.js', { cwd: testsRoot }, (err, files) => {
-      if (err) return reject(err)
+      if (err) {
+        return reject(err)
+      }
 
       // Add files to the test suite
       console.log(`Found files:\n${files.join('\n')}`)
@@ -43,8 +45,11 @@ export function run(): Promise<void> {
       try {
         // Run the mocha test
         mocha.run((failures) => {
-          if (failures > 0) reject(new Error(`${failures} tests failed.`))
-          else resolve()
+          if (failures > 0) {
+            reject(new Error(`${failures} tests failed.`))
+          } else {
+            resolve()
+          }
         })
       } catch (err) {
         console.error(err)

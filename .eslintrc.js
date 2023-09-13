@@ -24,6 +24,9 @@ module.exports = {
     // Currently annoying as we have a lot of bootstraping code, lets fix later
     '@typescript-eslint/no-unused-vars': 'off',
 
+    // Enforce consistent braces
+    curly: ['error', 'all'],
+
     // This is the native rule that enforces multiline comments to be wrapped in a block
     'multiline-comment-style': ['error', 'bare-block'],
     // This is a plugin splitting up long comments into multiple lines

@@ -138,7 +138,9 @@ export function trimUpToOneLeadingNewLine(content: string) {
 
 export function trimUpToOneTrailingNewLine(content: string) {
   const lastLineBreak = content.lastIndexOf('\n')
-  if (lastLineBreak === -1) return content
+  if (lastLineBreak === -1) {
+    return content
+  }
 
   const lineAfterLastLineBreak = content.substring(lastLineBreak)
   return lineAfterLastLineBreak.trim() === ''

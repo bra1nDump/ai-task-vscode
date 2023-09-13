@@ -27,7 +27,9 @@ export function multicast<T>(source: AsyncIterable<T>): AsyncIterableX<T> {
       yield value
     }
 
-    if (sourceExhausted) return
+    if (sourceExhausted) {
+      return
+    }
 
     while (true) {
       const result = await iterator.next() // use the shared iterator to get the next value

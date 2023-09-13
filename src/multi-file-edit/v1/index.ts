@@ -79,7 +79,9 @@ First output thoughts, then changes`,
 
   // Log files that we are submitting as context
   void highLevelLogger(`\n# Files submitted:\n`)
-  for (const fileContext of fileContexts) logFilePath(fileContext)
+  for (const fileContext of fileContexts) {
+    logFilePath(fileContext)
+  }
 
   /* Provider pointer to low level log for debugging,
    * it wants a relative to workspace path for some reason The document path is
@@ -121,7 +123,7 @@ First output thoughts, then changes`,
     const planStream = parsedPatchStream.pipe(mapAsync((x) => x.plan))
     const loggedPlanIndexWithSuffix = new Set<string>()
     void highLevelLogger(`\n# Plan:\n`)
-    for await (const plan of planStream)
+    for await (const plan of planStream) {
       for (const [index, item] of plan.entries()) {
         // Find the last suffix that was logged
         const latestVersion = `${index}: ${item}`
@@ -133,10 +135,13 @@ First output thoughts, then changes`,
         if (lastLoggedVersion) {
           const delta = latestVersion.slice(lastLoggedVersion.length)
           void highLevelLogger(delta)
-        } else void highLevelLogger(`\n- ${item}`)
+        } else {
+          void highLevelLogger(`\n- ${item}`)
+        }
 
         loggedPlanIndexWithSuffix.add(latestVersion)
       }
+    }
   }
 
   async function startApplication() {

@@ -44,20 +44,25 @@ export const makeToResolvedChangesTransformer = (
           /* Find the matching document snapshot,
            * we need those to perform an edit with an outdated range
            */
-          if (!filePathRelativeToWorkspace) return []
+          if (!filePathRelativeToWorkspace) {
+            return []
+          }
           const fileUri = await findSingleFileMatchingPartialPath(
             filePathRelativeToWorkspace,
           )
-          if (!fileUri) return []
+          if (!fileUri) {
+            return []
+          }
 
           const documentSnapshot =
             sessionDocumentManager.getDocumentSnapshot(fileUri)
-          if (!documentSnapshot)
+          if (!documentSnapshot) {
             throw new Error(
               `Document ${
                 fileUri.fsPath
               } not found in session. Files in the session: ${sessionDocumentManager.dumpState()} Unable to modify files but were not added to the snapshot. This is most likely a bug or LLM might have produced a bogus file path to modify.`,
             )
+          }
 
           // Collect all the result changes for this file so far
 
@@ -67,7 +72,9 @@ export const makeToResolvedChangesTransformer = (
             documentSnapshot.document.eol,
           )
 
-          if (!rangeToReplace) return []
+          if (!rangeToReplace) {
+            return []
+          }
 
           // Use the DocumentSnapshot to adjust the range to current time
           const lineRangedToReplace = vscodeRangeToLineRange(rangeToReplace)
@@ -77,10 +84,11 @@ export const makeToResolvedChangesTransformer = (
           /* TODO: We really should not be throwing an error here.
            * Instead we should somehow report this change as not resolved
            */
-          if (rangeInCurrentDocument.type === 'error')
+          if (rangeInCurrentDocument.type === 'error') {
             throw new Error(
               `Range is out of bounds of the document ${fileUri.fsPath}\nError: ${rangeInCurrentDocument.error}`,
             )
+          }
 
           const resolvedChange: ResolvedChange = {
             fileUri: fileUri,
@@ -126,14 +134,18 @@ export function findTargetRangeInFileWithContent(
     const secondMatchIndex = lines.findIndex(
       (l, i) => i !== firstMatchIndex && l.trim() === trimmedLine,
     )
-    if (secondMatchIndex !== -1) return -1
+    if (secondMatchIndex !== -1) {
+      return -1
+    }
 
     return firstMatchIndex
   }
 
   /* Separately handle a case with four empty files - assume we're inserting
      into the first line */
-  if (documentContent.trim() === '') return new vscode.Range(0, 0, 0, 0)
+  if (documentContent.trim() === '') {
+    return new vscode.Range(0, 0, 0, 0)
+  }
 
   // Separately handle a case of very simple ranges (single line)
   if (
@@ -142,14 +154,16 @@ export function findTargetRangeInFileWithContent(
     oldChunk.fullContent.indexOf(eofString) === -1
   ) {
     const lineIndex = searchLine(fileLines, oldChunk.fullContent)
-    if (lineIndex === -1) return undefined
-    else
+    if (lineIndex === -1) {
+      return undefined
+    } else {
       return new vscode.Range(
         lineIndex,
         0,
         lineIndex,
         fileLines[lineIndex].length,
       )
+    }
   }
 
   // Get both range formats to a common format
@@ -172,16 +186,20 @@ export function findTargetRangeInFileWithContent(
   let prefixIndex = -1
   let suffixIndex = -1
 
-  while (start === -1 && prefixIndex < prefixLines.length - 1)
+  while (start === -1 && prefixIndex < prefixLines.length - 1) {
     start = searchLine(fileLines, prefixLines[++prefixIndex])
+  }
 
-  while (end === -1 && suffixIndex < suffixLines.length - 1)
+  while (end === -1 && suffixIndex < suffixLines.length - 1) {
     end = searchLine(
       fileLines,
       suffixLines[suffixLines.length - 1 - ++suffixIndex],
     )
+  }
 
-  if (start === -1 || end === -1 || start > end) return undefined
+  if (start === -1 || end === -1 || start > end) {
+    return undefined
+  }
 
   start -= prefixIndex
   end += suffixIndex

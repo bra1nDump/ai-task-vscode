@@ -41,18 +41,23 @@ export async function streamLlm(
   let key: string | undefined =
     process.env.OPENAI_API_KEY ??
     vscode.workspace.getConfiguration('birds').get('openaiApiKey')
-  if (typeof key !== 'string')
+  if (typeof key !== 'string') {
     // Give the user a chance to enter the key
     key = await vscode.window.showInputBox({
       prompt: 'Please enter your OpenAI API key',
       ignoreFocusOut: true,
     })
-  if (!key) throw new Error('No OpenAI API key provided')
+  }
+  if (!key) {
+    throw new Error('No OpenAI API key provided')
+  }
 
   /* Ensure we are not already running a stream,
      we want to avoid large bills if there's a bug and we start too many
      streams at once */
-  if (isStreamRunning) throw new Error('Stream is already running')
+  if (isStreamRunning) {
+    throw new Error('Stream is already running')
+  }
   isStreamRunning = true
 
   const openai = new OpenAI({
@@ -66,7 +71,7 @@ export async function streamLlm(
   const streamResult = await promiseToResult(
     openai.chat.completions.create({
       model: process.env.OPENAI_DEFAULT_MODEL ?? 'gpt-4',
-      temperature: 0.8,
+      temperature: 0.7,
       messages,
       stream: true,
     }),
@@ -83,7 +88,9 @@ export async function streamLlm(
     mapAsync((part) => {
       // Refactor: These details should have stayed in openai.ts
       const delta = part.choices[0]?.delta?.content
-      if (!delta) return undefined
+      if (!delta) {
+        return undefined
+      }
 
       /* Design Shortcoming: Async iterable multi casting
        * Due to multiplexing and iterating over the stream multiple times all
@@ -109,8 +116,9 @@ export async function streamLlm(
   const multicastStream = multicast(simplifiedStream)
 
   void logger(`\n# Messages submitted:\n`)
-  for (const { content, role } of messages)
+  for (const { content, role } of messages) {
     void logger(`\n## [${role}]:\n\`\`\`md\n${content}\n\`\`\`\n`)
+  }
   void logger(`\n# [assistant, latest response]:\n\`\`\`md\n`)
 
   // Detect end of stream and free up the llm resource

@@ -52,8 +52,9 @@ export async function resolveAndApplyChangesToMultipleFiles(
 
   /* Need to apply serially to hold the application assumption that only a
      single editor is open at the same time */
-  for (const resolvedChange of resolvedChanges)
+  for (const resolvedChange of resolvedChanges) {
     await applyResolvedChangesWhileShowingTheEditor(resolvedChange)
+  }
 }
 
 export const makeTemporaryFileWriterAndOpener = (temporaryFileName: string) => {

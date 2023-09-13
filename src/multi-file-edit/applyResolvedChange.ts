@@ -40,8 +40,8 @@ async function applyChangesAsTheyBecomeAvailable(
   context: SessionContext,
 ) {
   const appliedChangesIndices = new Set<number>()
-  for await (const changesForMultipleFiles of growingSetOfFileChanges)
-    for (const [index, change] of changesForMultipleFiles.entries())
+  for await (const changesForMultipleFiles of growingSetOfFileChanges) {
+    for (const [index, change] of changesForMultipleFiles.entries()) {
       if (
         !appliedChangesIndices.has(index) &&
         /* We only want to start applying once we know the range we are
@@ -52,8 +52,12 @@ async function applyChangesAsTheyBecomeAvailable(
 
         /* Add the index to the set of applied changes once the change we
            applied is final */
-        if (change.replacementIsFinal) appliedChangesIndices.add(index)
+        if (change.replacementIsFinal) {
+          appliedChangesIndices.add(index)
+        }
       }
+    }
+  }
 }
 
 async function highlightTargetRangesAsTheyBecomeAvailable(
@@ -64,7 +68,7 @@ async function highlightTargetRangesAsTheyBecomeAvailable(
   const highlightedChanges = new Set<number>()
   const finalizedChanges = new Set<number>()
   const highlightingRemovalTimeouts = new Map<number, NodeJS.Timeout>()
-  for await (const changesForMultipleFiles of growingSetOfFileChanges)
+  for await (const changesForMultipleFiles of growingSetOfFileChanges) {
     for (const [index, change] of changesForMultipleFiles.entries()) {
       const findMatchingVisibleEditor = () =>
         vscode.window.visibleTextEditors.find(
@@ -93,7 +97,9 @@ async function highlightTargetRangesAsTheyBecomeAvailable(
       if (!finalizedChanges.has(index)) {
         // Clear the timeout if it exists
         const previousTimeout = highlightingRemovalTimeouts.get(index)
-        if (previousTimeout) clearTimeout(previousTimeout)
+        if (previousTimeout) {
+          clearTimeout(previousTimeout)
+        }
 
         /* Set a new timeout to clear the highlighting,
            this implementation also handles when we abort the session
@@ -108,7 +114,9 @@ async function highlightTargetRangesAsTheyBecomeAvailable(
         /* Mark as finalized only once the replacement stopped changing.
          * This effectively starts the timer to remove the highlighting.
          */
-        if (change.replacementIsFinal) finalizedChanges.add(index)
+        if (change.replacementIsFinal) {
+          finalizedChanges.add(index)
+        }
       }
 
       // Highlight the range if it was not already highlighted, only done once
@@ -129,10 +137,12 @@ async function highlightTargetRangesAsTheyBecomeAvailable(
              keeping redundant decoration updates for now
              change.replacement.length > 10 || */
           change.replacementIsFinal
-        )
+        ) {
           highlightedChanges.add(index)
+        }
       }
     }
+  }
 }
 
 async function showFilesOnceWeKnowWeWantToModifyThem(
@@ -140,8 +150,8 @@ async function showFilesOnceWeKnowWeWantToModifyThem(
   context: SessionContext,
 ) {
   const shownChangeIndexes = new Set<string>()
-  for await (const changesForMultipleFiles of growingSetOfFileChanges)
-    for (const change of changesForMultipleFiles)
+  for await (const changesForMultipleFiles of growingSetOfFileChanges) {
+    for (const change of changesForMultipleFiles) {
       if (!shownChangeIndexes.has(change.fileUri.fsPath)) {
         const document = await vscode.workspace.openTextDocument(change.fileUri)
         const relativeFilepath = vscode.workspace.asRelativePath(change.fileUri)
@@ -152,6 +162,8 @@ async function showFilesOnceWeKnowWeWantToModifyThem(
         await vscode.window.showTextDocument(document)
         shownChangeIndexes.add(change.fileUri.fsPath)
       }
+    }
+  }
 }
 
 async function showWarningWhenNoFileWasModified(
@@ -161,11 +173,12 @@ async function showWarningWhenNoFileWasModified(
   const finalSetOfChangesToMultipleFiles = await lastAsync(
     growingSetOfFileChanges,
   )
-  if (!finalSetOfChangesToMultipleFiles)
+  if (!finalSetOfChangesToMultipleFiles) {
     await queueAnAppendToDocument(
       context.markdownHighLevelFeedbackDocument,
       '\n## No files got changed thats strange\n',
     )
+  }
 }
 
 export async function applyResolvedChangesWhileShowingTheEditor(
@@ -234,7 +247,7 @@ export async function applyResolvedChangesWhileShowingTheEditor(
        */
       { undoStopBefore: false, undoStopAfter: false },
     )
-  } else
+  } else {
     isApplicationSuccessful = await editor.edit(
       (editBuilder) => {
         editBuilder.replace(
@@ -246,6 +259,7 @@ export async function applyResolvedChangesWhileShowingTheEditor(
          usually replacing old content with empty string */
       { undoStopBefore: true, undoStopAfter: false },
     )
+  }
 
   debug('Document after replacement', document.getText())
 

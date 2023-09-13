@@ -56,11 +56,12 @@ export async function startSession(): Promise<SessionContext> {
   )
 
   // Restore the focus
-  if (cachedActiveEditor)
+  if (cachedActiveEditor) {
     await vscode.window.showTextDocument(
       cachedActiveEditor.document,
       cachedActiveEditor.viewColumn,
     )
+  }
 
   /* Create document manager that will help us backdate edits throughout this
      sessiong */
@@ -84,8 +85,9 @@ export async function startSession(): Promise<SessionContext> {
             sessionMarkdownHighLevelFeedbackDocument.uri.path.split('/').at(-1)!
           return tab.label.includes(abortSignalDocumentName)
         })
-      )
+      ) {
         sessionAbortedEventEmitter.fire()
+      }
     },
   )
 
@@ -146,7 +148,9 @@ async function findMostRecentSessionLogIndexPrefix(
       () => true,
       () => false,
     )
-  if (!directoryExists) return 0
+  if (!directoryExists) {
+    return 0
+  }
 
   const sessionLogFiles =
     await vscode.workspace.fs.readDirectory(sessionsDirectory)

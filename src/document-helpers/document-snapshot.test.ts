@@ -90,9 +90,9 @@ Line 5
       const currentTargetRange =
         documentSnapshot.toCurrentDocumentRange(rangeInSnapshot)
 
-      if (currentTargetRange.type === 'error')
+      if (currentTargetRange.type === 'error') {
         assert.fail(currentTargetRange.error)
-      else {
+      } else {
         const lineRangeToBeReplaced = vscodeRangeToLineRange(
           currentTargetRange.value,
         )
@@ -161,9 +161,9 @@ Line 5
       const currentTargetRange =
         documentSnapshot.toCurrentDocumentRange(rangeInSnapshot)
 
-      if (currentTargetRange.type === 'error')
+      if (currentTargetRange.type === 'error') {
         assert.fail(currentTargetRange.error)
-      else {
+      } else {
         const lineRangeToBeReplaced = vscodeRangeToLineRange(
           currentTargetRange.value,
         )
@@ -185,7 +185,9 @@ Line 5
             const delta = content.slice(currentContent.length)
 
             editBuilder.insert(currentTargetRange.value.end, delta)
-          } else editBuilder.replace(currentTargetRange.value, content)
+          } else {
+            editBuilder.replace(currentTargetRange.value, content)
+          }
         })
       }
     }

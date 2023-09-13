@@ -44,7 +44,9 @@ export async function findSingleFileMatchingPartialPath(
   path: string,
 ): Promise<vscode.Uri | undefined> {
   const matchingFiles = await findFilesMatchingPartialPath(path)
-  if (matchingFiles.length > 1) return undefined
+  if (matchingFiles.length > 1) {
+    return undefined
+  }
 
   return matchingFiles[0]
 }
@@ -101,7 +103,10 @@ export function openedTabs(): vscode.Uri[] {
 
 export function tabsToUris(tabs: readonly vscode.Tab[]): vscode.Uri[] {
   return tabs.flatMap((tab) => {
-    if (tab.input instanceof vscode.TabInputText) return [tab.input.uri]
-    else return []
+    if (tab.input instanceof vscode.TabInputText) {
+      return [tab.input.uri]
+    } else {
+      return []
+    }
   })
 }
