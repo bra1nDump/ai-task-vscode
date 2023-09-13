@@ -29,19 +29,28 @@ export async function startMultiFileEditing(
 
   const outputFormat: OpenAiMessage = {
     role: 'system',
-    content: `First collect all of the information relevant to the task the user is trying to accomplish and restate the task. The task can be spread out across the input. Next explain how you will accomplish it in detail. Sometimes part of the task is already accomplished, clearly state so and consider it stale instructions.
+    content: `Creating thoughts:
+- Collect all of the information relevant to the task the user is trying to accomplish and restate the task
+- Restate any specific instructions that the user has already provided on how to accomplish the task 
+- Sometimes parts of the task are already accomplished, clearly state so and consider it stale instructions
+- Your detailed plan to accomplish the task
 
+Format:
 <thoughts>
-{{Your detailed understanding of you the task the user is trying to accomplish}}
-{{Your detailed plan on how to accomplish the task}}
+{{restating the task and any specific instructions the user has provided}}
+{{detailed plan on how to accomplish the task}}
 </thoughts>
 
-Next output any file changes right after your <thoughts> in the format described in "How to make a multi file change".`,
+Creating changes:
+- Right after the thoughts block output any changes following "How to make a multi file change"
+- Provide a detailed plan for each change using <description>...</description>
+
+First output thoughts, then changes`,
   }
 
   const userTaskMessage: OpenAiMessage = {
     role: 'user',
-    content: `Your task: ${taskPrompt}`,
+    content: taskPrompt,
   }
   const messages = [
     multiFileEditPrompt,

@@ -33,8 +33,6 @@ export type ChangeApplicationResult =
   | 'appliedSuccessfully'
   | 'failedToApplyCanRetry'
 
-// Refactor: abstract the iteration away alongside checking if a given change was already processed
-
 async function applyChangesAsTheyBecomeAvailable(
   growingSetOfFileChanges: AsyncIterableX<ResolvedChange[]>,
   context: SessionContext,
@@ -58,11 +56,34 @@ async function highlightTargetRangesAsTheyBecomeAvailable(
   growingSetOfFileChanges: AsyncIterableX<ResolvedChange[]>,
   context: SessionContext,
 ) {
+  const shownEditorAndRevealedRange = new Set<number>()
   const highlightedChanges = new Set<number>()
   const finalizedChanges = new Set<number>()
   const highlightingRemovalTimeouts = new Map<number, NodeJS.Timeout>()
   for await (const changesForMultipleFiles of growingSetOfFileChanges)
     for (const [index, change] of changesForMultipleFiles.entries()) {
+      const findMatchingVisibleEditor = () =>
+        vscode.window.visibleTextEditors.find(
+          (editor) => editor.document.uri.path === change.fileUri.path,
+        )
+
+      // Show the editor if it is not already shown
+      if (!shownEditorAndRevealedRange.has(index)) {
+        // Decorations can only be set on active editors
+        const editor = await vscode.window.showTextDocument(change.fileUri)
+
+        // We want to show the user the area we're updating
+        editor.revealRange(
+          change.rangeToReplace,
+          vscode.TextEditorRevealType.InCenter,
+        )
+
+        shownEditorAndRevealedRange.add(index)
+      }
+
+      // As long as the change is not finalized (or we have not cancelled the session)
+      // we want to keep highlighting alive.
+      // This code continuously clears out that old timer and creates a new one for every time a change updates.
       if (!finalizedChanges.has(index)) {
         // Clear the timeout if it exists
         const previousTimeout = highlightingRemovalTimeouts.get(index)
@@ -72,11 +93,9 @@ async function highlightTargetRangesAsTheyBecomeAvailable(
         // Assumption: LLM produces at least a token a second
         const timeout = setTimeout(() => {
           // Only dehighlight of the editor is visible
-          const editor = vscode.window.visibleTextEditors.find(
-            (editor) => editor.document.uri.path === change.fileUri.path,
-          )
+          const editor = findMatchingVisibleEditor()
           editor?.setDecorations(targetRangeHighlightingDecoration, [])
-        }, 1000)
+        }, 3000)
         highlightingRemovalTimeouts.set(index, timeout)
 
         // Mark as finalized only once the replacement stopped changing.
@@ -84,17 +103,22 @@ async function highlightTargetRangesAsTheyBecomeAvailable(
         if (change.replacementIsFinal) finalizedChanges.add(index)
       }
 
+      // Highlight the range if it was not already highlighted, only done once
       if (!highlightedChanges.has(index) && change.rangeToReplace) {
-        const editor = await vscode.window.showTextDocument(change.fileUri)
-
-        // Set the decoration, vscode automatically keeps track of the decoration ranges
-        // so no need to keep them up to date, they will expand with the content
-        editor.setDecorations(targetRangeHighlightingDecoration, [
+        const editor = findMatchingVisibleEditor()
+        editor?.setDecorations(targetRangeHighlightingDecoration, [
           change.rangeToReplace,
         ])
 
-        // Mark as processed only once the range stopped changing
-        if (change.rangeToReplaceIsFinal) highlightedChanges.add(index)
+        // First  we will replace the old range with empty content, effectively removing the decoration
+        // Once we have added nonempty content, or the changes final we no longer need to update the decoration
+        // since subsequent inserts will extended the decoration by vscode natively
+        if (
+          // Warning: Not sure why it was not working, keeping redundant decoration updates for now
+          // change.replacement.length > 10 ||
+          change.replacementIsFinal
+        )
+          highlightedChanges.add(index)
       }
     }
 }
@@ -135,6 +159,9 @@ async function showWarningWhenNoFileWasModified(
 export async function applyResolvedChangesWhileShowingTheEditor(
   resolvedChange: ResolvedChange,
 ): Promise<ChangeApplicationResult> {
+  // WARNING: The editor has to be shown before we can apply the changes!
+  // This is not very nice for parallelization.
+  // We should migrate to workspace edits for documents not currently visible.
   const document = await vscode.workspace.openTextDocument(
     resolvedChange.fileUri,
   )
@@ -166,12 +193,35 @@ export async function applyResolvedChangesWhileShowingTheEditor(
   debug('Replacing content:', document.getText(resolvedChange.rangeToReplace))
   debug('With:', resolvedChange.replacement)
 
-  const isApplicationSuccessful = await editor.edit((editBuilder) => {
-    editBuilder.replace(
-      resolvedChange.rangeToReplace,
-      resolvedChange.replacement,
+  // Applied the most recent change to the editor.
+  // Optimized to use an insert operation at the end of the range if existing contents partially match the replacement.
+  // Done to avoid the flickering of the code highlighting when the same range is repeatedly replaced
+  let isApplicationSuccessful
+  const oldContent = document.getText(resolvedChange.rangeToReplace)
+  if (resolvedChange.replacement.startsWith(oldContent)) {
+    const delta = resolvedChange.replacement.substring(oldContent.length)
+    debug(
+      `Delta: ${delta}, oldContent: ${oldContent}, position: ${end.line}, ${end.character}`,
     )
-  })
+    isApplicationSuccessful = await editor.edit(
+      (editBuilder) => {
+        editBuilder.insert(resolvedChange.rangeToReplace.end, delta)
+      },
+      // https://stackoverflow.com/a/71787983/5278310
+      // Make it possible to undo all the session changes in one go by avoiding undo checkpoints
+      { undoStopBefore: false, undoStopAfter: false },
+    )
+  } else
+    isApplicationSuccessful = await editor.edit(
+      (editBuilder) => {
+        editBuilder.replace(
+          resolvedChange.rangeToReplace,
+          resolvedChange.replacement,
+        )
+      },
+      // Checkpoint before the the first edit to this range, usually replacing old content with empty string
+      { undoStopBefore: true, undoStopAfter: false },
+    )
 
   debug('Document after replacement', document.getText())
 

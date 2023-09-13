@@ -38,6 +38,8 @@ Suggestions:
   - A body of small function
   - A block of code surrounded with new lines
   - A for loop and some variables defined right before it
+- Avoid replacing large ranges if most of the code remains the same. Instead use multiple smaller targeted changes
+- If the change is trivial and affects only a single line, only print out that line as a target range
 - Make sure symbols you are using are available in scope or define them yourself
 
 Examples:
@@ -112,32 +114,20 @@ const Counter: React.FC = () => {
 </content>
 </file>
 
-Given a task to refactor the code to use a single div instead of a list, the following are acceptable changes to generate. Notice the indentation is respected from the original file.
+Given a task to refactor the code to use a single div instead of a list, the following are acceptable changes to generate.
 <change>
 <path>counter.ts</path>
 <description>Use a single div simply showing the count instead of showing a list element with values from 0 to count</description>
 <range-to-replace>
-  return (
-    <div>
-      <button onClick={() => count > 0 && setCount(count - 1)}>-</button>
-      <button onClick={() => setCount(count + 1)}>+</button>
       <ul>
         {Array.from({ length: count }, 
           (_, i) => 
             <li key={i}>Item {i + 1}</li>)
         }
       </ul>
-    </div>
-  );
 </range-to-replace>
 <replacement>
-  return (
-    <div>
-      <button onClick={() => count > 0 && setCount(count - 1)}>-</button>
-      <button onClick={() => setCount(count + 1)}>+</button>
       <div>{count}</div>
-    </div>
-  );
 </replacement>
 </change>
 `
@@ -175,7 +165,7 @@ print("Sorted array is:", data)
 </content>
 </file>
 
-Given a task to address @${breadIdentifier} comments, the following is a reasonable change to make. Notice the use of </truncated>. Use it when the range you were replacing is large. Ranges over 5 lines long should be truncated.
+Given a task to address @${breadIdentifier} comments, the following is a reasonable change to make. Notice the use of </truncated>. Use it only two truncate range to replace when it is large (over 5 lines). Never truncate replacement.
 <change>
 <path>src/quicksortpy</path>
 <description>Replacing the existing quicksort implementation with a more efficient one</description>

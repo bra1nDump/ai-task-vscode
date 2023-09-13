@@ -126,6 +126,22 @@ suite('vscode.workspace.OnDidChangeTextDocumentEvent', () => {
     assert.equal(editor.document.lineAt(0).text, 'SuffixLine 1')
   })
 
+  test('Insert newline at end of line zero', async () => {
+    const editor = vscode.window.activeTextEditor
+    assert.ok(editor)
+    const changes: vscode.TextDocumentContentChangeEvent[] = []
+    vscode.workspace.onDidChangeTextDocument((event) => {
+      changes.push(...event.contentChanges)
+    })
+    await editor.edit((editBuilder) => {
+      editBuilder.insert(new vscode.Position(0, 6), '\n')
+    })
+    assert.equal(editor.document.lineAt(0).text, 'Line 1')
+    assert.equal(changes.length, 1)
+    assert.equal(changes[0].text, '\n')
+    assert.deepEqual(changes[0].range, new vscode.Range(0, 6, 0, 6))
+  })
+
   test('Merge two lines', async () => {
     const editor = vscode.window.activeTextEditor
     assert.ok(editor)

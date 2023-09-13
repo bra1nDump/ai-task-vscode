@@ -43,3 +43,12 @@ So I can run a script to ask me questions about the codebase to add more documen
 ## Blocked by
 
 - Stale file issue for multi edits on a single file
+
+# Replace all comments with more than three lines with block comments
+
+# Replace all timeouts in all test files
+
+# Rewrite explore vscode on change event.ts to remove the common setup code and instead use a helper function to bootstrap the editor
+
+## Blocked by
+- Use line range as targets instead of text because there will be multiple matches with repetitive test code

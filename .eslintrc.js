@@ -22,8 +22,11 @@ module.exports = {
     // Currently annoying as we have a lot of bootstraping code, lets fix later
     '@typescript-eslint/no-unused-vars': 'off',
 
-    // Allow single line if statemtns without curly
+    // Allow single line if statemtns without curly, Removes rule is very annoying. I would only wanted for returning from a function or throwing early
     curly: ['error', 'multi'],
+
+    // npm i --save-dev eslint-plugin-comment-length seems like a better fit because it will also break up the long lines
+    // 'multiline-comment-style': ['error', 'starred-block'],
   },
 
   ignorePatterns: [

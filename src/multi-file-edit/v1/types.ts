@@ -48,7 +48,6 @@ export interface FileChange {
 
 export interface LlmGeneratedPatchXmlV1 {
   /**
-   * @crust
    * - I have updated the type to be a string instead of a string array, make changes acordingly across the files
    *   to account for this change, including the fixes to address the compilation errors due to this refactor.
    * - First You should update the parsing code to support it. The new desired format is to have the plan printed out within <thoughts>...</thoughts> tags.

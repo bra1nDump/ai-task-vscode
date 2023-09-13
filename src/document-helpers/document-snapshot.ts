@@ -208,7 +208,9 @@ export class DocumentSnapshot {
 
         - This is kind of similar to the first case because we also need to find the line displacement. The only differences we only add thus to the end range, because the range is strictly expanding or staying the same when we are simply adding more characters to the last line in the range.
 
-      4. The contentChange is partially overlapping the range we're looking to adjust.
+      4. @crust This is an additional case when the change is an insert in the end of the tracked range. In this case we want to extend the range by an extra line if necessary. Please explain this case similar to the cases above. Please add another case to the if statements below to handle this case. 
+
+      default. The contentChange is partially overlapping the range we're looking to adjust.
         - This is a complex case that we should not encounter with basic usage. Simply return and error.
       */
     for (const contentChange of this.contentChanges) {
@@ -236,9 +238,16 @@ export class DocumentSnapshot {
         contentChange.range.end.line === currentRange.end
       )
         // Case 3: contentChange exactly matches the range
-
         currentRange.end += lineDisplacement
-      // Case 4: contentChange is partially overlapping the range
+      else if (
+        contentChange.range.start.line === currentRange.end
+        // We don't store document stayed at that point and time, so we can't check this. Let's just assume it's true for now. The assumption is broken if the user edits the overlapping ranch within document while the LLM is running.
+        //  && contentChange.range.start.character === document.lineAt(currentRange.end).text.length
+      )
+        // Case 4: contentChange is an insert in the end of the tracked range
+        // Extend the range by an extra line if necessary
+        currentRange.end += lineDisplacement
+      // Default: contentChange is partially overlapping the range
       else return { type: 'error', error: 'Range is partially overlapping' }
     }
 

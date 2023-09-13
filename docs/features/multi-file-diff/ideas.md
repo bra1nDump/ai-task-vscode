@@ -13,12 +13,20 @@ I am able to get much better results when I trim the context down to just the fu
 
 ## Improve chain of thought prompt before creating the more work fix. 
 
+Questions were already asking:
+- Collect all of the information relevant to the task the user is trying to accomplish and restate the task
+- Make sure to restate any specific instructions that the user has already provided on how to accomplish the task 
+- Sometimes parts of the task are already accomplished, clearly state so and consider it stale instructions
+
 Questions we can ask of the model:
 - Which function should we change? (helps model target)
 - Can we change a smaller scope to accomplish the task?
 - Are there any helper functions we can reuse?
 
-We can also provide examples of how this chain of thought.
+Other ideas:
+- We can also provide examples of how this chain of thought
+- I'm now thinking restating part of the task and providing detailed reasoning for the code change right before generating the change might help the model focus on the particular change it is making
+
 
 ## Split up the generation
 Step 1

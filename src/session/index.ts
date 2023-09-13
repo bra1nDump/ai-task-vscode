@@ -23,6 +23,13 @@ export interface SessionContext {
   sessionAbortedEventEmitter: vscode.EventEmitter<void>
 
   /**
+   * Will fire when the session has ended, if the session was aborted is expected to be called after it.
+   * If it is not called, that means the command most likely has a bug related to aborting.
+   * Will be disposed right after.
+   */
+  sessionEndedEventEmitter: vscode.EventEmitter<void>
+
+  /**
    * This is a list of subscriptions that will be disposed when the session is closed.
    */
   subscriptions: vscode.Disposable[]
@@ -54,6 +61,9 @@ export async function startSession(): Promise<SessionContext> {
 
   // Create an event emitter to notify anyone interested in session aborts
   const sessionAbortedEventEmitter = new vscode.EventEmitter<void>()
+  // Another emitter for when session ends no matter if it was aborted or it has run its course
+  const sessionEndedEventEmitter = new vscode.EventEmitter<void>()
+
   const textDocumentCloseSubscription = vscode.window.tabGroups.onDidChangeTabs(
     ({ closed: closedTabs }) => {
       // input contains viewType key: 'mainThreadWebview-markdown.preview'
@@ -70,11 +80,31 @@ export async function startSession(): Promise<SessionContext> {
     },
   )
 
+  void vscode.window.withProgress(
+    {
+      location: vscode.ProgressLocation.Notification,
+      title: 'Birds are chasing your bread',
+      cancellable: true,
+    },
+    async (_progress, cancellationToken) => {
+      // Cancelled from a button on the progress view
+      cancellationToken.onCancellationRequested(() => {
+        sessionAbortedEventEmitter.fire()
+      })
+
+      // Does not matter how but the session has ended. Remove the progress.
+      await new Promise((resolve) => {
+        sessionEndedEventEmitter.event(resolve)
+      })
+    },
+  )
+
   return {
     markdownHighLevelFeedbackDocument: sessionMarkdownHighLevelFeedbackDocument,
     markdownLowLevelFeedbackDocument: sessionMarkdownLowLevelFeedbackDocument,
     documentManager,
     sessionAbortedEventEmitter,
+    sessionEndedEventEmitter,
     subscriptions: [textDocumentCloseSubscription],
   }
 }
@@ -92,6 +122,9 @@ export async function closeSession(
   )
 
   sessionContext.sessionAbortedEventEmitter.dispose()
+
+  sessionContext.sessionEndedEventEmitter.fire()
+  sessionContext.sessionEndedEventEmitter.dispose()
 }
 
 async function findMostRecentSessionLogIndexPrefix(

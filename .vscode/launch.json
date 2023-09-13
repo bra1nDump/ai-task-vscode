@@ -88,11 +88,14 @@
 				"--extensionTestsPath=${workspaceFolder}/out/test/mochaTestRunner.js"
 			],
 			"envFile": "${workspaceFolder}/.env",
+			"env": {
+				"MOCHA_IGNORE_TIMEOUT": "true",
+			},
 			"outFiles": [
 				"${workspaceFolder}/out/**/*.js",
 				"${workspaceFolder}/dist/**/*.js"
 			],
-			"preLaunchTask": "tasks: watch-tests",
+			"preLaunchTask": "${defaultBuildTask}",
 			// Because the test compilation tasks or watch tasks they will not rebuild unless content changes
 			// So if we just clean the out directory it will not trigger a re-run
 			// "postDebugTask": "clean: out-directory"
