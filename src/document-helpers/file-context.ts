@@ -80,15 +80,22 @@ async function safeWorkspaceQueryAllFiles(): Promise<vscode.Uri[]> {
 
   return allFilesInWorkspace
 }
+
+/**
+ * Encode the file contexts into a prompt for the model
+ * @param fileContexts - The files to encode
+ * @param includeLineNumbers - Whether to include line numbers in the prompt. Keeping this as a parameter to quantify improvements or regressions
+ */
 export function fileContextSystemMessage(fileContexts: FileContext[]) {
   const filesContextXmlPrompt = fileContexts
-    .map(
-      (fileContext) =>
+    .map((fileContext) => {
+      return (
         '<file>\n' +
         `<path>${fileContext.filePathRelativeToWorkspace}</path>\n` +
         `<content>\n${fileContext.content}\n</content>\n` +
-        '</file>',
-    )
+        '</file>'
+      )
+    })
     .join('\n')
 
   const filesContextXmlPromptSystemMessage: OpenAiMessage = {

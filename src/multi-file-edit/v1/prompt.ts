@@ -22,19 +22,18 @@ import { OpenAiMessage } from 'helpers/openai'
  * changes generation
  */
 
-/* @crust your job is to refactor breadIdentifier parameter by moving it into a configuration object argument passed as the last argument
- * to this function. Don't touch other parameters. Only modify the function
- * signature. Don't modify other functions.
- */
 export function createMultiFileEditingMessages(
   fileContexts: FileContext[],
   taskPrompt: string,
-  config: { breadIdentifier: string },
+  config: { breadIdentifier: string; includeLineNumbers: boolean },
 ) {
   const multiFileEditPrompt = multiFileEditV1FormatSystemMessage(
     config.breadIdentifier,
   )
-  const fileContext = fileContextSystemMessage(fileContexts)
+  const fileContext = fileContextSystemMessage(
+    fileContexts,
+    config.includeLineNumbers,
+  )
 
   /* Planning is very important as chain of thought prompting is currently
    * state of the art. There's also structure chain of thought which promises
