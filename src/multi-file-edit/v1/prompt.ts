@@ -30,10 +30,7 @@ export function createMultiFileEditingMessages(
   const multiFileEditPrompt = multiFileEditV1FormatSystemMessage(
     config.breadIdentifier,
   )
-  const fileContext = fileContextSystemMessage(
-    fileContexts,
-    config.includeLineNumbers,
-  )
+  const fileContext = fileContextSystemMessage(fileContexts)
 
   /* Planning is very important as chain of thought prompting is currently
    * state of the art. There's also structure chain of thought which promises

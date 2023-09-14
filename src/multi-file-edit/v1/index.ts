@@ -22,7 +22,7 @@ export async function startMultiFileEditing(
 
   const messages = createMultiFileEditingMessages(fileContexts, taskPrompt, {
     breadIdentifier: breadIdentifier,
-    includeLineNumbers: true,
+    includeLineNumbers: false,
   })
 
   const highLevelLogger = (text: string) =>

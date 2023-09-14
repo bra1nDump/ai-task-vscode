@@ -175,7 +175,27 @@ export function resultMap<Value, NewValue, Error>(
 }
 
 export class DocumentSnapshot {
+  /**
+   * The snapshot could have two different formats:
+   * - File context verbatim
+   * - File context with line numbers
+   *
+   * This gets decided by the option passed to the constructor.
+   *
+   * Having cline numbers is useful for:
+   * - Disambiguating between lines with the same
+   * - Speeding up process of targeting LLM changes to specific lines
+   * - Splitting multi file editing into tasks of targeting and editing
+   * separately
+   *
+   * Potential issues:
+   * - Without splitting the task line targeting will most work as well. It
+   * should still provide improvements in reliability but not in speed in the
+   * first iteration
+   * - More tokens in the input and output
+   */
   public snapshotContext: FileContext
+
   private contentChanges: TextDocumentContentChangeEvent[] = []
 
   /**
@@ -185,10 +205,24 @@ export class DocumentSnapshot {
    * Maybe write a simple Unittest to test this similar to how I did with
    * VSCode edit apis
    */
-  constructor(public document: TextDocument) {
+  constructor(
+    public document: TextDocument,
+    public includeLineNumbers: boolean,
+  ) {
+    const documentContent = document.getText()
+    const path = workspace.asRelativePath(document.uri)
+
+    let snapshotContent = documentContent
+    if (this.includeLineNumbers) {
+      snapshotContent = documentContent
+        .split('\n')
+        .map((line, index) => `${index}: ${line}`)
+        .join('\n')
+    }
+
     this.snapshotContext = {
-      filePathRelativeToWorkspace: workspace.asRelativePath(document.uri),
-      content: document.getText(),
+      filePathRelativeToWorkspace: path,
+      content: snapshotContent,
     }
 
     workspace.onDidChangeTextDocument((change) => {

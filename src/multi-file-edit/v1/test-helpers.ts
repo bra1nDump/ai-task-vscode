@@ -9,7 +9,8 @@ export async function resolveAndApplyChangesToSingleFile(
   changes: Change[],
   editor: vscode.TextEditor,
 ) {
-  const sessionDocumentManager = new SessionDocumentManager()
+  // I'm still prototyping line numbers so let's stick to falls for now
+  const sessionDocumentManager = new SessionDocumentManager(false)
   await sessionDocumentManager.addDocuments('test', [editor.document.uri])
 
   const resolver = makeToResolvedChangesTransformer(sessionDocumentManager)
@@ -44,7 +45,9 @@ export async function resolveAndApplyChangesToMultipleFiles(
       ).then((x) => x!),
     ),
   )
-  const sessionDocumentManager = new SessionDocumentManager()
+  /* Still prototyping stick into the old API which does not include line
+     numbers */
+  const sessionDocumentManager = new SessionDocumentManager(false)
   await sessionDocumentManager.addDocuments('test', documentUris)
   const resolvedChanges = await makeToResolvedChangesTransformer(
     sessionDocumentManager,

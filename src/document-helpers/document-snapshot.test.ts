@@ -30,7 +30,15 @@ Line 5
       content: initialContent,
     })
     const editor = await vscode.window.showTextDocument(doc)
-    const documentSnapshot = new DocumentSnapshot(editor.document)
+
+    const documentSnapshotWithoutLineNumbers = new DocumentSnapshot(
+      editor.document,
+      false,
+    )
+    const documentSnapshotWithLineNumbers = new DocumentSnapshot(
+      editor.document,
+      true,
+    )
 
     // See more details on this example in header for DocumentSnapshot
     const changes = [
@@ -87,29 +95,36 @@ Line 5
 
       await new Promise((resolve) => setTimeout(resolve, 10)) // Artificial delay
 
-      const currentTargetRange =
-        documentSnapshot.toCurrentDocumentRange(rangeInSnapshot)
+      const currentTargetRangeWithoutLineNumbers =
+        documentSnapshotWithoutLineNumbers.toCurrentDocumentRange(
+          rangeInSnapshot,
+        )
+      const currentTargetRangeWithLineNumbers =
+        documentSnapshotWithLineNumbers.toCurrentDocumentRange(rangeInSnapshot)
 
-      if (currentTargetRange.type === 'error') {
-        assert.fail(currentTargetRange.error)
+      if (currentTargetRangeWithoutLineNumbers.type === 'error') {
+        assert.fail(currentTargetRangeWithoutLineNumbers.error)
+      } else if (currentTargetRangeWithLineNumbers.type === 'error') {
+        assert.fail(currentTargetRangeWithLineNumbers.error)
       } else {
-        const lineRangeToBeReplaced = vscodeRangeToLineRange(
-          currentTargetRange.value,
+        const lineRangeToBeReplacedWithoutLineNumbers = vscodeRangeToLineRange(
+          currentTargetRangeWithoutLineNumbers.value,
+        )
+        const lineRangeToBeReplacedWithLineNumbers = vscodeRangeToLineRange(
+          currentTargetRangeWithLineNumbers.value,
         )
         assert.deepStrictEqual(
-          lineRangeToBeReplaced,
+          lineRangeToBeReplacedWithoutLineNumbers,
+          change.rangeInCurrentDocumentBeforeApplying,
+        )
+        assert.deepStrictEqual(
+          lineRangeToBeReplacedWithLineNumbers,
           change.rangeInCurrentDocumentBeforeApplying,
         )
         await editor.edit((editBuilder) => {
-          editBuilder.replace(currentTargetRange.value, content)
+          // Only perform a single replacement
+          editBuilder.replace(currentTargetRangeWithLineNumbers.value, content)
         })
-
-        /* console.log(
-         * `\n\nDocument after replacing line range
-         * ${lineRangeToBeReplaced.start}-${lineRangeToBeReplaced.end} with
-         * '${content}':`,
-           )
-           console.log(editor.document.getText()) */
       }
     }
 
@@ -128,7 +143,7 @@ Line 5
       content: initialContent,
     })
     const editor = await vscode.window.showTextDocument(doc)
-    const documentSnapshot = new DocumentSnapshot(editor.document)
+    const documentSnapshot = new DocumentSnapshot(editor.document, false)
 
     const changes = [
       {

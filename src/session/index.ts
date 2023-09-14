@@ -65,7 +65,7 @@ export async function startSession(): Promise<SessionContext> {
 
   /* Create document manager that will help us backdate edits throughout this
      sessiong */
-  const documentManager = new SessionDocumentManager()
+  const documentManager = new SessionDocumentManager(true)
 
   // Create an event emitter to notify anyone interested in session aborts
   const sessionAbortedEventEmitter = new vscode.EventEmitter<void>()

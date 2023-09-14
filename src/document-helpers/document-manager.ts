@@ -14,7 +14,7 @@ export class SessionDocumentManager {
   // Using strength so get lookup succeeds even if the uri is different object
   private uriToDocumentsSnapshots: Map<string, DocumentSnapshot>
 
-  constructor() {
+  constructor(public includeLineNumbers: boolean) {
     this.uriToDocumentsSnapshots = new Map()
   }
 
@@ -29,7 +29,10 @@ export class SessionDocumentManager {
 
     const tasks = newUris.map(async (uri) => {
       const document = await vscode.workspace.openTextDocument(uri)
-      const documentSnapshot = new DocumentSnapshot(document)
+      const documentSnapshot = new DocumentSnapshot(
+        document,
+        this.includeLineNumbers,
+      )
       this.uriToDocumentsSnapshots.set(uri.path, documentSnapshot)
     })
 

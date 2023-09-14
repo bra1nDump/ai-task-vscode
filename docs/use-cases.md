@@ -64,3 +64,10 @@ I should already be able to do so by making the change, this will produce compil
 I can actually make the change with @crust as well.
 But next I would have to update all the calls to the function to use the new parameter separately.
 Ideally I could ad @references in the prompt to fix all the references to this function at the same time as it produces the change to the parameter
+
+# Lift configuration to the parent function
+I was passing a configuration to one function, but I realized I need those context in other places and the configuration should really be dictated from the session level. Lifting it will involve 
+- Updating the type of the signature object to include configuration
+- Making a decision where to pass the entire session object and where to extract the configuration only
+- Updating ca sites
+- Potentially moving other configuration like thanks into the existing configuration object on the session now 
