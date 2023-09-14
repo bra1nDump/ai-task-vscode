@@ -1,71 +1,30 @@
 import * as vscode from 'vscode'
 
-import {
-  FileContext,
-  fileContextSystemMessage,
-} from 'document-helpers/file-context'
-import { OpenAiMessage, streamLlm } from 'helpers/openai'
+import { FileContext } from 'document-helpers/file-context'
+import { streamLlm } from 'helpers/openai'
 import { from } from 'ix/asynciterable'
 
 import { startInteractiveMultiFileApplication } from 'multi-file-edit/applyResolvedChange'
 import { parsePartialMultiFileEdit } from './parse'
 import { makeToResolvedChangesTransformer } from './resolveTargetRange'
-import { multiFileEditV1FormatSystemMessage } from './prompt'
 import { SessionContext } from 'session'
 import { queueAnAppendToDocument } from 'helpers/vscode'
 
 import { map as mapAsync } from 'ix/asynciterable/operators'
+import { createMultiFileEditingMessages } from './prompt'
 
 export async function startMultiFileEditing(
   taskPrompt: string,
   breadIdentifier: string,
   sessionContext: SessionContext,
 ) {
-  const multiFileEditPrompt =
-    multiFileEditV1FormatSystemMessage(breadIdentifier)
-
   const fileContexts = sessionContext.documentManager.getFileContexts()
-  const fileContext = fileContextSystemMessage(fileContexts)
 
-  /* Planning is very important as chain of thought prompting is currently
-   * state of the art. There's also structure chain of thought which promises
-   * to be better https://arxiv.org/pdf/2305.06599.pdf
-   *
-   * I'm considering to move pseudocode algorithms for the replacement into the
-   * examples for the diff generation prompt. I'm hoping by reducing locality
-   * it will improve the quality of the replacement.
-   */
-  const taskUnderstandingSelfPrompting: OpenAiMessage = {
-    role: 'system',
-    content: `Understanding the task:
-- Collect all of the information relevant to the task the user is trying to accomplish and restate the task
-- Restate any specific instructions that the user has already provided on how to accomplish the task 
-- Used technical style of writing - be concise but do not lose any information
-- Parts of the task might be accomplished, clearly state so and consider it stale instructions
-
-Task output format:
-<task>
-{{restating the task}}
-</task>`,
-  }
-
-  const combinedResponseOutputFormat: OpenAiMessage = {
-    role: 'system',
-    content: `In your next message respond only with the task immediately followed by the changes to be made to the files.`,
-  }
-
-  const userTaskMessage: OpenAiMessage = {
-    role: 'user',
-    content: taskPrompt,
-  }
-
-  const messages = [
-    multiFileEditPrompt,
-    fileContext,
-    userTaskMessage,
-    taskUnderstandingSelfPrompting,
-    combinedResponseOutputFormat,
-  ]
+  const messages = createMultiFileEditingMessages(
+    breadIdentifier,
+    fileContexts,
+    taskPrompt,
+  )
 
   const highLevelLogger = (text: string) =>
     queueAnAppendToDocument(

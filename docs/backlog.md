@@ -15,9 +15,12 @@
 
 # Next up
 
-## Play with prompts for multi file edits, try improving the planning stage
+- Refactor so the prompts for multi file edit all left together disk
+- Continue to line range targets 
+  - (maybe combined with content?!! Can then require only a single line, can also add ellipses if the line is long).h
+  - This is genius because then I can simply change the conversion to file context prompts and search logic 
 
-## Tuesday Type at cursor - allows me to replace continue for personal use
+## Wednesday Type at cursor - allows me to replace continue for personal use
 
 - For example current model does not support inserts only some sort of replacement
 - The simplest version is to keep reusing the multi file edit prompt and simply instruct to replace a single line with the comment /run
@@ -25,6 +28,7 @@
 - Maybe also take into account the @bread files + diagnostics
 
 ## Record Type at cursor
+## Record multi file edit
 
 ## Compilation Step
 
@@ -122,6 +126,8 @@ https://github.com/microsoft/vscode/blob/41e940f76f5deda197bc5930b044c55607ba1cb
 - Create a company and apply for open eye credits
 
 # Done
+
+## Play with prompts for multi file edits, try improving the planning stage
 
 ### Wednesday Gradually apply changes as they come in, while supporting multiple edits within the file
 

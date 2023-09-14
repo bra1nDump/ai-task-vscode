@@ -1,3 +1,7 @@
+import {
+  FileContext,
+  fileContextSystemMessage,
+} from 'document-helpers/file-context'
 import { OpenAiMessage } from 'helpers/openai'
 
 /**
@@ -18,27 +22,56 @@ import { OpenAiMessage } from 'helpers/openai'
  * changes generation
  */
 
-/*
-- You are a coding assistant that generates incremental file changes
-- You will be given files along with some task
- * - You might generate changes to some file if it's necessary to accomplish
- * the task - Start by making changes you are most confident about
- * - Respect indentation of the original range you are replacing (does not
- * really replace indentation) - If you're only replacing a single line, only
- * print out that line as a target range - Avoid replacing large ranges if most
- * of the code remains the same. Instead use multiple smaller targeted change
+export function createMultiFileEditingMessages(
+  breadIdentifier: string,
+  fileContexts: FileContext[],
+  taskPrompt: string,
+) {
+  const multiFileEditPrompt =
+    multiFileEditV1FormatSystemMessage(breadIdentifier)
+  const fileContext = fileContextSystemMessage(fileContexts)
 
-I'm playing around with the scope that should be replaced.
- * Before it would replace too big over chunk, now it has gone too granular and
- * I think it's causing issues.
+  /* Planning is very important as chain of thought prompting is currently
+   * state of the art. There's also structure chain of thought which promises
+   * to be better https://arxiv.org/pdf/2305.06599.pdf
+   *
+   * I'm considering to move pseudocode algorithms for the replacement into the
+   * examples for the diff generation prompt. I'm hoping by reducing locality
+   * it will improve the quality of the replacement.
+   */
+  const taskUnderstandingSelfPrompting: OpenAiMessage = {
+    role: 'system',
+    content: `Understanding the task:
+- Collect all of the information relevant to the task the user is trying to accomplish and restate the task
+- Restate any specific instructions that the user has already provided on how to accomplish the task 
+- Used technical style of writing - be concise but do not lose any information
+- Parts of the task might be accomplished, clearly state so and consider it stale instructions
 
- * It has continuously used a string that does not exist in scope and did not
- * declare it. When declaring variables it would oftentimes place them too far
- * from when they're used.
+Task output format:
+<task>
+{{restating the task}}
+</task>`,
+  }
 
- * Maybe I am being overly harsh on the multi file editing. I have asked
- * continue some more question and it has failed to  make the change I wanted.
-*/
+  const combinedResponseOutputFormat: OpenAiMessage = {
+    role: 'system',
+    content: `In your next message respond only with the task immediately followed by the changes to be made to the files.`,
+  }
+
+  const userTaskMessage: OpenAiMessage = {
+    role: 'user',
+    content: taskPrompt,
+  }
+
+  const messages = [
+    multiFileEditPrompt,
+    fileContext,
+    userTaskMessage,
+    taskUnderstandingSelfPrompting,
+    combinedResponseOutputFormat,
+  ]
+  return messages
+}
 
 const diffGeneratorPromptPrefix = (examples: string[]) =>
   `Creating changes:
@@ -58,7 +91,7 @@ Examples:
 ${examples.join('\n\n')}
 `
 
-export const typescriptHelloWorldParametrizationMultiFileExample = (
+const typescriptHelloWorldParametrizationMultiFileExample = (
   breadIdentifier: string,
 ) =>
   `
@@ -111,7 +144,7 @@ hello(name);
  * probably not get edited correctly. I should probably use more esoteric tag
  * names.
  */
-export const editMiddleOfAJsxExpressionEnsureIndentIsPreserved = (
+const editMiddleOfAJsxExpressionEnsureIndentIsPreserved = (
   breadIdentifier: string,
 ) =>
   `Given this file:
@@ -158,7 +191,7 @@ Context: jsx subexpression
 </change>
 `
 
-export const detailedPseudocodeAndTruncation = `Given this file:
+const detailedPseudocodeAndTruncation = `Given this file:
 <file>
 <path>duplicate.ts</path>
 <content>
@@ -211,68 +244,10 @@ function deduplicate(arr: number[]): number[] {
 </change>
 `
 
-export const UNUSED_NotRepresentativeOfOurUseCases_pythonRewriteBigPortionOfTheCodeWithTruncation =
-  (breadIdentifier: string) => `
-Given this file:
-<file>
-<path>src/quicksort.py</path>
-<content>
-# @${breadIdentifier} Refactor thus using recursion
-def partition(array, low, high):
-  i = (low-1)
-  pivot = array[high]
-  for j in range(low, high):
-    if array[j] <= pivot:
-      i = i+1
-      array[i], array[j] = array[j], array[i]
-  array[i+1], array[high] = array[high], array[i+1]
-  return (i+1)
-
-def quicksort(array, low, high):
-  if len(array) == 1:
-    return array
-  if low < high:
-    pi = partition(array, low, high)
-    quicksort(array, low, pi-1)
-    quicksort(array, pi+1, high)
-
-data = [10, 7, 8, 9, 1, 5]
-n = len(data)
-quicksort(data, 0, n-1)
-print("Sorted array is:", data)
-</content>
-</file>
-
-Given a task to address @${breadIdentifier} comments, the following is a reasonable change to make. Notice the use of </truncated>. Use it only two truncate range to replace when it is large (over 5 lines). Never truncate replacement.
-<change>
-<path>src/quicksortpy</path>
-<description>Replacing the existing quicksort implementation with a more efficient one</description>
-<range-to-replace>
-def partition(array, low, high):
-  i = (low-1)
-<truncated/>
-    quicksort(array, low, pi-1)
-    quicksort(array, pi+1, high)
-</range-to-replace>
-<replacement>
-def quicksort(arr):
-  if len(arr) <= 1:
-    return arr
-  pivot = arr[len(arr) // 2]
-  left = [x for x in arr if x < pivot]
-  middle = [x for x in arr if x == pivot]
-  right = [x for x in arr if x > pivot]
-  return quicksort(left) + middle + quicksort(right)
-</replacement>
-</change>
-`
-
-export const allDiffV1Examples = (breadIdentifier: string) => [
+const allDiffV1Examples = (breadIdentifier: string) => [
   typescriptHelloWorldParametrizationMultiFileExample(breadIdentifier),
   editMiddleOfAJsxExpressionEnsureIndentIsPreserved(breadIdentifier),
   detailedPseudocodeAndTruncation,
-
-  // pythonRewriteBigPortionOfTheCodeWithTruncation(breadIdentifier),
 ]
 
 /**
@@ -289,7 +264,7 @@ export const allDiffV1Examples = (breadIdentifier: string) => [
  * @param breadIdentifier - used to generate a more customized prompt for editing files with
  *  @breadIdentifier mentions. Kind of has no business being here, but I will allow it.
  */
-export function multiFileEditV1FormatSystemMessage(
+function multiFileEditV1FormatSystemMessage(
   breadIdentifier: string,
 ): OpenAiMessage {
   const diffPrompt = diffGeneratorPromptPrefix(
