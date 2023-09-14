@@ -52,3 +52,9 @@ So I can run a script to ask me questions about the codebase to add more documen
 
 ## Blocked by
 - Use line range as targets instead of text because there will be multiple matches with repetitive test code
+
+# Shortened the names of the worthy response files and move the more detailed description of what they're doing into the file body instead of the title
+
+## Blocked by
+- tree command
+- file renaming tool
