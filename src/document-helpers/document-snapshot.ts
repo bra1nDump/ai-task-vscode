@@ -152,26 +152,17 @@ import {
   TextDocument,
   TextDocumentContentChangeEvent,
 } from 'vscode'
-import { FileContext } from './file-context'
+
+import { Result, resultMap } from '../helpers/result'
+
+export interface FileContext {
+  filePathRelativeToWorkspace: string
+  content: string
+}
 
 export interface LineRange {
   start: number
   end: number
-}
-
-export type Result<Value, Error> =
-  | { type: 'success'; value: Value }
-  | { type: 'error'; error: Error }
-
-export function resultMap<Value, NewValue, Error>(
-  f: (value: Value) => NewValue,
-  result: Result<Value, Error>,
-): Result<NewValue, Error> {
-  if (result.type === 'success') {
-    return { type: 'success', value: f(result.value) }
-  } else {
-    return result
-  }
 }
 
 export class DocumentSnapshot {
@@ -194,7 +185,7 @@ export class DocumentSnapshot {
    * first iteration
    * - More tokens in the input and output
    */
-  public snapshotContext: FileContext
+  public fileSnapshotForLlm: FileContext
 
   private contentChanges: TextDocumentContentChangeEvent[] = []
 
@@ -209,21 +200,7 @@ export class DocumentSnapshot {
     public document: TextDocument,
     public includeLineNumbers: boolean,
   ) {
-    const documentContent = document.getText()
-    const path = workspace.asRelativePath(document.uri)
-
-    let snapshotContent = documentContent
-    if (this.includeLineNumbers) {
-      snapshotContent = documentContent
-        .split('\n')
-        .map((line, index) => `${index}: ${line}`)
-        .join('\n')
-    }
-
-    this.snapshotContext = {
-      filePathRelativeToWorkspace: path,
-      content: snapshotContent,
-    }
+    this.fileSnapshotForLlm = createFileContext(document)
 
     workspace.onDidChangeTextDocument((change) => {
       if (change.document !== document) {
@@ -356,6 +333,30 @@ export function lineRangeToVscodeRange(
     lineRange.end,
     document.lineAt(lineRange.end).text.length,
   )
+}
+
+export function createFileContext(document: TextDocument): FileContext {
+  const documentContent = document.getText()
+  const path = workspace.asRelativePath(document.uri)
+
+  return {
+    filePathRelativeToWorkspace: path,
+    content: documentContent,
+  }
+}
+
+export function transformFileContextWithLineNumbers(
+  fileContext: FileContext,
+): FileContext {
+  const snapshotContent = fileContext.content
+    .split('\n')
+    .map((line, index) => `${index}: ${line}`)
+    .join('\n')
+
+  return {
+    ...fileContext,
+    content: snapshotContent,
+  }
 }
 
 /**

@@ -1,6 +1,11 @@
 import * as vscode from 'vscode'
 
 /**
+ * Refactor: this file has accumulated many things that are not very related,
+ * the file is also called vscode which is not representative of what it does.
+ */
+
+/**
  * Previously we were reading from the file system which caused the contents to
  * be stale.
  */

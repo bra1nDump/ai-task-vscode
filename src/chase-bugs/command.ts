@@ -4,7 +4,7 @@ import { closeSession, startSession } from 'session'
 import { openedTabs, queueAnAppendToDocument } from 'helpers/vscode'
 import { startMultiFileEditing } from 'multi-file-edit/v1'
 import { getBreadIdentifier } from 'helpers/bread-identifier'
-import { findAndCollectBreadedFiles } from 'document-helpers/file-context'
+import { findAndCollectBreadedFiles } from 'document-helpers/file-search'
 
 /**
  * Gathered the problems in the code base

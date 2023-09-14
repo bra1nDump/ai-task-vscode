@@ -1,7 +1,7 @@
 import {
   FileContext,
   fileContextSystemMessage,
-} from 'document-helpers/file-context'
+} from 'document-helpers/file-search'
 import { OpenAiMessage } from 'helpers/openai'
 
 /**
@@ -92,6 +92,11 @@ Examples:
 ${examples.join('\n\n')}
 `
 
+/*
+I think generating these examples from source code would be more reliable.
+This schema would be enforced, configuration would be easier
+*/
+
 const typescriptHelloWorldParametrizationMultiFileExample = (
   breadIdentifier: string,
 ) =>
@@ -100,16 +105,17 @@ Given two files (omitted for brevity) and a task to make changes based on ${brea
 <change>
 <path>src/hello-world.ts</path>
 <range-to-replace>
-function helloWorld() {
-    // ${breadIdentifier} pass name to be greeted
-    console.log('Hello World');
-}
+0:function helloWorld() {
+1:  // ${breadIdentifier} pass name to be greeted
+2:  console.log('Hello World');
+3:}
 </range-to-replace>
 <description>
 Context: function
 Input: name: thing to be greeted of type string
 Output: void
 1: Print out "Hello " followed by the name
+</description>
 <replacement>
 function hello(name: string) {
     console.log(\`Hello \${name}\`);
@@ -152,22 +158,22 @@ const editMiddleOfAJsxExpressionEnsureIndentIsPreserved = (
 <file>
 <path>counter.ts</path>
 <content>
-const Counter: React.FC = () => {
-  const [count, setCount] = useState<number>(0);
-
-  return (
-    <div>
-      <button onClick={() => count > 0 && setCount(count - 1)}>-</button>
-      <button onClick={() => setCount(count + 1)}>+</button>
-      <ul>
-        {Array.from({ length: count }, 
-          (_, i) => 
-            <li key={i}>Item {i + 1}</li>)
-        }
-      </ul>
-    </div>
-  );
-};
+0:const Counter: React.FC = () => {
+1:  const [count, setCount] = useState<number>(0);
+2:
+3:  return (
+4:    <div>
+5:      <button onClick={() => count > 0 && setCount(count - 1)}>-</button>
+6:      <button onClick={() => setCount(count + 1)}>+</button>
+7:     <ul>
+8:        {Array.from({ length: count },
+9:         (_, i) =>
+10:           <li key={i}>Item {i + 1}</li>)
+11:        }
+12:      </ul>
+13:    </div>
+14:  );
+15:};
 </content>
 </file>
 
@@ -175,15 +181,16 @@ Given a task to refactor the code to use a single div instead of a list, the fol
 <change>
 <path>counter.ts</path>
 <range-to-replace>
-      <ul>
-        {Array.from({ length: count }, 
-          (_, i) => 
-            <li key={i}>Item {i + 1}</li>)
-        }
-      </ul>
+0:       <ul>
+1:         {Array.from({ length: count },
+2:           (_, i) =>
+3:             <li key={i}>Item {i + 1}</li>)
+4:         }
+5:       </ul>
 </range-to-replace>
 <description>
 Context: jsx subexpression
+Symbols in scope: count, setCount
 1: Show count value in a div
 </description>
 <replacement>

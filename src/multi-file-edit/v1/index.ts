@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 
-import { FileContext } from 'document-helpers/file-context'
+import { FileContext } from 'document-helpers/document-snapshot'
 import { streamLlm } from 'helpers/openai'
 import { from } from 'ix/asynciterable'
 

@@ -1,6 +1,5 @@
 import * as vscode from 'vscode'
-import { DocumentSnapshot } from './document-snapshot'
-import { FileContext } from './file-context'
+import { DocumentSnapshot, FileContext } from './document-snapshot'
 
 /**
  * This is a document manager that will help us backdate edits throughout a
@@ -56,7 +55,7 @@ export class SessionDocumentManager {
    */
   getFileContexts(): FileContext[] {
     return Array.from(this.uriToDocumentsSnapshots.values()).map(
-      (documentSnapshot) => documentSnapshot.snapshotContext,
+      (documentSnapshot) => documentSnapshot.fileSnapshotForLlm,
     )
   }
 

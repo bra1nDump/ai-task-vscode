@@ -68,7 +68,7 @@ export const makeToResolvedChangesTransformer = (
 
           const rangeToReplace = findTargetRangeInFileWithContent(
             change.oldChunk,
-            documentSnapshot.snapshotContext.content,
+            documentSnapshot.fileSnapshotForLlm.content,
             documentSnapshot.document.eol,
           )
 

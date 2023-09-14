@@ -1,12 +1,6 @@
 import * as vscode from 'vscode'
 
 import { getDocumentText } from 'helpers/vscode'
-import { OpenAiMessage } from 'helpers/openai'
-
-export interface FileContext {
-  filePathRelativeToWorkspace: string
-  content: string
-}
 
 /**
  * Find all files in the workspace with @breadIdentifier mention or with bread
@@ -79,28 +73,4 @@ async function safeWorkspaceQueryAllFiles(): Promise<vscode.Uri[]> {
   }
 
   return allFilesInWorkspace
-}
-
-/**
- * Encode the file contexts into a prompt for the model
- * @param fileContexts - The files to encode
- * @param includeLineNumbers - Whether to include line numbers in the prompt. Keeping this as a parameter to quantify improvements or regressions
- */
-export function fileContextSystemMessage(fileContexts: FileContext[]) {
-  const filesContextXmlPrompt = fileContexts
-    .map((fileContext) => {
-      return (
-        '<file>\n' +
-        `<path>${fileContext.filePathRelativeToWorkspace}</path>\n` +
-        `<content>\n${fileContext.content}\n</content>\n` +
-        '</file>'
-      )
-    })
-    .join('\n')
-
-  const filesContextXmlPromptSystemMessage: OpenAiMessage = {
-    content: 'Given files:\n' + filesContextXmlPrompt,
-    role: 'system',
-  }
-  return filesContextXmlPromptSystemMessage
 }
