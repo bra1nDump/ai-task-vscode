@@ -21,6 +21,13 @@ export function projectDiagnosticEntriesWithAffectedFileContext(): DiagnosticEnt
 
   for (const [uri, fileDiagnostics] of diagnostics) {
     for (const fileDiagnostic of fileDiagnostics) {
+      if (
+        fileDiagnostic.severity !== vscode.DiagnosticSeverity.Error &&
+        fileDiagnostic.severity !== vscode.DiagnosticSeverity.Warning
+      ) {
+        continue
+      }
+
       diagnosticEntries.push({
         uri,
         diagnostic: fileDiagnostic,

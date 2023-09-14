@@ -50,21 +50,10 @@ export interface FileChange {
 
 export interface LlmGeneratedPatchXmlV1 {
   /**
-   * @crust
-   * - I am refactoring plan to be a string instead of a string array, make
-   * changes acordingly across the files. I have started this change by
-   * changing the type of the plan below
-   *   to account for this change, including the fixes to address the
-   *   compilation errors due to this refactor.
-   * - First You should update the parsing code to support it. The new desired
-   * format is to have the plan printed out within <thoughts>...</thoughts>
-   * tags. Keep the old plan name for the variables.
-   * - Next update the code where we print out the plan to use the new
-   * format. Get rid of the inner for loop, replace the set that tracks
-   * previously shown plant item with a single variable holding a string. Make
-   * sure not to print out the entire plan but only the delta.
+   * Contains short technical description of the task. Used to start the
+   * chain of thought for the edits the model about to make
    */
-  plan: string[]
+  task: string
   changes: FileChange[]
   /**
    * Not used now, but it's much easier to add a new field to an object type

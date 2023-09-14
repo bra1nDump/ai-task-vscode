@@ -9,9 +9,9 @@ import { TargetRange, LlmGeneratedPatchXmlV1, FileChange } from './types'
 /**
  * Example payload thus would parse:
 ```xml
-<thoughts>
-{{Thoughts in free form}}
-</thoughts>
+<task>
+{{Understanding of the task}}
+</task>
 
 <change>
 <path>src/hello-world.ts</path>
@@ -32,18 +32,7 @@ function hello(name: string) {
 ```
 */
 export function parsePartialMultiFileEdit(xml: string): LlmGeneratedPatchXmlV1 {
-  /* Plan is encoded using - as a bullet point for each item
-     Extract the plan before the first change tag */
-  const planItems: string[] = []
-  const [planSection] = xml.split('<change>')
-  /* Extract plan items using regex,
-     account for first item being in the beginning of the string or on a new
-     line */
-  const planItemsRegex = /(?:^|\n)- (.*)/g
-  let match: RegExpExecArray | null
-  while ((match = planItemsRegex.exec(planSection)) !== null) {
-    planItems.push(match[1])
-  }
+  const task = extractSingleXmlElement(xml, 'task')?.content ?? ''
 
   const fileChangeOutputs = extractXmlElementsForTag(xml, 'change')
 
@@ -117,6 +106,6 @@ export function parsePartialMultiFileEdit(xml: string): LlmGeneratedPatchXmlV1 {
   return {
     changes: fileChanges,
     isStreamFinalizedUnused: false,
-    plan: planItems,
+    task,
   }
 }

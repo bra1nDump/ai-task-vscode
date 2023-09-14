@@ -11,11 +11,6 @@ import { OpenAiMessage } from 'helpers/openai'
  * Given that I now want multi file editing to work outside of the bread idea
  * and bread is simply one way of giving the task to a multi file editing
  * program
- *
- * Idea: Trying to decouple the prompt too much might be heard in performance.
- * If I were to consolidate output specification to same set of examples this
- * might help the model. Specifically adding the task block as part of the
- * changes generation
  */
 
 /*
@@ -41,18 +36,17 @@ I'm playing around with the scope that should be replaced.
 */
 
 const diffGeneratorPromptPrefix = (examples: string[]) =>
-  `Creating changes:
+  `How to make a multi file change.
+
+Suggestions:
 - Only make changes based on your task
 - Only replace logically complete chunks of code. Avoid replacing sub expressions. Examples:
   - A body of small function
-  - A block of code surrounded with empty lines
+  - A block of code surrounded with new lines
   - A for loop and some variables defined right before it
-  - A single line if the change is trivial
-  - An entire function if majority of its code needs replacement
 - Avoid replacing large ranges if most of the code remains the same. Instead use multiple smaller targeted changes
+- If the change is trivial and affects only a single line, only print out that line as a target range
 - Make sure symbols you are using are available in scope or define them yourself
-- Only import other dependencies in the file header
-- Respect indentation of the original range you are replacing
 
 Examples:
 ${examples.join('\n\n')}
@@ -65,17 +59,13 @@ export const typescriptHelloWorldParametrizationMultiFileExample = (
 Given two files (omitted for brevity) and a task to make changes based on ${breadIdentifier} mentions. The following are acceptable changes to generate.
 <change>
 <path>src/hello-world.ts</path>
+<description>Parametrising function with a name of the thing to be greeted</description>
 <range-to-replace>
 function helloWorld() {
     // ${breadIdentifier} pass name to be greeted
     console.log('Hello World');
 }
 </range-to-replace>
-<description>
-Context: function
-Input: name: thing to be greeted of type string
-Output: void
-1: Print out "Hello " followed by the name
 <replacement>
 function hello(name: string) {
     console.log(\`Hello \${name}\`);
@@ -84,15 +74,10 @@ function hello(name: string) {
 </change>
 <change>
 <path>src/main.ts</path>
+<description>Use hello world from a helper module and use environment variable to get the user name</description>
 <range-to-replace>
 // ${breadIdentifier} use hello world from a helper module and use environment variable to get the user name
 </range-to-replace>
-<description>
-Context: top level code
-1: Import hello function from helper module
-2: Get user name from environment variable USER_NAME
-3: Call hello function with user name
-</description>
 <replacement>
 import { hello } from './helper';
 const name = process.env.USER_NAME || 'World';
@@ -114,7 +99,8 @@ hello(name);
 export const editMiddleOfAJsxExpressionEnsureIndentIsPreserved = (
   breadIdentifier: string,
 ) =>
-  `Given this file:
+  `
+Given this file:
 <file>
 <path>counter.ts</path>
 <content>
@@ -140,6 +126,7 @@ const Counter: React.FC = () => {
 Given a task to refactor the code to use a single div instead of a list, the following are acceptable changes to generate.
 <change>
 <path>counter.ts</path>
+<description>Use a single div simply showing the count instead of showing a list element with values from 0 to count</description>
 <range-to-replace>
       <ul>
         {Array.from({ length: count }, 
@@ -148,71 +135,15 @@ Given a task to refactor the code to use a single div instead of a list, the fol
         }
       </ul>
 </range-to-replace>
-<description>
-Context: jsx subexpression
-1: Show count value in a div
-</description>
 <replacement>
       <div>{count}</div>
 </replacement>
 </change>
 `
 
-export const detailedPseudocodeAndTruncation = `Given this file:
-<file>
-<path>duplicate.ts</path>
-<content>
-function deduplicate(arr: number[]): number[] {
-  const result: number[] = [];
-  for (const item of arr) {
-    if (!result.includes(item)) {
-      result.push(item);
-    }
-  }
-  return result;
-}
-</content>
-</file>
-
-And the task to optimize the code, the following is an acceptable change to generate.
-<change>
-<path>counter.ts</path>
-<range-to-replace>
-function deduplicate(arr: number[]): number[] {
-  <truncated/>
-  return result;
-}
-</range-to-replace>
-<description>
-Context: function
-Input: arr: array of numbers
-Output: array of numbers with duplicates removed
-1: initialize a set to track unique numbers uniqueSet
-2: initialize result array
-3: for each item in arr
-4:   if uniqueSet does not contain item
-5:     add item to uniqueSet
-6:     add item to result
-7: return result
-</description>
-<replacement>
-function deduplicate(arr: number[]): number[] {
-  const uniqueSet = new Set<number>();
-  const result: number[] = [];
-  for (const item of arr) {
-    if (!uniqueSet.has(item)) {
-      result.push(item);
-      uniqueSet.add(item);
-    }
-  }
-  return result;
-}
-</replacement>
-</change>
-`
-
-export const UNUSED_NotRepresentativeOfOurUseCases_pythonRewriteBigPortionOfTheCodeWithTruncation =
-  (breadIdentifier: string) => `
+export const pythonRewriteBigPortionOfTheCodeWithTruncation = (
+  breadIdentifier: string,
+) => `
 Given this file:
 <file>
 <path>src/quicksort.py</path>
@@ -250,7 +181,7 @@ Given a task to address @${breadIdentifier} comments, the following is a reasona
 <range-to-replace>
 def partition(array, low, high):
   i = (low-1)
-<truncated/>
+</truncated>
     quicksort(array, low, pi-1)
     quicksort(array, pi+1, high)
 </range-to-replace>
@@ -269,10 +200,8 @@ def quicksort(arr):
 
 export const allDiffV1Examples = (breadIdentifier: string) => [
   typescriptHelloWorldParametrizationMultiFileExample(breadIdentifier),
-  editMiddleOfAJsxExpressionEnsureIndentIsPreserved(breadIdentifier),
-  detailedPseudocodeAndTruncation,
-
-  // pythonRewriteBigPortionOfTheCodeWithTruncation(breadIdentifier),
+  typescriptHelloWorldParametrizationMultiFileExample(breadIdentifier),
+  pythonRewriteBigPortionOfTheCodeWithTruncation(breadIdentifier),
 ]
 
 /**

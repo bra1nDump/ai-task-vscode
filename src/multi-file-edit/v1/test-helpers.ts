@@ -23,7 +23,7 @@ export async function resolveAndApplyChangesToSingleFile(
     })),
 
     // Doesn't matter what we put here, plan is only for informational purposes
-    plan: [],
+    task: '',
     isStreamFinalizedUnused: false,
   })
 

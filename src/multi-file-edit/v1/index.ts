@@ -27,36 +27,44 @@ export async function startMultiFileEditing(
   const fileContexts = sessionContext.documentManager.getFileContexts()
   const fileContext = fileContextSystemMessage(fileContexts)
 
-  const outputFormat: OpenAiMessage = {
+  /* Planning is very important as chain of thought prompting is currently
+   * state of the art. There's also structure chain of thought which promises
+   * to be better https://arxiv.org/pdf/2305.06599.pdf
+   *
+   * I'm considering to move pseudocode algorithms for the replacement into the
+   * examples for the diff generation prompt. I'm hoping by reducing locality
+   * it will improve the quality of the replacement.
+   */
+  const taskUnderstandingSelfPrompting: OpenAiMessage = {
     role: 'system',
-    content: `Creating thoughts:
+    content: `Understanding the task:
 - Collect all of the information relevant to the task the user is trying to accomplish and restate the task
 - Restate any specific instructions that the user has already provided on how to accomplish the task 
-- Sometimes parts of the task are already accomplished, clearly state so and consider it stale instructions
-- Your detailed plan to accomplish the task
+- Used technical style of writing - be concise but do not lose any information
+- Parts of the task might be accomplished, clearly state so and consider it stale instructions
 
-Format:
-<thoughts>
-{{restating the task and any specific instructions the user has provided}}
-{{detailed plan on how to accomplish the task}}
-</thoughts>
+Task output format:
+<task>
+{{restating the task}}
+</task>`,
+  }
 
-Creating changes:
-- Right after the thoughts block output any changes following "How to make a multi file change"
-- Provide a detailed plan for each change using <description>...</description>
-
-First output thoughts, then changes`,
+  const combinedResponseOutputFormat: OpenAiMessage = {
+    role: 'system',
+    content: `In your next message respond only with the task immediately followed by the changes to be made to the files.`,
   }
 
   const userTaskMessage: OpenAiMessage = {
     role: 'user',
     content: taskPrompt,
   }
+
   const messages = [
     multiFileEditPrompt,
     fileContext,
     userTaskMessage,
-    outputFormat,
+    taskUnderstandingSelfPrompting,
+    combinedResponseOutputFormat,
   ]
 
   const highLevelLogger = (text: string) =>
@@ -92,7 +100,9 @@ First output thoughts, then changes`,
   const relativePath = vscode.workspace.asRelativePath(
     sessionContext.markdownLowLevelFeedbackDocument.uri.path,
   )
-  void highLevelLogger(`## [Raw LLM input + response](../../${relativePath})\n`)
+  void highLevelLogger(
+    `\n\n[Raw LLM input + response](../../${relativePath})\n`,
+  )
 
   const [rawLlmResponseStream, abortController] = await streamLlm(
     messages,
@@ -120,27 +130,13 @@ First output thoughts, then changes`,
    * Parsing should pass deltas or I need to implement local delta generation
    */
   async function showPlanAsItBecomesAvailable() {
-    const planStream = parsedPatchStream.pipe(mapAsync((x) => x.plan))
-    const loggedPlanIndexWithSuffix = new Set<string>()
+    const planStream = parsedPatchStream.pipe(mapAsync((x) => x.task))
+    let lastPlan = ''
     void highLevelLogger(`\n# Plan:\n`)
     for await (const plan of planStream) {
-      for (const [index, item] of plan.entries()) {
-        // Find the last suffix that was logged
-        const latestVersion = `${index}: ${item}`
-        const lastLoggedVersion = [...loggedPlanIndexWithSuffix]
-          .filter((x) => x.startsWith(`${index}:`))
-          .sort((a, b) => b.length - a.length)[0]
-        /* Only logged the delta or the first version including the item
-           separator */
-        if (lastLoggedVersion) {
-          const delta = latestVersion.slice(lastLoggedVersion.length)
-          void highLevelLogger(delta)
-        } else {
-          void highLevelLogger(`\n- ${item}`)
-        }
-
-        loggedPlanIndexWithSuffix.add(latestVersion)
-      }
+      const delta = plan.slice(lastPlan.length)
+      void highLevelLogger(delta)
+      lastPlan = plan
     }
   }
 
