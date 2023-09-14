@@ -1,3 +1,46 @@
+# Where to find sample tests
+
+## mermaid-laid-out-graph repository, branch cleanup-boards-job
+### Task - Refactor to use batching
+Rewrite the function below to account for the comments in the doc string.
+Let's first write the batch querying, and figuring out if the board is stale functionality without deletion.
+Let's use an offset of 20_000 and limit of 50 to query the boards. Use the links to paginate.
+
+Commit hash 97dfd6d69d777b62ea1d93851177989c32a65827
+
+### Task - Stop using nonexisting field
+Below code uses nonexistent last opened at field. Only use the fields from the string above.
+There's no delay between the batches.
+The board is considered active if it was created under 2 days ago, or if it was ever modified by the user different from the service user account an environment variable SERVICE_USER_ID.
+Rewrite the function below to address these comments.
+
+Commit hash f2d0b5bb09a94e48e31bf62ecb891fae421cfa79
+
+### Task - Adjust algorithm to create next page link programmatically
+Create the next link yourself instead of using the one from the response.
+Comment out deletion code, we're running at driver now.
+Count the number of boards that would be deleted from the batch and printed out also printing out the total batch number.
+
+Commit hash e22b341a115ef540287d120695682205aec96da5
+
+### There's some tasks in between these that I have omitted, we don't really need all of them for testing though
+
+### Task - Create two changes: create permutations of two static arrays and parameterize function
+@bread your task is to create queries for all the permutations of the board names. Don't rely on helpers you need to create permutations manually from the two arrays provided. Then sequentially run cleanupStaleMiroBoardsJobShardedByName for each of the queries.
+
+@bread parametrized the wink generated with parameter passed in
+
+Commit hash 0c08816c64bfced3f7564a7c5491be127bf184b4
+
+
+
+## birds repository, branch plan-refactor-demo-checkpoint
+
+### Task - Refactor a type and automatically fixed compilation errors
+Commit hash 5fd3413edf64c1fb2d68ed0e9b2cad1d193ae5b9
+
+# Automated regression testing
+
 Having some reliable way to know which print is better is really nice.
 Ideally I would keep accumulating a list of inputs and desired outputs and then for each prompt iteration I would run the tests and see how many of them pass.
 More so I would want to see the quality of the passes.
