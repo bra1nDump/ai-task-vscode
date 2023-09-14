@@ -20,11 +20,9 @@ export async function startMultiFileEditing(
 ) {
   const fileContexts = sessionContext.documentManager.getFileContexts()
 
-  const messages = createMultiFileEditingMessages(
-    breadIdentifier,
-    fileContexts,
-    taskPrompt,
-  )
+  const messages = createMultiFileEditingMessages(fileContexts, taskPrompt, {
+    breadIdentifier: breadIdentifier,
+  })
 
   const highLevelLogger = (text: string) =>
     queueAnAppendToDocument(

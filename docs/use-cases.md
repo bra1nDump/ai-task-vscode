@@ -58,3 +58,9 @@ So I can run a script to ask me questions about the codebase to add more documen
 ## Blocked by
 - tree command
 - file renaming tool
+
+# I want to move a simple parameter into a configuration object for function
+I should already be able to do so by making the change, this will produce compile errors
+I can actually make the change with @crust as well.
+But next I would have to update all the calls to the function to use the new parameter separately.
+Ideally I could ad @references in the prompt to fix all the references to this function at the same time as it produces the change to the parameter

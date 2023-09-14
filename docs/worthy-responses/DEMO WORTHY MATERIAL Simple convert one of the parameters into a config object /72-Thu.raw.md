@@ -1,3 +1,166 @@
+
+# Messages submitted:
+
+## [system]:
+```md
+Creating changes:
+- Only make changes based on your task
+- Only replace logically complete chunks of code. Avoid replacing sub expressions. Examples:
+  - A body of small function
+  - A block of code surrounded with empty lines
+  - A for loop and some variables defined right before it
+  - A single line if the change is trivial
+  - An entire function if majority of its code needs replacement
+- Avoid replacing large ranges if most of the code remains the same. Instead use multiple smaller targeted changes
+- Make sure symbols you are using are available in scope or define them yourself
+- Respect indentation of the original range you are replacing
+
+Examples:
+
+Given two files (omitted for brevity) and a task to make changes based on crust mentions. The following are acceptable changes to generate.
+<change>
+<path>src/hello-world.ts</path>
+<range-to-replace>
+function helloWorld() {
+    // crust pass name to be greeted
+    console.log('Hello World');
+}
+</range-to-replace>
+<description>
+Context: function
+Input: name: thing to be greeted of type string
+Output: void
+1: Print out "Hello " followed by the name
+<replacement>
+function hello(name: string) {
+    console.log(`Hello ${name}`);
+}
+</replacement>
+</change>
+<change>
+<path>src/main.ts</path>
+<range-to-replace>
+// crust use hello world from a helper module and use environment variable to get the user name
+</range-to-replace>
+<description>
+Context: top level code
+1: Import hello function from helper module
+2: Get user name from environment variable USER_NAME
+3: Call hello function with user name
+</description>
+<replacement>
+import { hello } from './helper';
+const name = process.env.USER_NAME || 'World';
+hello(name);
+</replacement>
+</change>
+
+
+Given this file:
+<file>
+<path>counter.ts</path>
+<content>
+const Counter: React.FC = () => {
+  const [count, setCount] = useState<number>(0);
+
+  return (
+    <div>
+      <button onClick={() => count > 0 && setCount(count - 1)}>-</button>
+      <button onClick={() => setCount(count + 1)}>+</button>
+      <ul>
+        {Array.from({ length: count }, 
+          (_, i) => 
+            <li key={i}>Item {i + 1}</li>)
+        }
+      </ul>
+    </div>
+  );
+};
+</content>
+</file>
+
+Given a task to refactor the code to use a single div instead of a list, the following are acceptable changes to generate.
+<change>
+<path>counter.ts</path>
+<range-to-replace>
+      <ul>
+        {Array.from({ length: count }, 
+          (_, i) => 
+            <li key={i}>Item {i + 1}</li>)
+        }
+      </ul>
+</range-to-replace>
+<description>
+Context: jsx subexpression
+1: Show count value in a div
+</description>
+<replacement>
+      <div>{count}</div>
+</replacement>
+</change>
+
+
+Given this file:
+<file>
+<path>duplicate.ts</path>
+<content>
+function deduplicate(arr: number[]): number[] {
+  const result: number[] = [];
+  for (const item of arr) {
+    if (!result.includes(item)) {
+      result.push(item);
+    }
+  }
+  return result;
+}
+</content>
+</file>
+
+And the task to optimize the code, the following is an acceptable change to generate.
+<change>
+<path>counter.ts</path>
+<range-to-replace>
+function deduplicate(arr: number[]): number[] {
+  <truncated/>
+  return result;
+}
+</range-to-replace>
+<description>
+Context: function
+Input: arr: array of numbers
+Output: array of numbers with duplicates removed
+1: initialize a set to track unique numbers uniqueSet
+2: initialize result array
+3: for each item in arr
+4:   if uniqueSet does not contain item
+5:     add item to uniqueSet
+6:     add item to result
+7: return result
+</description>
+<replacement>
+function deduplicate(arr: number[]): number[] {
+  const uniqueSet = new Set<number>();
+  const result: number[] = [];
+  for (const item of arr) {
+    if (!uniqueSet.has(item)) {
+      result.push(item);
+      uniqueSet.add(item);
+    }
+  }
+  return result;
+}
+</replacement>
+</change>
+
+
+```
+
+## [system]:
+```md
+Given files:
+<file>
+<path>src/multi-file-edit/v1/prompt.ts</path>
+<content>
 import {
   FileContext,
   fileContextSystemMessage,
@@ -24,16 +187,15 @@ import { OpenAiMessage } from 'helpers/openai'
 
 /* @crust your job is to refactor breadIdentifier parameter by moving it into a configuration object argument passed as the last argument
  * to this function. Don't touch other parameters. Only modify the function
- * signature. Don't modify other functions.
+ * signature
  */
 export function createMultiFileEditingMessages(
+  breadIdentifier: string,
   fileContexts: FileContext[],
   taskPrompt: string,
-  config: { breadIdentifier: string },
 ) {
-  const multiFileEditPrompt = multiFileEditV1FormatSystemMessage(
-    config.breadIdentifier,
-  )
+  const multiFileEditPrompt =
+    multiFileEditV1FormatSystemMessage(breadIdentifier)
   const fileContext = fileContextSystemMessage(fileContexts)
 
   /* Planning is very important as chain of thought prompting is currently
@@ -282,3 +444,62 @@ function multiFileEditV1FormatSystemMessage(
 
   return divPromptSystemMessage
 }
+
+</content>
+</file>
+<file>
+<path>.crust.md</path>
+<content>
+This project is a VSCode extension that invokes LLMs to help users edit their code files using natural language.
+All the code is in typescript and nothing should have an any type.
+
+</content>
+</file>
+```
+
+## [user]:
+```md
+
+
+Your task is spread out across multiple files with main goals tagged with @crust
+```
+
+## [system]:
+```md
+Understanding the task:
+- Collect all of the information relevant to the task the user is trying to accomplish and restate the task
+- Restate any specific instructions that the user has already provided on how to accomplish the task 
+- Used technical style of writing - be concise but do not lose any information
+- Parts of the task might be accomplished, clearly state so and consider it stale instructions
+
+Task output format:
+<task>
+{{restating the task}}
+</task>
+```
+
+## [system]:
+```md
+In your next message respond only with the task immediately followed by the changes to be made to the files.
+```
+
+# [assistant, latest response]:
+```md
+<task>
+Refactor the function "createMultiFileEditingMessages" in the file "src/multi-file-edit/v1/prompt.ts" by moving the "breadIdentifier" parameter into a configuration object argument passed as the last argument. Do not modify other parameters.
+</task>
+
+<change>
+<path>src/multi-file-edit/v1/prompt.ts</path>
+<range-to-replace>
+export function createMultiFileEditingMessages(
+  breadIdentifier: string,
+  fileContexts: FileContext[],
+  taskPrompt: string,
+)
+</range-to-replace>
+<description>
+Context: function signature
+Input: config: configuration object containing breadIdentifier of type string, fileContexts: array of FileContext, taskPrompt: string
+Output: void
+1: Replace the function signature
