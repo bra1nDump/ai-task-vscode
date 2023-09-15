@@ -19,6 +19,7 @@
  */
 import * as fs from 'fs'
 import * as path from 'path'
+import { execSync } from 'child_process'
 import * as tsconfigPaths from 'tsconfig-paths'
 
 const projectRoot = path.resolve(__dirname, '..')
@@ -34,8 +35,8 @@ tsconfigPaths.register({
 import {
   transformFileContextWithLineNumbers,
   FileContext,
-} from './document-helpers/file-context'
-import { createMultiFileEditingMessages } from './multi-file-edit/v1/prompt'
+} from 'document-helpers/file-context'
+import { createMultiFileEditingMessages } from 'multi-file-edit/v1/prompt'
 
 // Will be passed within package script
 const currentVersion = process.env.MULTI_FILE_PROMPT_VERSION ?? 'v1'
@@ -61,6 +62,12 @@ export function codeGeneratePromptCheckpoint(version: string) {
     )
 
     let fileContent = ''
+    const commitHash = execSync('git rev-parse HEAD').toString().trim()
+    fileContent += `# ${version} - ${
+      includeLineNumbers ? 'lines' : 'no-lines'
+    }\n\n`
+    fileContent += `Generated at: ${new Date().toLocaleDateString()}\n\n`
+    fileContent += `Commit Hash: ${commitHash}\n\n`
     for (const message of exampleMessages) {
       fileContent += `## ${message.role}\n\n${message.content}\n\n`
     }
@@ -69,6 +76,7 @@ export function codeGeneratePromptCheckpoint(version: string) {
     const filePath = path.join(
       workspaceRoot,
       'prompt-engineering',
+      'checkpoints',
       'multi-file-edit',
       `${version}-${includeLineNumbers ? 'lines' : 'no-lines'}.md`,
     )

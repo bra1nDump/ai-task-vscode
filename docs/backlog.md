@@ -15,34 +15,21 @@
 
 # Next up
 
-- Refactor so the prompts for multi file edit all left together disk
-- Continue to line range targets 
-  - (maybe combined with content?!! Can then require only a single line, can also add ellipses if the line is long).h
-  - This is genius because then I can simply change the conversion to file context prompts and search logic 
+- Continue to line range targets
+- Print pseudocode for replacement
+- Delay deleting the content until replacement is final or until it is not empty
 
-## Wednesday Type at cursor - allows me to replace continue for personal use
-
-- For example current model does not support inserts only some sort of replacement
-- The simplest version is to keep reusing the multi file edit prompt and simply instruct to replace a single line with the comment /run
-- We can also get rid of the planning stage (maybe we should also inject at using /plan directive)
-- Maybe also take into account the @bread files + diagnostics
-
-## Record Type at cursor
 ## Record multi file edit
 
-## Compilation Step
+- Take notes on what videos you want to record. Record three while you do the following:
+- Watch all the demo videos you have recorded so far
+- Look through some examples of the generations that were successful and worthy responses
 
-- Refactor chase bread and chase bugs commands to to use a virtual script with context provider mentions and prompt
-- Add context providers for
-  - @bread, @bugs
-  - Later @url
-  - Think about auto completion, specifically for @url would probably want some fixed websites will use often. For instance I would include vscode Api docs
-  - Have them implement a common interface
-- Compile the script to get context instead of getting context manually within two available commands
+Things to showcase
 
-## Language server draft for @bread context, and target ranges @function, @block
-
-- Reuse the context provider definitions to provide autocomplete
+- Multi file edit
+- Simple compile error fix after a data structure factor
+- Referencing project wide context
 
 ## Release - REALLY DON'T WANT TO DO THIS, BUT THIS IS ESSENTIAL
 
@@ -56,18 +43,55 @@
 - Manually go over popular repositories in the space vscode extensions find top contributors
 - Send them an email from a personal email sending the GitHub page + Discord
 
+## Type at cursor - allows me to replace continue for personal use
+
+- For example current model does not support inserts only some sort of replacement
+- The simplest version is to keep reusing the multi file edit prompt and simply instruct to replace a single line with the comment /run
+- We can also get rid of the planning stage (maybe we should also inject at using /plan directive)
+- Maybe also take into account the @bread files + diagnostics
+
+## Record Type at cursor
+
+# Bread expressions
+
+## Context providers (move to the context section)
+
+- Instead of by default pulling in tabs and compile errors manually specify them
+- Add context providers for
+  - @bread, @bugs
+  - Later @url, @search, @shell
+  - Complex @semantic "Code that ads line numbers to the code"
+  - Complex @dependencies (should probably be enabled by default, this would mean pulling in dependencies for first degree types used within the function)
+  - Think about auto completion, specifically for @url would probably want some fixed websites will use often. For instance I would include vscode Api docs
+  - Have them implement a common interface
+- Compile the script to get context instead of getting context manually within two available commands
+
+## Targeting
+
+- For example if I only want to modify the given function, specify @function, if I only want to modify the following block, specify @block
+- This would be useful for inline generations
+
+## Language server draft for @bread context, and target ranges @function, @block
+
+- Reuse the context provider definitions to provide autocomplete
+- Find an existing language server that does something similar
+
+# Prompt engineering
+
+- Probably unifying multi file patch generation and task extraction into a single prompt is the most impactful things for multi file edits
+- One of the issues I have experienced is the task extraction is not very reliable. Maybe I should manually extract a task using the @crust comments and provide it in a separate message to the model to highlight its importance.
+- @crust or @bread are not very descriptive of what they re for. Maybe I should use @task instead
+
 # Later
 
 ## UX
 
-- Scroll into view when editing - very annoying to look for it
+- Delay scroll into view until there's only a single match ? I thought it would already do that
+- If you cancel the execution, the preview should clothes, also once the execution finishes the preview should close also
 - Indentation should ideally be taken into account when generating diffs to match the indentation preferred by the user. This is low priority since type script does not care about it
 - Preview also scrolls up all the time as we are re-writing the document. I wonder if we were to append to the document instead of write to fs scroll would be preserved
 - Preview for the high level oftentimes flickers. Not sure what causes itb but try larger outputs
   - we rewriting the entire file. Workaround documented in append function
-- Currently all edits push individually to the undue stack tremendously polluting it. Only have the final edit pushed to the undue stack
-- When we make edits we do big replacements causing flicker due to language highlighter needing to parse the change.10
-  - A simple solution is to at the time of applying the change get the current text for the range we're trying to edit, if it is the prefix of the replacement, drop that prefix from the replacement and insert at end of original target range
 
 ## Developer experience working on Birds
 
@@ -126,6 +150,12 @@ https://github.com/microsoft/vscode/blob/41e940f76f5deda197bc5930b044c55607ba1cb
 - Create a company and apply for open eye credits
 
 # Done
+
+- Scroll into view when editing - very annoying to look for it
+- Currently all edits push individually to the undue stack tremendously polluting it. Only have the final edit pushed to the undue stack
+- When we make edits we do big replacements causing flicker due to language highlighter needing to parse the change.10
+  - A simple solution is to at the time of applying the change get the current text for the range we're trying to edit, if it is the prefix of the replacement, drop that prefix from the replacement and insert at end of original target range
+- Refactor so the prompts for multi file edit all left together disk
 
 ## Play with prompts for multi file edits, try improving the planning stage
 

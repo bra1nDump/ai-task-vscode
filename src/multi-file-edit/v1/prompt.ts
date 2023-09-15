@@ -141,7 +141,7 @@ const typescriptHelloWorldParametrizationMultiFileExample = (
   const rangeToReplace1 = extractMatchingLineRange(
     editableFileContext1.content,
     'function helloWorld() {',
-    "console.log('Hello World');",
+    '};',
   )
 
   const rangeToReplace2 = extractMatchingLineRange(
@@ -219,7 +219,7 @@ const editMiddleOfAJsxExpressionEnsureIndentIsPreserved = (
     <div>
       <button onClick={() => count > 0 && setCount(count - 1)}>-</button>
       <button onClick={() => setCount(count + 1)}>+</button>
-     <ul>
+      <ul>
         {Array.from({ length: count },
          (_, i) =>
            <li key={i}>Item {i + 1}</li>)
@@ -266,11 +266,13 @@ Show count value in a div
 `
 }
 
-const detailedPseudocodeAndTruncation = `Given this file:
-<file>
-<path>duplicate.ts</path>
-<content>
-function deduplicate(arr: number[]): number[] {
+const detailedPseudocodeAndTruncation = (
+  breadIdentifier: string,
+  includeLineNumbers: boolean,
+) => {
+  let editableFileContext: FileContext = {
+    filePathRelativeToWorkspace: 'duplicate.ts',
+    content: `function deduplicate(arr: number[]): number[] {
   const result: number[] = [];
   for (const item of arr) {
     if (!result.includes(item)) {
@@ -278,30 +280,42 @@ function deduplicate(arr: number[]): number[] {
     }
   }
   return result;
-}
-</content>
-</file>
+};`,
+  }
+
+  if (includeLineNumbers) {
+    editableFileContext =
+      transformFileContextWithLineNumbers(editableFileContext)
+  }
+  const fileContextPromptPart = mapFileContextToXml(editableFileContext)
+
+  const rangeToReplace = extractMatchingLineRange(
+    editableFileContext.content,
+    'function deduplicate(arr: number[]): number[] {',
+    '};',
+  )
+
+  return `Given this file:
+${fileContextPromptPart}
 
 And the task to optimize the code, the following is an acceptable change to generate.
 <change>
-<path>counter.ts</path>
+<path>duplicate.ts</path>
 <range-to-replace>
-function deduplicate(arr: number[]): number[] {
-  <truncated/>
-  return result;
-}
+${rangeToReplace}
 </range-to-replace>
 <description>
 Context: function
 Input: arr: array of numbers
 Output: array of numbers with duplicates removed
-1: initialize a set to track unique numbers uniqueSet
-2: initialize result array
-3: for each item in arr
-4:   if uniqueSet does not contain item
-5:     add item to uniqueSet
-6:     add item to result
-7: return result
+Algorithm:
+initialize a set to track unique numbers uniqueSet
+initialize result array
+for each item in arr
+  if uniqueSet does not contain item
+    add item to uniqueSet
+    add item to result
+return result
 </description>
 <replacement>
 function deduplicate(arr: number[]): number[] {
@@ -316,12 +330,15 @@ function deduplicate(arr: number[]): number[] {
   return result;
 }
 </replacement>
-</change>
-`
+</change>`
+}
 
 /** I'm using a content based to find the target range because the line
  * numbers are implicit and I don't want to keep truck of them in case they
  * change in the future or their format changes.
+ *
+ * This function extracts the target range from the content passed in and
+ * truncates it if it's over five lines.
  *
  * Not exactly sure how I will handle cases when we will stop providing
  * content in the range to replace. Could be handled similarly except for
@@ -342,7 +359,22 @@ function extractMatchingLineRange(
   const lines = content.split('\n')
   const startLineIndex = lines.findIndex((line) => line.includes(startTerm))
   const endLineIndex = lines.findIndex((line) => line.includes(endTerm))
-  return lines.slice(startLineIndex, endLineIndex + 1).join('\n')
+  const lineRange = lines.slice(startLineIndex, endLineIndex + 1)
+
+  /* Including two lines in the front and in the end because the last line
+   * would often be a closing bracket which might make it harder for the modal
+   * to reason about the range ending
+   */
+  if (lineRange.length > 6) {
+    const truncatedLineRange = [
+      ...lineRange.slice(0, 2),
+      '<truncated/>',
+      ...lineRange.slice(lineRange.length - 2),
+    ]
+    return truncatedLineRange.join('\n')
+  }
+
+  return lineRange.join('\n')
 }
 
 const allDiffV1Examples = (
@@ -357,5 +389,5 @@ const allDiffV1Examples = (
     breadIdentifier,
     includeLineNumbers,
   ),
-  detailedPseudocodeAndTruncation,
+  detailedPseudocodeAndTruncation(breadIdentifier, includeLineNumbers),
 ]

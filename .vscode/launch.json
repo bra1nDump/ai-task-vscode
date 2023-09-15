@@ -5,6 +5,7 @@
 {
 	"version": "0.2.0",
 	"configurations": [
+		/////////////////////// Testing the extension on a toy project ///////////////////////
 		{
 			"name": "Sandbox",
 			"type": "extensionHost",
@@ -21,6 +22,7 @@
 			"sourceMaps": true,
 			"preLaunchTask": "${defaultBuildTask}"
 		},
+		/////////////////////// Testing the extension on other real projects ///////////////////////
 		// This is the same as Extension, but it runs with the current project directory and the current file
 		//   Limitation: Can't open the same directory in two windows - https://stackoverflow.com/a/51426734/5278310
 		//   Created a simlink to workaround
@@ -76,6 +78,7 @@
 			"sourceMaps": true,
 			"preLaunchTask": "${defaultBuildTask}"
 		},
+		/////////////////////// Unit tests ///////////////////////
 		// Docs: https://code.visualstudio.com/api/working-with-extensions/testing-extension
 		{
 			"name": "Tests",
@@ -99,6 +102,22 @@
 			// Because the test compilation tasks or watch tasks they will not rebuild unless content changes
 			// So if we just clean the out directory it will not trigger a re-run
 			// "postDebugTask": "clean: out-directory"
+		},
+		/////////////////////// Prompt engineering ///////////////////////
+		{
+			"name": "Prompt codegen",
+			"type": "node",
+			"runtimeExecutable": "npm",
+			"runtimeArgs": [
+				"run-script",
+				"codegen:prompt-checkpoints"
+			],
+			"request": "launch",
+			"outFiles": [
+				"${workspaceFolder}/out/**/*.js",
+				"${workspaceFolder}/dist/**/*.js"
+			],
+			"preLaunchTask": "${defaultBuildTask}",
 		}
 	]
 }
