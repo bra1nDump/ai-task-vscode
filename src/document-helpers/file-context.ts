@@ -8,7 +8,7 @@ export function transformFileContextWithLineNumbers(
 ): FileContext {
   const snapshotContent = fileContext.content
     .split('\n')
-    .map((line, index) => `${index}: ${line}`)
+    .map((line, index) => `${index}:${line}`)
     .join('\n')
 
   return {

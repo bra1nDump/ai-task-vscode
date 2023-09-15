@@ -73,3 +73,7 @@ I was passing a configuration to one function, but I realized I need those conte
 - Potentially moving other configuration like thanks into the existing configuration object on the session now 
 
 # DEMO WORTHY file system refactor to use node apis instead of vscode  apis
+
+# Semantic search for functions
+A simple extension to do semantic search within your workspace. Can be used as both context provider, context selector within @bread comments and as a search provider for the search view.
+For example I remember I'm mapping my file context too file context with lines but I don't remember exactly what the function is called.

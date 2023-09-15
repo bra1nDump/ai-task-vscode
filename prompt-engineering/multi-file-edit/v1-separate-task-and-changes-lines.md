@@ -18,16 +18,16 @@ Given these inputs:
 <file>
 <path>src/hello-world.ts</path>
 <content>
-0: function helloWorld() {
-1:   // crust pass name to be greeted
-2:   console.log('Hello World');
-3: }
+0:function helloWorld() {
+1:  // crust pass name to be greeted
+2:  console.log('Hello World');
+3:}
 </content>
 </file>
 <file>
 <path>src/main.ts</path>
 <content>
-0: // crust use hello world from a helper module and use environment variable to get the user name
+0:// crust use hello world from a helper module and use environment variable to get the user name
 </content>
 </file>
 
@@ -37,9 +37,9 @@ Good output is:
 <change>
 <path>src/hello-world.ts</path>
 <range-to-replace>
-0: function helloWorld() {
-1:   // crust pass name to be greeted
-2:   console.log('Hello World');
+0:function helloWorld() {
+1:  // crust pass name to be greeted
+2:  console.log('Hello World');
 </range-to-replace>
 <description>
 Context: function
@@ -78,22 +78,22 @@ Given this input:
 <file>
 <path>counter.ts</path>
 <content>
-0: const Counter: React.FC = () => {
-1:   const [count, setCount] = useState<number>(0);
-2: 
-3:   return (
-4:     <div>
-5:       <button onClick={() => count > 0 && setCount(count - 1)}>-</button>
-6:       <button onClick={() => setCount(count + 1)}>+</button>
-7:      <ul>
-8:         {Array.from({ length: count },
-9:          (_, i) =>
-10:            <li key={i}>Item {i + 1}</li>)
-11:         }
-12:       </ul>
-13:     </div>
-14:   );
-15: };
+0:const Counter: React.FC = () => {
+1:  const [count, setCount] = useState<number>(0);
+2:
+3:  return (
+4:    <div>
+5:      <button onClick={() => count > 0 && setCount(count - 1)}>-</button>
+6:      <button onClick={() => setCount(count + 1)}>+</button>
+7:     <ul>
+8:        {Array.from({ length: count },
+9:         (_, i) =>
+10:           <li key={i}>Item {i + 1}</li>)
+11:        }
+12:      </ul>
+13:    </div>
+14:  );
+15:};
 </content>
 </file>
 
@@ -103,12 +103,12 @@ Good output is:
 <change>
 <path>counter.ts</path>
 <range-to-replace>
-7:      <ul>
-8:         {Array.from({ length: count },
-9:          (_, i) =>
-10:            <li key={i}>Item {i + 1}</li>)
-11:         }
-12:       </ul>
+7:     <ul>
+8:        {Array.from({ length: count },
+9:         (_, i) =>
+10:           <li key={i}>Item {i + 1}</li>)
+11:        }
+12:      </ul>
 </range-to-replace>
 <description>
 Context: jsx subexpression
@@ -182,7 +182,7 @@ Given files:
 <file>
 <path>example.ts</path>
 <content>
-0: console.log('Hello world')
+0:console.log('Hello world')
 </content>
 </file>
 
