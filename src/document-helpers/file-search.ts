@@ -3,23 +3,20 @@ import * as vscode from 'vscode'
 import { getDocumentText } from 'helpers/vscode'
 
 /**
- * Find all files in the workspace with @breadIdentifier mention or with bread
- * sub-extension
+ * Find all files in the workspace with @breadIdentifier mention
  */
-export async function findAndCollectBreadedFiles(
+export async function findAndCollectBreadMentionedFiles(
   breadIdentifier: string,
-): Promise<vscode.Uri[] | undefined> {
+): Promise<vscode.Uri[]> {
   const allFilesInWorkspace = await safeWorkspaceQueryAllFiles()
 
   const fileContexts = await Promise.all(
     allFilesInWorkspace.map(
       async (fileUri): Promise<vscode.Uri | undefined> => {
         const fileText = await getDocumentText(fileUri)
-        const containsBreadMentionOrIsBreadDotfile =
-          fileText.includes(`@${breadIdentifier}`) ||
-          fileUri.path.includes(`.${breadIdentifier}`)
+        const containsBreadMention = fileText.includes(`@${breadIdentifier}`)
 
-        if (containsBreadMentionOrIsBreadDotfile) {
+        if (containsBreadMention) {
           return fileUri
         } else {
           return undefined
@@ -32,9 +29,34 @@ export async function findAndCollectBreadedFiles(
     (fileContext): fileContext is vscode.Uri => fileContext !== undefined,
   )
 
-  if (fileContexts.length === 0) {
-    return undefined
-  }
+  return filteredFileContexts
+}
+
+/**
+ * Find all files in the workspace with bread sub-extension
+ */
+export async function findAndCollectDotBreadFiles(
+  breadIdentifier: string,
+): Promise<vscode.Uri[]> {
+  const allFilesInWorkspace = await safeWorkspaceQueryAllFiles()
+
+  const fileContexts = await Promise.all(
+    allFilesInWorkspace.map(
+      async (fileUri): Promise<vscode.Uri | undefined> => {
+        const isBreadDotfile = fileUri.path.includes(`.${breadIdentifier}`)
+
+        if (isBreadDotfile) {
+          return fileUri
+        } else {
+          return undefined
+        }
+      },
+    ),
+  )
+
+  const filteredFileContexts = fileContexts.filter(
+    (fileContext): fileContext is vscode.Uri => fileContext !== undefined,
+  )
 
   return filteredFileContexts
 }

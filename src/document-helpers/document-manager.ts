@@ -1,5 +1,6 @@
 import * as vscode from 'vscode'
-import { DocumentSnapshot, FileContext } from './document-snapshot'
+import { DocumentSnapshot } from './document-snapshot'
+import { FileContext } from './file-context'
 
 /**
  * This is a document manager that will help us backdate edits throughout a

@@ -50,5 +50,11 @@
 			"script": "publish",
 			"problemMatcher": []
 		},
+		{
+			"label": "Codegen: Prompt Checkpoints",
+			"type": "npm",
+			"script": "codegen:prompt-checkpoints",
+			"problemMatcher": []
+		}
 	]
 }

@@ -1,7 +1,9 @@
 import {
-  FileContext,
   fileContextSystemMessage,
-} from 'document-helpers/file-search'
+  mapFileContextToXml,
+} from 'document-helpers/file-context-prompt'
+import { FileContext } from 'document-helpers/file-context'
+import { transformFileContextWithLineNumbers } from 'document-helpers/file-context'
 import { OpenAiMessage } from 'helpers/openai'
 
 /**
@@ -20,17 +22,34 @@ import { OpenAiMessage } from 'helpers/openai'
  * If I were to consolidate output specification to same set of examples this
  * might help the model. Specifically adding the task block as part of the
  * changes generation
+ *
+ * It will be very hard to reason about these prompts without seeing what they
+ * actually look like one compiled with a given configuration. I think a code
+ * generation step might help bring structure to these dynamically generated
+ * prompts. As the first step I could simply run the various configurations and
+ * generate files along side this file for reference and debugging.
  */
 
 export function createMultiFileEditingMessages(
   fileContexts: FileContext[],
   taskPrompt: string,
   config: { breadIdentifier: string; includeLineNumbers: boolean },
-) {
-  const multiFileEditPrompt = multiFileEditV1FormatSystemMessage(
-    config.breadIdentifier,
+): OpenAiMessage[] {
+  // Dynamic messages based on input
+  const fileContextDynamic = fileContextSystemMessage(fileContexts)
+  const userTaskMessage: OpenAiMessage = {
+    role: 'user',
+    content: taskPrompt,
+  }
+
+  // Static messages. Please
+  const diffPrompt = diffGeneratorPromptPrefix(
+    allDiffV1Examples(config.breadIdentifier, config.includeLineNumbers),
   )
-  const fileContext = fileContextSystemMessage(fileContexts)
+  const multiFileEditPrompt: OpenAiMessage = {
+    content: diffPrompt,
+    role: 'system',
+  }
 
   /* Planning is very important as chain of thought prompting is currently
    * state of the art. There's also structure chain of thought which promises
@@ -59,14 +78,9 @@ Task output format:
     content: `In your next message respond only with the task immediately followed by the changes to be made to the files.`,
   }
 
-  const userTaskMessage: OpenAiMessage = {
-    role: 'user',
-    content: taskPrompt,
-  }
-
   const messages = [
     multiFileEditPrompt,
-    fileContext,
+    fileContextDynamic,
     userTaskMessage,
     taskUnderstandingSelfPrompting,
     combinedResponseOutputFormat,
@@ -99,22 +113,61 @@ This schema would be enforced, configuration would be easier
 
 const typescriptHelloWorldParametrizationMultiFileExample = (
   breadIdentifier: string,
-) =>
-  `
-Given two files (omitted for brevity) and a task to make changes based on ${breadIdentifier} mentions. The following are acceptable changes to generate.
+  includeLineNumbers: boolean,
+) => {
+  let editableFileContext1: FileContext = {
+    filePathRelativeToWorkspace: 'src/hello-world.ts',
+    content: `function helloWorld() {
+  // ${breadIdentifier} pass name to be greeted
+  console.log('Hello World');
+}`,
+  }
+
+  let editableFileContext2: FileContext = {
+    filePathRelativeToWorkspace: 'src/main.ts',
+    content: `// ${breadIdentifier} use hello world from a helper module and use environment variable to get the user name`,
+  }
+
+  if (includeLineNumbers) {
+    editableFileContext1 =
+      transformFileContextWithLineNumbers(editableFileContext1)
+    editableFileContext2 =
+      transformFileContextWithLineNumbers(editableFileContext2)
+  }
+
+  const fileContextPromptPart1 = mapFileContextToXml(editableFileContext1)
+  const fileContextPromptPart2 = mapFileContextToXml(editableFileContext2)
+
+  const rangeToReplace1 = extractMatchingLineRange(
+    editableFileContext1.content,
+    'function helloWorld() {',
+    "console.log('Hello World');",
+  )
+
+  const rangeToReplace2 = extractMatchingLineRange(
+    editableFileContext2.content,
+    '// ${breadIdentifier} use hello world from a helper module and use environment variable to get the user name',
+    '// ${breadIdentifier} use hello world from a helper module and use environment variable to get the user name',
+  )
+
+  return `Given these inputs:
+${fileContextPromptPart1}
+${fileContextPromptPart2}
+
+Given a task: Make changes based on ${breadIdentifier} mentions.
+
+Good output is:
 <change>
 <path>src/hello-world.ts</path>
 <range-to-replace>
-0:function helloWorld() {
-1:  // ${breadIdentifier} pass name to be greeted
-2:  console.log('Hello World');
-3:}
+${rangeToReplace1}
 </range-to-replace>
 <description>
 Context: function
 Input: name: thing to be greeted of type string
 Output: void
-1: Print out "Hello " followed by the name
+Algorithm:
+Print out "Hello " followed by the name
 </description>
 <replacement>
 function hello(name: string) {
@@ -125,13 +178,14 @@ function hello(name: string) {
 <change>
 <path>src/main.ts</path>
 <range-to-replace>
-// ${breadIdentifier} use hello world from a helper module and use environment variable to get the user name
+${rangeToReplace2}
 </range-to-replace>
 <description>
 Context: top level code
-1: Import hello function from helper module
-2: Get user name from environment variable USER_NAME
-3: Call hello function with user name
+Algorithm:
+Import hello function from helper module
+Get user name from environment variable USER_NAME
+Call hello function with user name
 </description>
 <replacement>
 import { hello } from './helper';
@@ -140,6 +194,7 @@ hello(name);
 </replacement>
 </change>
 `
+}
 
 /**
  * I anticipate jsx generation will be tough as the model will probably get
@@ -153,51 +208,63 @@ hello(name);
  */
 const editMiddleOfAJsxExpressionEnsureIndentIsPreserved = (
   breadIdentifier: string,
-) =>
-  `Given this file:
-<file>
-<path>counter.ts</path>
-<content>
-0:const Counter: React.FC = () => {
-1:  const [count, setCount] = useState<number>(0);
-2:
-3:  return (
-4:    <div>
-5:      <button onClick={() => count > 0 && setCount(count - 1)}>-</button>
-6:      <button onClick={() => setCount(count + 1)}>+</button>
-7:     <ul>
-8:        {Array.from({ length: count },
-9:         (_, i) =>
-10:           <li key={i}>Item {i + 1}</li>)
-11:        }
-12:      </ul>
-13:    </div>
-14:  );
-15:};
-</content>
-</file>
+  includeLineNumbers: boolean,
+) => {
+  let editableFileContext: FileContext = {
+    filePathRelativeToWorkspace: 'counter.ts',
+    content: `const Counter: React.FC = () => {
+  const [count, setCount] = useState<number>(0);
 
-Given a task to refactor the code to use a single div instead of a list, the following are acceptable changes to generate.
+  return (
+    <div>
+      <button onClick={() => count > 0 && setCount(count - 1)}>-</button>
+      <button onClick={() => setCount(count + 1)}>+</button>
+     <ul>
+        {Array.from({ length: count },
+         (_, i) =>
+           <li key={i}>Item {i + 1}</li>)
+        }
+      </ul>
+    </div>
+  );
+};`,
+  }
+
+  if (includeLineNumbers) {
+    editableFileContext =
+      transformFileContextWithLineNumbers(editableFileContext)
+  }
+  const fileContextPromptPart = mapFileContextToXml(editableFileContext)
+
+  const rangeToReplace = extractMatchingLineRange(
+    editableFileContext.content,
+    '<ul>',
+    '</ul>',
+  )
+
+  return `Given this input:
+${fileContextPromptPart}
+
+Given a task: Refactor the code to use a single div instead of a list
+
+Good output is:
 <change>
 <path>counter.ts</path>
 <range-to-replace>
-0:       <ul>
-1:         {Array.from({ length: count },
-2:           (_, i) =>
-3:             <li key={i}>Item {i + 1}</li>)
-4:         }
-5:       </ul>
+${rangeToReplace}
 </range-to-replace>
 <description>
 Context: jsx subexpression
 Symbols in scope: count, setCount
-1: Show count value in a div
+Algorithm:
+Show count value in a div
 </description>
 <replacement>
       <div>{count}</div>
 </replacement>
 </change>
 `
+}
 
 const detailedPseudocodeAndTruncation = `Given this file:
 <file>
@@ -252,36 +319,43 @@ function deduplicate(arr: number[]): number[] {
 </change>
 `
 
-const allDiffV1Examples = (breadIdentifier: string) => [
-  typescriptHelloWorldParametrizationMultiFileExample(breadIdentifier),
-  editMiddleOfAJsxExpressionEnsureIndentIsPreserved(breadIdentifier),
+/** I'm using a content based to find the target range because the line
+ * numbers are implicit and I don't want to keep truck of them in case they
+ * change in the future or their format changes.
+ *
+ * Not exactly sure how I will handle cases when we will stop providing
+ * content in the range to replace. Could be handled similarly except for
+ * dropping the content of the line.
+ *
+ * The algorithm is roughly:
+ * Split content within the editable file content into lines
+ * Find the line with the content from the first line for the range to
+ * replace, in our case space <ul>
+ * Find the line with the content from the last line for the range to replace
+ * Concatenate hold the lines within the range and put into a variable.
+ */
+function extractMatchingLineRange(
+  content: string,
+  startTerm: string,
+  endTerm: string,
+): string {
+  const lines = content.split('\n')
+  const startLineIndex = lines.findIndex((line) => line.includes(startTerm))
+  const endLineIndex = lines.findIndex((line) => line.includes(endTerm))
+  return lines.slice(startLineIndex, endLineIndex + 1).join('\n')
+}
+
+const allDiffV1Examples = (
+  breadIdentifier: string,
+  includeLineNumbers: boolean,
+) => [
+  typescriptHelloWorldParametrizationMultiFileExample(
+    breadIdentifier,
+    includeLineNumbers,
+  ),
+  editMiddleOfAJsxExpressionEnsureIndentIsPreserved(
+    breadIdentifier,
+    includeLineNumbers,
+  ),
   detailedPseudocodeAndTruncation,
 ]
-
-/**
- * Generic prompt to generate changes to multiple files.
- * Can work on both breaded and non-bread related requests.
- *
- * Refactor: Probably should create a separate function for each message:
- * - file context (universal)
- * - diff generation prompt (version dependent) (examples and format
- * explanation)
- *   assuming this will be changed to function calling eventually
- * - task (should be passed from the top level command)
- *
- * @param breadIdentifier - used to generate a more customized prompt for editing files with
- *  @breadIdentifier mentions. Kind of has no business being here, but I will allow it.
- */
-function multiFileEditV1FormatSystemMessage(
-  breadIdentifier: string,
-): OpenAiMessage {
-  const diffPrompt = diffGeneratorPromptPrefix(
-    allDiffV1Examples(breadIdentifier),
-  )
-  const divPromptSystemMessage: OpenAiMessage = {
-    content: diffPrompt,
-    role: 'system',
-  }
-
-  return divPromptSystemMessage
-}

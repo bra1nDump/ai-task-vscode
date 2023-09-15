@@ -154,11 +154,7 @@ import {
 } from 'vscode'
 
 import { Result, resultMap } from '../helpers/result'
-
-export interface FileContext {
-  filePathRelativeToWorkspace: string
-  content: string
-}
+import { FileContext } from './file-context'
 
 export interface LineRange {
   start: number
@@ -342,20 +338,6 @@ export function createFileContext(document: TextDocument): FileContext {
   return {
     filePathRelativeToWorkspace: path,
     content: documentContent,
-  }
-}
-
-export function transformFileContextWithLineNumbers(
-  fileContext: FileContext,
-): FileContext {
-  const snapshotContent = fileContext.content
-    .split('\n')
-    .map((line, index) => `${index}: ${line}`)
-    .join('\n')
-
-  return {
-    ...fileContext,
-    content: snapshotContent,
   }
 }
 

@@ -71,3 +71,5 @@ I was passing a configuration to one function, but I realized I need those conte
 - Making a decision where to pass the entire session object and where to extract the configuration only
 - Updating ca sites
 - Potentially moving other configuration like thanks into the existing configuration object on the session now 
+
+# DEMO WORTHY file system refactor to use node apis instead of vscode  apis

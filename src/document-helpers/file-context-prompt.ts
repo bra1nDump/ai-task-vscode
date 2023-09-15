@@ -1,5 +1,5 @@
 import { OpenAiMessage } from 'helpers/openai'
-import { FileContext } from './document-snapshot'
+import { FileContext } from './file-context'
 
 /**
  * Encode the file contexts into a prompt for the model

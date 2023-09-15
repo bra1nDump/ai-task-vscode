@@ -1,5 +1,8 @@
 import * as vscode from 'vscode'
-import { findAndCollectBreadedFiles } from 'document-helpers/file-search'
+import {
+  findAndCollectBreadMentionedFiles,
+  findAndCollectDotBreadFiles,
+} from 'document-helpers/file-search'
 import { openedTabs } from 'helpers/vscode'
 import { getBreadIdentifier } from 'helpers/bread-identifier'
 import { queueAnAppendToDocument } from 'helpers/vscode'
@@ -26,19 +29,32 @@ export async function chaseBreadCommand() {
 
   // Functionality specific to bread mentions
   const breadIdentifier = getBreadIdentifier()
-  const breadFileUris = await findAndCollectBreadedFiles(breadIdentifier)
-  if (!breadFileUris) {
+  const fileUrisWithBreadMentions =
+    await findAndCollectBreadMentionedFiles(breadIdentifier)
+  if (fileUrisWithBreadMentions.length === 0) {
     void vscode.window.showErrorMessage(
-      'No bread found, birds are getting hungry. Remember to add @bread mention to at least one file in the workspace.',
+      `No bread found, birds are getting hungry. Remember to add @${breadIdentifier} mention to at least one file in the workspace.`,
     )
     return
   }
 
   await sessionContext.documentManager.addDocuments(
-    'Bread files',
-    breadFileUris,
+    'Files with bread mentions',
+    fileUrisWithBreadMentions,
   )
 
+  /* .bread files Ideally will want to signal to the document manager that this
+   * file is not editable. As well as providing a way to extract these context
+   * only files separately from the editable files (and blobs, we should
+   * renamed document manager to be a generic context manager)
+   */
+  const dotBreadFileUris = await findAndCollectDotBreadFiles(breadIdentifier)
+  await sessionContext.documentManager.addDocuments(
+    '.bread files',
+    dotBreadFileUris,
+  )
+
+  // Opened tabs
   const openTabsFileUris = openedTabs()
 
   await sessionContext.documentManager.addDocuments(
@@ -59,7 +75,8 @@ export async function chaseBreadCommand() {
 
   console.log('fileManager', sessionContext.documentManager.dumpState())
 
-  // Provide optional problem context + prompt
+  /* Provide optional problem context + prompt
+     Refactor: Move all prompts out of the command */
   const problemContext = diagnosticsAlongWithTheirFileContexts
     .flatMap(({ uri, diagnostic }) => {
       if (diagnostic.severity !== vscode.DiagnosticSeverity.Error) {

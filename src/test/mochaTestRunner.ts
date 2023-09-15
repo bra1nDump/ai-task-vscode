@@ -8,6 +8,11 @@ import * as Mocha from 'mocha'
 import * as glob from 'glob'
 import * as tsconfigPaths from 'tsconfig-paths'
 
+/* I'm pretty sure otherwise my use of absolute paths within the project would
+   not work unless I would bundle up all the tests into one file.
+ * For reference I believe I have done this within blocky.ai project. Anyway
+ * experiencing the same issue within the script just copying this
+ */
 const projectRoot = path.resolve(__dirname, '../..')
 const outSrc = path.resolve(projectRoot, 'out')
 tsconfigPaths.register({

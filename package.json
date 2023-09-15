@@ -51,9 +51,8 @@
     "install-local": "node install-local.mjs 'code-insiders'",
     "tsc": "tsc -p . --outDir out",
     "watch-tsc": "tsc -p . -w --outDir out",
-    "pretest": "npm run tsc && npm run bundle && npm run lint",
     "lint": "eslint . --ext ts --fix",
-    "test": "node ./out/test/runTest.js"
+    "codegen:prompt-checkpoints": "MULTI_FILE_PROMPT_VERSION=v1-separate-task-and-changes node ./out/script-generate-prompt-checkpoint.js"
   },
   "devDependencies": {
     "@types/glob": "^8.1.0",
