@@ -15,10 +15,6 @@
 
 # Next up
 
-- Continue to line range targets
-- Print pseudocode for replacement
-- Delay deleting the content until replacement is final or until it is not empty
-
 ## Record multi file edit
 
 - Take notes on what videos you want to record. Record three while you do the following:
@@ -138,8 +134,6 @@ https://github.com/microsoft/vscode/blob/41e940f76f5deda197bc5930b044c55607ba1cb
 
 - Provide token count on the input and provide approximate price
 - Improve new line character usage across the code base. This will suck because we print many logs relying on \n. For now I will just fix the code that has to do with line splitting for range calculation because that definitely needs to be robust.
-- Content based matching has bugged out when there were multiple matches within the same file of the same string
-- Remove plan craziness with custom list parsing and simply use <plan> tags
 - Typing @run should start executing
 - Add play button to @bread comments
 - Explore UIs
@@ -152,6 +146,12 @@ https://github.com/microsoft/vscode/blob/41e940f76f5deda197bc5930b044c55607ba1cb
 
 # Done
 
+
+- Continue to line range targets
+- Content based matching has bugged out when there were multiple matches within the same file of the same string
+- Remove plan craziness with custom list parsing and simply use <plan> tags
+- Print pseudocode for replacement
+- Delay deleting the content until replacement is final or until it is not empty
 - Scroll into view when editing - very annoying to look for it
 - Currently all edits push individually to the undue stack tremendously polluting it. Only have the final edit pushed to the undue stack
 - When we make edits we do big replacements causing flicker due to language highlighter needing to parse the change.10

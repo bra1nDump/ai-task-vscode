@@ -14,5 +14,7 @@ export interface ResolvedChange {
   rangeToReplaceIsFinal: boolean
   replacement: string
   replacementIsFinal: boolean
-  descriptionForHuman: string
+  descriptionForHuman?: string
+  /* Saving this reflector for when I have batch processing setup
+     descriptionForHumanIsFinal: boolean */
 }

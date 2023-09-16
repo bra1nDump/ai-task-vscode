@@ -44,7 +44,7 @@ export async function startMultiFileEditing(
   }
 
   // Log files that we are submitting as context
-  void highLevelLogger(`\n# Files submitted:\n`)
+  void highLevelLogger(`\n## Files submitted:\n`)
   for (const fileContext of fileContexts) {
     logFilePath(fileContext)
   }
@@ -59,7 +59,7 @@ export async function startMultiFileEditing(
     sessionContext.markdownLowLevelFeedbackDocument.uri.path,
   )
   void highLevelLogger(
-    `\n\n[Raw LLM input + response](../../${relativePath})\n`,
+    `\n\n[Raw LLM input + response](../../${relativePath}) [Debug]\n`,
   )
 
   const [rawLlmResponseStream, abortController] = await streamLlm(
@@ -84,13 +84,13 @@ export async function startMultiFileEditing(
   /* Split the stream into stream with plan and changes to apply
      Process in parallell
    * Currently has an issue where I am unable to log the delta and am forced to
-   * wait until an item is fully generated Refactor:
-   * Parsing should pass deltas or I need to implement local delta generation
+   * wait until an item is fully generated 
+   * Refactor: Parsing should pass deltas because it is used all over the place
    */
   async function showPlanAsItBecomesAvailable() {
     const planStream = parsedPatchStream.pipe(mapAsync((x) => x.task))
     let lastPlan = ''
-    void highLevelLogger(`\n# Plan:\n`)
+    void highLevelLogger(`\n## Task:\n`)
     for await (const plan of planStream) {
       const delta = plan.slice(lastPlan.length)
       void highLevelLogger(delta)

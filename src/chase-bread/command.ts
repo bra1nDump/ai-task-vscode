@@ -35,6 +35,7 @@ export async function chaseBreadCommand() {
     void vscode.window.showErrorMessage(
       `No bread found, birds are getting hungry. Remember to add @${breadIdentifier} mention to at least one file in the workspace.`,
     )
+    await closeSession(sessionContext)
     return
   }
 

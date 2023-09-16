@@ -27,6 +27,7 @@ export async function startInteractiveMultiFileApplication(
       context,
     ),
     applyChangesAsTheyBecomeAvailable(growingSetOfFileChanges, context),
+    appendDescriptionsAsTheyBecomeAvailable(growingSetOfFileChanges, context),
     showWarningWhenNoFileWasModified(growingSetOfFileChanges, context),
   ])
 }
@@ -34,6 +35,62 @@ export async function startInteractiveMultiFileApplication(
 export type ChangeApplicationResult =
   | 'appliedSuccessfully'
   | 'failedToApplyCanRetry'
+
+async function appendDescriptionsAsTheyBecomeAvailable(
+  growingSetOfFileChanges: AsyncIterableX<ResolvedChange[]>,
+  context: SessionContext,
+) {
+  const changesWithFinalizedDescription = new Set<number>()
+  const changeIndexToLastDescription = new Map<number, string>()
+  for await (const changesForMultipleFiles of growingSetOfFileChanges) {
+    for (const [index, change] of changesForMultipleFiles.entries()) {
+      /* You are paying for the hack of not having a proper streaming field
+         abstraction 
+         We only want to start the pseudocode section once we have 
+         */
+      if (
+        changesWithFinalizedDescription.has(index) ||
+        change.descriptionForHuman === undefined ||
+        change.descriptionForHuman === '' // Otherwise we need more logic in the statements below
+      ) {
+        continue
+      }
+
+      const lastDescription = changeIndexToLastDescription.get(index)
+      // First time we see this change, append the description header
+      if (lastDescription === undefined) {
+        void queueAnAppendToDocument(
+          context.markdownHighLevelFeedbackDocument,
+          '\n### Pseudocode\n```\n',
+        )
+      }
+
+      if (lastDescription !== change.descriptionForHuman) {
+        // We are still streaming the description because it is been updated
+        const delta = change.descriptionForHuman.slice(
+          lastDescription?.length ?? 0,
+        )
+        void queueAnAppendToDocument(
+          context.markdownHighLevelFeedbackDocument,
+          delta,
+        )
+        changeIndexToLastDescription.set(index, change.descriptionForHuman)
+      } else if (change.replacementIsFinal || change.replacement.length > 10) {
+        /* Since we are trimming the description of the new line we cannot rely
+         * on the equality above since it will fail on the first line break.
+         * Instead we need to rely on the proxy of the replacement being non
+         * empty. Yet again paying the hack tax.
+         */
+        void queueAnAppendToDocument(
+          context.markdownHighLevelFeedbackDocument,
+          '\n```',
+        )
+        // The description is finalized
+        changesWithFinalizedDescription.add(index)
+      }
+    }
+  }
+}
 
 async function applyChangesAsTheyBecomeAvailable(
   growingSetOfFileChanges: AsyncIterableX<ResolvedChange[]>,
@@ -46,7 +103,13 @@ async function applyChangesAsTheyBecomeAvailable(
         !appliedChangesIndices.has(index) &&
         /* We only want to start applying once we know the range we are
            replacing */
-        change.rangeToReplaceIsFinal
+        change.rangeToReplaceIsFinal &&
+        /* Avoid deleting old range before we have anything to display.
+         * Refactor: Ideally we will have some abstraction that will tell us
+         * that the field started streaming, is currently streaming and is
+         * finalized.
+         */
+        (change.replacementIsFinal || change.replacement.length > 10)
       ) {
         await applyResolvedChangesWhileShowingTheEditor(change)
 
@@ -155,9 +218,9 @@ async function showFilesOnceWeKnowWeWantToModifyThem(
       if (!shownChangeIndexes.has(change.fileUri.fsPath)) {
         const document = await vscode.workspace.openTextDocument(change.fileUri)
         const relativeFilepath = vscode.workspace.asRelativePath(change.fileUri)
-        await queueAnAppendToDocument(
+        void queueAnAppendToDocument(
           context.markdownHighLevelFeedbackDocument,
-          `\n### Modifying: ${relativeFilepath}\n`,
+          `\n### Modifying ${relativeFilepath}\n`,
         )
         await vscode.window.showTextDocument(document)
         shownChangeIndexes.add(change.fileUri.fsPath)
@@ -174,7 +237,7 @@ async function showWarningWhenNoFileWasModified(
     growingSetOfFileChanges,
   )
   if (!finalSetOfChangesToMultipleFiles) {
-    await queueAnAppendToDocument(
+    void queueAnAppendToDocument(
       context.markdownHighLevelFeedbackDocument,
       '\n## No files got changed thats strange\n',
     )

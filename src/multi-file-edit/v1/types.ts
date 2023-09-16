@@ -35,7 +35,7 @@ export interface Replacement {
 }
 
 export interface Change {
-  description: string
+  description?: string
   oldChunk: TargetRange
   newChunk: Replacement
 }

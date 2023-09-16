@@ -77,3 +77,12 @@ I was passing a configuration to one function, but I realized I need those conte
 # Semantic search for functions
 A simple extension to do semantic search within your workspace. Can be used as both context provider, context selector within @bread comments and as a search provider for the search view.
 For example I remember I'm mapping my file context too file context with lines but I don't remember exactly what the function is called.
+
+# Simply reorganize the code lay out within a single file
+## Block by 
+- scripting
+- Short cut is to add a special command, but I don't think it's a good idea
+- batching operator
+
+## Alternatives 
+You can simply regenerate the entire file in any of the LLM applications

@@ -20,7 +20,7 @@
 			"problemMatcher": "$tsc-watch",
 			"isBackground": true,
 			"presentation": {
-				"revealProblems": "onProblem",
+				"revealProblems": "never",
 				"group": "watchers"
 			},
 			"group": "build"

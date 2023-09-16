@@ -15,14 +15,15 @@ import { TargetRange, LlmGeneratedPatchXmlV1, FileChange } from './types'
 
 <change>
 <path>src/hello-world.ts</path>
-<description>Parametrising function with a name of the thing to be
-greeted</description> 
 <range-to-replace>
 function helloWorld() {
     // ${breadIdentifier} pass name to be greeted
     console.log('Hello World');
 }
 </range-to-replace>
+<description>
+Line by line pseudocode for the replacement
+</description> 
 <replacement>
 function hello(name: string) {
     console.log(\`Hello \${name}\`);
@@ -38,13 +39,13 @@ export function parsePartialMultiFileEdit(xml: string): LlmGeneratedPatchXmlV1 {
 
   const fileChanges = fileChangeOutputs.map((fileChangeOutput): FileChange => {
     const path = extractSingleXmlElement(fileChangeOutput.content, 'path')
-    const description = extractSingleXmlElement(
-      fileChangeOutput.content,
-      'description',
-    )
     const oldChunk = extractSingleXmlElement(
       fileChangeOutput.content,
       'range-to-replace',
+    )
+    const description = extractSingleXmlElement(
+      fileChangeOutput.content,
+      'description',
     )
 
     /* Handle case where old chunk is truncated
@@ -87,8 +88,8 @@ export function parsePartialMultiFileEdit(xml: string): LlmGeneratedPatchXmlV1 {
      * a single file tag to a more flat xml encoding but keeping the old data
      * structure Ideally we want to group the changes by file,
        but the hell with it for now */
-    const singularChangeForAFile = {
-      description: description?.content ?? '',
+    const change = {
+      description: description?.content,
       oldChunk: oldChunkContent,
       newChunk: {
         content: newChunk?.content ?? '',
@@ -98,7 +99,7 @@ export function parsePartialMultiFileEdit(xml: string): LlmGeneratedPatchXmlV1 {
 
     return {
       filePathRelativeToWorkspace: path?.content,
-      change: singularChangeForAFile,
+      change,
       isStreamFinilized: fileChangeOutput.isClosed,
     }
   })
