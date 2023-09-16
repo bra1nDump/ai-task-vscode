@@ -113,22 +113,19 @@ Will function calling help me getter faster? I would not need to deal with Xml p
 - Run tsc oursleves instead of relying on the language server
   - Problem matcher is super simple, so just re-implement it and run tsc
   - tsc is 40mb, lets not bundle typescript into the extnesion :D
-  - https://chat.openai.com/share/f1d8b474-6d84-4c2a-86f6-91a5a3317aeb
+  - <https://chat.openai.com/share/f1d8b474-6d84-4c2a-86f6-91a5a3317aeb>
 - Only provide errors, not warnings from the compiler
 - Provide a better prompt for fixing refactors. Example:
-
-```
 - You should not revert the refactor of plan: string back to string[] to fix the problem
 - You should output only 3 ways you can think of fixing the problem
 - Keep in mind that when something breaks due to a refactor, you should usually avoid trying to fix the problem right there and think about implications of the refactor and how to fix the problem in a way that will be inline with what the refactor was trying to achieve
-```
 
 ### Problem matchers
 
 Use tsc directly with a problem matcher to get the errors?
 How to get problem matcher to work?
 Can I run tsc using a javascript, so from the extension code itself? .. probably a bad idea
-https://github.com/microsoft/vscode/blob/41e940f76f5deda197bc5930b044c55607ba1cbc/extensions/typescript-language-features/package.json#L1520-L1550
+<https://github.com/microsoft/vscode/blob/41e940f76f5deda197bc5930b044c55607ba1cbc/extensions/typescript-language-features/package.json#L1520-L1550>
 
 ## Uncategorized
 
@@ -146,10 +143,9 @@ https://github.com/microsoft/vscode/blob/41e940f76f5deda197bc5930b044c55607ba1cb
 
 # Done
 
-
 - Continue to line range targets
 - Content based matching has bugged out when there were multiple matches within the same file of the same string
-- Remove plan craziness with custom list parsing and simply use <plan> tags
+- Remove plan craziness with custom list parsing and simply use `<plan>` tags
 - Print pseudocode for replacement
 - Delay deleting the content until replacement is final or until it is not empty
 - Scroll into view when editing - very annoying to look for it
@@ -180,7 +176,7 @@ https://github.com/microsoft/vscode/blob/41e940f76f5deda197bc5930b044c55607ba1cb
     - Next a FileContextManager should be created which will keep track of of a map with relative file paths to DocumentSnapshot
     - It should be available in SessionContext as we will need to dispose off subscriptions once the session ends
 - Stale files, specifically making it impossible to do multi-edits in the same file
-  - https://github.com/microsoft/vscode/issues/15723
+  - <https://github.com/microsoft/vscode/issues/15723>
   - openTextDocument should work ..
 - Too many things to clean up after the session
   - [maybe] Use fs to write to files instead of opening documents
@@ -223,7 +219,3 @@ https://github.com/microsoft/vscode/blob/41e940f76f5deda197bc5930b044c55607ba1cb
   - This sucks, the editor contents also need to be saved ... otherwise fs read will not be accurate. Hmm. Maybe I should just check if there is an editor opened for a given uri and if yes
   - Well this is a big problem, you cannot access editors that are not in focus. Task output is also considered an editor
   - The rough idea is to watch editors and when they change cache their content, store in a map. When we try reading a file - first try reading from the map, only after from fs
-
-```
-
-```

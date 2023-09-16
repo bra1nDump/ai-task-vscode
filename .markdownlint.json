@@ -1,0 +1,11 @@
+{
+    "default": true,
+    "first-line-h1": false,
+    "single-h1": false,
+    "line-length": false
+    // Unfortunately the rule of zero lines below is not respected :(
+    // "blanks-around-headings": {
+    //     "lines_below": 0,
+    //     "lines_above": 0
+    // }
+}

@@ -7,7 +7,7 @@
 - Directory specific context files like `components/team-patterns.birds.md`
 - What you see is what you get. Everything is in the file system making it easy to share and version control
 
-# Demo (Click to play YouTube video):
+# Demo (Click to play YouTube video)
 
 [![Demo showing multi-file edit + bulk compile error fixing](https://img.youtube.com/vi/t2evckJtRgM/0.jpg)](https://youtu.be/t2evckJtRgM)
 
@@ -28,13 +28,13 @@ Sprinkle some @bread crumbs around your code base to get the birds attention. Bi
 
 # Using the extension
 
-## High level:
+## High level
 
 - Leave comments with instructions mentioning `@bread` to include those files for potential edits
 - Instructions in `<directory>/*.birds.md` are included when files in the subdirectory is `@bread`ed
 - Is a side effect of the rule above, `workspace/*.birds.md` is included with every request
 
-## Try it out:
+## Try it out
 
 - Add a comment with instructions on how you want to modify the code, mention `@bread` to get the birds attention
 - Example comment: `// @bread add a parameter to this function and fix functions using it`
@@ -63,16 +63,16 @@ To run tests: Then select `Tests` and press `F5` or hit play. If you only want t
 ## Linting
 
 Using ESLint
-And prettier as an ESLint plugin https://github.com/prettier/eslint-plugin-prettier
+And prettier as an ESLint plugin <https://github.com/prettier/eslint-plugin-prettier>
 
 # Publishing
 
-Exntension https://marketplace.visualstudio.com/items?itemName=bra1ndump.birds
+Exntension <https://marketplace.visualstudio.com/items?itemName=bra1ndump.birds>
 
-Publisher url https://marketplace.visualstudio.com/manage/publishers/bra1ndump Run vsce publish from the project root. It will ask for authentication token which you can get from azure here https://dev.azure.com/bra1ndump/_usersSettings/tokens. You can't access as the old one, just generate the new one (look at the scopes requested on the old one. Market Place > Manage).
-Docs: https://code.visualstudio.com/api/working-with-extensions/publishing-extension
+Publisher url <https://marketplace.visualstudio.com/manage/publishers/bra1ndump> Run vsce publish from the project root. It will ask for authentication token which you can get from azure here <https://dev.azure.com/bra1ndump/_usersSettings/tokens>. You can't access as the old one, just generate the new one (look at the scopes requested on the old one. Market Place > Manage).
+Docs: <https://code.visualstudio.com/api/working-with-extensions/publishing-extension>
 
-Had to place icon in the root of the project, downsized using free service: https://imresizer.com
+Had to place icon in the root of the project, downsized using free service: <https://imresizer.com>
 
 ## Ideas
 
