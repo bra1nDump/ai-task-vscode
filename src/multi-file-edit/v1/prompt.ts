@@ -5,6 +5,7 @@ import {
 import { FileContext } from 'document-helpers/file-context'
 import { transformFileContextWithLineNumbers } from 'document-helpers/file-context'
 import { OpenAiMessage } from 'helpers/openai'
+import { SessionConfiguration } from 'session'
 
 /**
  * Diff generation with these proms has been kind of underwhelming
@@ -33,7 +34,7 @@ import { OpenAiMessage } from 'helpers/openai'
 export function createMultiFileEditingMessages(
   fileContexts: FileContext[],
   taskPrompt: string,
-  config: { breadIdentifier: string; includeLineNumbers: boolean },
+  config: SessionConfiguration,
 ): OpenAiMessage[] {
   // Dynamic messages based on input
   const fileContextDynamic = fileContextSystemMessage(fileContexts)

@@ -86,6 +86,7 @@ Things to showcase
 
 ## UX
 
+- Add a comment with the line saying you can use command+z to undo the change
 - Delay scroll into view until there's only a single match ? I thought it would already do that
 - If you cancel the execution, the preview should clothes, also once the execution finishes the preview should close also
 - Indentation should ideally be taken into account when generating diffs to match the indentation preferred by the user. This is low priority since type script does not care about it

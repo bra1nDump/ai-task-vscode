@@ -4,7 +4,7 @@ import {
   findAndCollectDotBreadFiles,
 } from 'document-helpers/file-search'
 import { openedTabs } from 'helpers/vscode'
-import { getBreadIdentifier } from 'helpers/bread-identifier'
+import { getBreadIdentifier } from 'session'
 import { queueAnAppendToDocument } from 'helpers/vscode'
 import { closeSession, startSession } from 'session'
 import { startMultiFileEditing } from 'multi-file-edit/v1'
@@ -119,7 +119,6 @@ Addressing errors:
     `${compilationErrorContextAndPrompt ?? ''}
 
 Your task is spread out across multiple files with main goals tagged with @${breadIdentifier}`,
-    breadIdentifier,
     sessionContext,
   )
 

@@ -29,19 +29,24 @@
     ],
     "configuration": {
       "properties": {
-        "birds.at-bread-mention": {
+        "birds.taskMentionIdentifier": {
           "type": "string",
           "default": "bread",
-          "description": "Override the keyword to provide context to the llm. Will affect both mentions in the comments and file extension"
+          "description": "Override the keyword the LLM uses when searching for its task"
         },
         "birds.openaiApiKey": {
           "type": "string",
           "description": "OpenAI API key"
+        },
+        "birds.additionalExcludedDirectories": {
+          "type": "array",
+          "default": [],
+          "description": "Directories to exclude when searching for files to pass to the prompt"
         }
       }
-    },
-    "keybindings": []
+    }
   },
+  "keybindings": [],
   "scripts": {
     "bundle": "webpack",
     "watch": "webpack --watch",

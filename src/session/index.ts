@@ -1,7 +1,14 @@
 import { SessionDocumentManager } from 'document-helpers/document-manager'
 import * as vscode from 'vscode'
 
+export interface SessionConfiguration {
+  breadIdentifier: string
+  includeLineNumbers: boolean
+}
+
 export interface SessionContext {
+  configuration: SessionConfiguration
+
   /**
    * This will be open to the side to show real time feedback of what is
    * happening in the session.
@@ -111,6 +118,10 @@ export async function startSession(): Promise<SessionContext> {
   )
 
   return {
+    configuration: {
+      breadIdentifier: getBreadIdentifier(),
+      includeLineNumbers: true,
+    },
     markdownHighLevelFeedbackDocument: sessionMarkdownHighLevelFeedbackDocument,
     markdownLowLevelFeedbackDocument: sessionMarkdownLowLevelFeedbackDocument,
     documentManager,
@@ -209,4 +220,25 @@ async function createAndOpenEmptyDocument(
   const sessionMarkdownHighLevelFeedbackDocument =
     await vscode.workspace.openTextDocument(highLevelFeedbackPath)
   return sessionMarkdownHighLevelFeedbackDocument
+}
+
+/* Refactor: We probably want a helper function to get the entire configuration
+   for the session instead of just the bread */
+export function getBreadIdentifier(): string {
+  const breadIdentifierFromWorkspace = vscode.workspace
+    .getConfiguration('birds')
+    .get('taskMentionIdentifier')
+
+  /* We are using the environment override for simplified manual and automated
+     testingbecause As we might be opening single files instead off full
+     workspace with settings.json. */
+  const atBreadIdentifierOverride: any =
+    process.env.AT_BREAD_IDENTIFIER_OVERRIDE ?? breadIdentifierFromWorkspace
+
+  const safeAtBreadIdentifierOverride =
+    typeof atBreadIdentifierOverride === 'string'
+      ? atBreadIdentifierOverride
+      : '@bread'
+
+  return safeAtBreadIdentifierOverride
 }

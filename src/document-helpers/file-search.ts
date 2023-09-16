@@ -40,25 +40,17 @@ export async function findAndCollectDotBreadFiles(
 ): Promise<vscode.Uri[]> {
   const allFilesInWorkspace = await safeWorkspaceQueryAllFiles()
 
-  const fileContexts = await Promise.all(
-    allFilesInWorkspace.map(
-      async (fileUri): Promise<vscode.Uri | undefined> => {
-        const isBreadDotfile = fileUri.path.includes(`.${breadIdentifier}`)
+  const fileContexts = allFilesInWorkspace.flatMap((fileUri) => {
+    const isBreadDotfile = fileUri.path.includes(`.${breadIdentifier}`)
 
-        if (isBreadDotfile) {
-          return fileUri
-        } else {
-          return undefined
-        }
-      },
-    ),
-  )
+    if (isBreadDotfile) {
+      return [fileUri]
+    } else {
+      return []
+    }
+  })
 
-  const filteredFileContexts = fileContexts.filter(
-    (fileContext): fileContext is vscode.Uri => fileContext !== undefined,
-  )
-
-  return filteredFileContexts
+  return fileContexts
 }
 
 /**
@@ -81,11 +73,29 @@ export async function findAndCollectDotBreadFiles(
  * in .gitignore
  *   this also needs recursive search so ... later
  */
+
 async function safeWorkspaceQueryAllFiles(): Promise<vscode.Uri[]> {
+  const config = vscode.workspace.getConfiguration('birds')
+
+  const defaultExcludedDirectories = [
+    'node_modules',
+    '.git',
+    'out',
+    'dist',
+    '.bread',
+    '.vscode-test',
+  ]
+  const additionalExcludedDirectories =
+    config.get<string[]>('additionalExcludedDirectories') ?? []
+  const excludedDirectories = [
+    ...defaultExcludedDirectories,
+    ...additionalExcludedDirectories,
+  ]
+
   const allFilesInWorkspace = await vscode.workspace.findFiles(
     '**/*.{ts,md}',
-    '**/{node_modules,.git,out,dist,.bread,docs}/**/*',
-    1000, // Give more then the limit below so we can throw an error if it exceeds to signal that the glob is bad
+    `**/{${excludedDirectories.join(',')}}/**/*`,
+    1000,
   )
 
   if (allFilesInWorkspace.length === 0) {

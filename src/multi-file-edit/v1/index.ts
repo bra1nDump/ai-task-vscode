@@ -15,15 +15,15 @@ import { createMultiFileEditingMessages } from './prompt'
 
 export async function startMultiFileEditing(
   taskPrompt: string,
-  breadIdentifier: string,
   sessionContext: SessionContext,
 ) {
   const fileContexts = sessionContext.documentManager.getFileContexts()
 
-  const messages = createMultiFileEditingMessages(fileContexts, taskPrompt, {
-    breadIdentifier: breadIdentifier,
-    includeLineNumbers: false,
-  })
+  const messages = createMultiFileEditingMessages(
+    fileContexts,
+    taskPrompt,
+    sessionContext.configuration,
+  )
 
   const highLevelLogger = (text: string) =>
     queueAnAppendToDocument(

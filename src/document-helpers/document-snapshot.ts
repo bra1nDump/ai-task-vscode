@@ -154,7 +154,10 @@ import {
 } from 'vscode'
 
 import { Result, resultMap } from '../helpers/result'
-import { FileContext } from './file-context'
+import {
+  FileContext,
+  transformFileContextWithLineNumbers,
+} from './file-context'
 
 export interface LineRange {
   start: number
@@ -197,6 +200,11 @@ export class DocumentSnapshot {
     public includeLineNumbers: boolean,
   ) {
     this.fileSnapshotForLlm = createFileContext(document)
+    if (includeLineNumbers) {
+      this.fileSnapshotForLlm = transformFileContextWithLineNumbers(
+        this.fileSnapshotForLlm,
+      )
+    }
 
     workspace.onDidChangeTextDocument((change) => {
       if (change.document !== document) {

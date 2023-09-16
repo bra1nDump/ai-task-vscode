@@ -4,7 +4,7 @@ import {
   trimUpToOneLeadingNewLine,
   trimUpToOneTrailingNewLine,
 } from '../../xml/parser'
-import { getBreadIdentifier } from '../../helpers/bread-identifier'
+import { getBreadIdentifier } from 'session'
 
 const breadIdentifier = getBreadIdentifier()
 
