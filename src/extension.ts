@@ -7,31 +7,27 @@ export function activate(context: vscode.ExtensionContext) {
   // Commands also need to be defined in package.json
   context.subscriptions.unshift(
     vscode.commands.registerCommand('birds.chaseBread', chaseBreadCommand),
-    /* WARNING: The command was deprecated because it is overlapping with the
-     * chasing bread too much I have decided to include the compile errors in
-     * the chasing bread command to consolidate the code
-     * vscode.commands.registerCommand('birds.chaseBugs', chaseBugsCommand),
-     */
-    vscode.window.onDidChangeTextEditorSelection(changedEditorSelection),
   )
-}
 
-export function changedEditorSelection(
-  event: vscode.TextEditorSelectionChangeEvent,
-) {
-  /* Remove any decorations that were added by the extension,
-     potentially the user is interacting with the file we should remove the
-     decorations to avoid any distractions
-     
-   * Not so simple, selection gets changed when we use edit builder to apply
-   * changes produced by the LLM I think we should individually subscribe
-   * somewhere within the multi file edit code to the selection change event
-   * where we can only clear selection once the selection changes for the file
-   * which has already stopped editing
-     
-     Alternatively we can simply set a timeout to clear the highlight.
-   * I'm opting for the solution. Though this will not work for multiple
-   * options in the future
-   * event.textEditor.setDecorations(targetRangeHighlightingDecoration,
-     []) */
+  // Kickoff on @run mention
+  vscode.workspace.onDidChangeTextDocument((event) => {
+    /* Ideally will want to make sure we are within a comment,
+       could also be multiline and bread mention can be anywhere */
+    const isRunInLine = (document: vscode.TextDocument, line: number) => {
+      const lineText = document.lineAt(line).text
+      // const breadIdentifier = getBreadIdentifier()
+
+      return lineText.endsWith('@run')
+    }
+
+    if (
+      event.contentChanges.length > 0 &&
+      event.contentChanges[0].text !== '' && // not a delete
+      // event.contentChanges.every((change) => change.text === '\n') &&
+      isRunInLine(event.document, event.contentChanges[0].range.start.line)
+    ) {
+      // await undoInsertChanges([event])
+      void vscode.commands.executeCommand('birds.chaseBread')
+    }
+  })
 }

@@ -119,7 +119,7 @@ Addressing errors:
   await startMultiFileEditing(
     `${compilationErrorContextAndPrompt ?? ''}
 
-Your task is spread out across multiple files with main goals tagged with @${breadIdentifier}`,
+Your task is tagged with @${breadIdentifier}. Do not make any changes not directly requested by your task. Do not remove comments from code.`,
     sessionContext,
   )
 

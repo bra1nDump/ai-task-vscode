@@ -93,7 +93,7 @@ async function safeWorkspaceQueryAllFiles(): Promise<vscode.Uri[]> {
   ]
 
   const allFilesInWorkspace = await vscode.workspace.findFiles(
-    '**/*.{ts,md}',
+    '**/*.{ts,md,js,jsx,tsx,html,css,scss,less,json,yml,yaml}',
     `**/{${excludedDirectories.join(',')}}/**/*`,
     1000,
   )
