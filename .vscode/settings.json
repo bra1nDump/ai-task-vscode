@@ -17,7 +17,7 @@
     * Since we are using bread all over the code base, during development I need to override it with something else
     * otherwise a bunch of files related to @bread functionality - like this one - will be picked up
     */
-    "birds.taskMentionIdentifier": "crust",
+    // "birds.taskMentionIdentifier": "crust",
     "birds.additionalExcludedDirectories": [
         "prompt-engineering",
         "docs"

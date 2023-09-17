@@ -17,12 +17,10 @@ I'm hoping one of them will return problems for the entire workspace
 
 Thank you ChatGPT again, correct api is: vscode.languages.getDiagnostics()
 
-
-Some actions seem hidden? 
+Some actions seem hidden?
 Move function
-https://github.com/search?q=repo%3Amicrosoft%2Fvscode%20%22Move%20to%20a%20new%20file%22&type=code
+<https://github.com/search?q=repo%3Amicrosoft%2Fvscode%20%22Move%20to%20a%20new%20file%22&type=code>
 codeActions.refactor.move.newFile.title
-
 
 All commands
 [
@@ -2211,7 +2209,7 @@ All commands
   "testExplorerConverter.activate",
   "testExplorerConverter.useNativeTesting",
   "inline-parameters.toggle",
-  "birds.chaseBread",
+  "birds.completeInlineTasks",
   "test-explorer.toggleVisibility",
   "test-explorer.removeView",
   "test-explorer.reload",

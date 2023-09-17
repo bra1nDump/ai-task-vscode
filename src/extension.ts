@@ -1,4 +1,4 @@
-import { chaseBreadCommand } from 'chase-bread/command'
+import { completeInlineTasksCommand } from 'chase-bread/command'
 import * as vscode from 'vscode'
 
 export function activate(context: vscode.ExtensionContext) {
@@ -6,7 +6,10 @@ export function activate(context: vscode.ExtensionContext) {
 
   // Commands also need to be defined in package.json
   context.subscriptions.unshift(
-    vscode.commands.registerCommand('birds.chaseBread', chaseBreadCommand),
+    vscode.commands.registerCommand(
+      'birds.completeInlineTasks',
+      completeInlineTasksCommand,
+    ),
   )
 
   // Kickoff on @run mention
@@ -27,7 +30,7 @@ export function activate(context: vscode.ExtensionContext) {
       isRunInLine(event.document, event.contentChanges[0].range.start.line)
     ) {
       // await undoInsertChanges([event])
-      void vscode.commands.executeCommand('birds.chaseBread')
+      void vscode.commands.executeCommand('birds.completeInlineTasks')
     }
   })
 }

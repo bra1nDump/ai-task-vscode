@@ -20,7 +20,7 @@ import { projectDiagnosticEntriesWithAffectedFileContext } from 'chase-bugs/diag
  * Parse the diffs
  * Apply them to the current file in place
  */
-export async function chaseBreadCommand() {
+export async function completeInlineTasksCommand() {
   const sessionContext = await startSession()
   void queueAnAppendToDocument(
     sessionContext.markdownHighLevelFeedbackDocument,

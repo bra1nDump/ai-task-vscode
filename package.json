@@ -23,15 +23,15 @@
   "contributes": {
     "commands": [
       {
-        "command": "birds.chaseBread",
-        "title": "Code Birds: Chase @bread-ed files and apply requested changes"
+        "command": "birds.completeInlineTasks",
+        "title": "Task String AI: Complete inline tasks"
       }
     ],
     "configuration": {
       "properties": {
         "birds.taskMentionIdentifier": {
           "type": "string",
-          "default": "bread",
+          "default": "task",
           "description": "Override the keyword the LLM uses when searching for its task"
         },
         "birds.openaiApiKey": {

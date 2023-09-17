@@ -38,7 +38,7 @@ Sprinkle some @bread crumbs around your code base to get the birds attention. Bi
 
 - Add a comment with instructions on how you want to modify the code, mention `@bread` to get the birds attention
 - Example comment: `// @bread add a parameter to this function and fix functions using it`
-- **Hit enter two times** after the comment or you can use the command birds.chaseBread to invite the birds to munch on your code
+- **Hit enter two times** after the comment or you can use the command birds.completeInlineTasks to invite the birds to munch on your code
 - Multi file editing is supported out of the box, just make sure you leave `@bread` somewhere in the files you want to edit
 
 # Development
