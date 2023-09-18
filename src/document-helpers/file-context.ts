@@ -3,6 +3,11 @@ export interface FileContext {
   content: string
 }
 
+export interface StaticBlobContext {
+  blobName: string
+  content: string
+}
+
 export function transformFileContextWithLineNumbers(
   fileContext: FileContext,
 ): FileContext {

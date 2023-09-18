@@ -2,7 +2,7 @@ import * as vscode from 'vscode'
 import { applyResolvedChangesWhileShowingTheEditor } from '../applyResolvedChange'
 import { Change, LlmGeneratedPatchXmlV1 } from './types'
 import { makeToResolvedChangesTransformer } from './resolveTargetRange'
-import { SessionDocumentManager } from 'document-helpers/document-manager'
+import { SessionContextManager } from 'document-helpers/document-manager'
 import { findSingleFileMatchingPartialPath } from 'helpers/vscode'
 
 export async function resolveAndApplyChangesToSingleFile(
@@ -10,7 +10,7 @@ export async function resolveAndApplyChangesToSingleFile(
   editor: vscode.TextEditor,
 ) {
   // I'm still prototyping line numbers so let's stick to falls for now
-  const sessionDocumentManager = new SessionDocumentManager(false)
+  const sessionDocumentManager = new SessionContextManager(false)
   await sessionDocumentManager.addDocuments('test', [editor.document.uri])
 
   const resolver = makeToResolvedChangesTransformer(sessionDocumentManager)
@@ -47,7 +47,7 @@ export async function resolveAndApplyChangesToMultipleFiles(
   )
   /* Still prototyping stick into the old API which does not include line
      numbers */
-  const sessionDocumentManager = new SessionDocumentManager(false)
+  const sessionDocumentManager = new SessionContextManager(false)
   await sessionDocumentManager.addDocuments('test', documentUris)
   const resolvedChanges = await makeToResolvedChangesTransformer(
     sessionDocumentManager,

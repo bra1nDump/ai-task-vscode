@@ -1,7 +1,3 @@
-import {
-  fileContextSystemMessage,
-  mapFileContextToXml,
-} from 'document-helpers/file-context-prompt'
 import { FileContext } from 'document-helpers/file-context'
 import { transformFileContextWithLineNumbers } from 'document-helpers/file-context'
 import { OpenAiMessage } from 'helpers/openai'
@@ -31,80 +27,67 @@ import { SessionConfiguration } from 'session'
  * generate files along side this file for reference and debugging.
  */
 
+/* CURRENTLY NO PLANNING ENABLED for simplification and speed reasons.
+ * Planning is very important as chain of thought prompting is currently
+ * state of the art. There's also structure chain of thought which promises
+ * to be better https://arxiv.org/pdf/2305.06599.pdf
+ *
+ * I'm considering to move pseudocode algorithms for the replacement into the
+ * examples for the diff generation prompt. I'm hoping by reducing locality
+ * it will improve the quality of the replacement.
+ */
+
 export function createMultiFileEditingMessages(
   fileContexts: FileContext[],
-  taskPrompt: string,
-  config: SessionConfiguration,
+  blobContexts: string[],
+  configuration: SessionConfiguration,
 ): OpenAiMessage[] {
+  // Static messages.
+  const multiFileEditPromptMessage: OpenAiMessage = {
+    content: multiFileEditPrompt(configuration),
+    role: 'system',
+  }
+
   // Dynamic messages based on input
-  const fileContextDynamic = fileContextSystemMessage(fileContexts)
-  const userTaskMessage: OpenAiMessage = {
+  const filesContextXmlPrompt = fileContexts.map(mapFileContextToXml).join('\n')
+
+  // For example compilation errors or blobs of documentation
+  let optionalStaticContent = ''
+  if (blobContexts.length > 0) {
+    optionalStaticContent =
+      blobContexts
+        .map(
+          (blobContext) =>
+            `<information-blob>${blobContext}</information-blob>`,
+        )
+        .join('\n') + '\n\n'
+  }
+
+  /* Do we need to say your input? Doesn't matter for performance using a
+     system or user message? It feels like I should be using the user here */
+  const inputWithFiles: OpenAiMessage = {
+    content: optionalStaticContent + filesContextXmlPrompt,
     role: 'user',
-    content: taskPrompt,
   }
 
-  // Static messages. Please
-  const diffPrompt = diffGeneratorPromptPrefix(
-    allDiffV1Examples(config.breadIdentifier, config.includeLineNumbers),
-  )
-  const multiFileEditPrompt: OpenAiMessage = {
-    content: diffPrompt,
-    role: 'system',
-  }
-
-  /* Planning is very important as chain of thought prompting is currently
-   * state of the art. There's also structure chain of thought which promises
-   * to be better https://arxiv.org/pdf/2305.06599.pdf
-   *
-   * I'm considering to move pseudocode algorithms for the replacement into the
-   * examples for the diff generation prompt. I'm hoping by reducing locality
-   * it will improve the quality of the replacement.
-   */
-  const taskUnderstandingSelfPrompting: OpenAiMessage = {
-    role: 'system',
-    content: `Understanding the task:
-- Collect all of the information relevant to the task the user is trying to accomplish and restate the task
-- Restate any specific instructions that the user has already provided on how to accomplish the task 
-- Used technical style of writing - be concise but do not lose any information
-- Parts of the task might be accomplished, clearly state so and consider it stale instructions
-
-Task output format:
-<task>
-{{restating the task}}
-</task>`,
-  }
-
-  const combinedResponseOutputFormat: OpenAiMessage = {
-    role: 'system',
-    content: `In your next message respond only with the task immediately followed by the changes to be made to the files.`,
-  }
-
-  const messages = [
-    multiFileEditPrompt,
-    fileContextDynamic,
-    userTaskMessage,
-    taskUnderstandingSelfPrompting,
-    combinedResponseOutputFormat,
-  ]
+  const messages = [multiFileEditPromptMessage, inputWithFiles]
   return messages
 }
 
-const diffGeneratorPromptPrefix = (examples: string[]) =>
-  `Creating changes:
-- Only make changes based on your task
-- Only replace logically complete chunks of code. Avoid replacing sub expressions. Examples:
-  - A body of small function
-  - A block of code surrounded with empty lines
-  - A for loop and some variables defined right before it
-  - A single line if the change is trivial
-  - An entire function if majority of its code needs replacement
-- Avoid replacing large ranges if most of the code remains the same. Instead use multiple smaller targeted changes
-- Make sure symbols you are using are available in scope or define them yourself
-- Only import other dependencies in the file header
-- Respect indentation of the original range you are replacing
+const multiFileEditPrompt = (configuration: SessionConfiguration) =>
+  `You are a coding assistant.
+You will be given editable files with line numbers and optional information blobs as input.
+Your task is defined by @task mentions within your input.
+Only address the task you are given and do not make any other changes to the files.
+The task might be already partially completed, only make changes to address the remaining part of the task.
+You will first output your understand of the task and immediately after the changes to be made to the files.
 
-Examples:
-${examples.join('\n\n')}
+Examples of your input and output pairs follow.
+
+${[
+  typescriptHelloWorldParametrizationMultiFileExample(configuration),
+  editMiddleOfAJsxExpressionEnsureIndentIsPreserved(configuration),
+].join('\n\n')}
 `
 
 /*
@@ -113,27 +96,46 @@ This schema would be enforced, configuration would be easier
 */
 
 const typescriptHelloWorldParametrizationMultiFileExample = (
-  breadIdentifier: string,
-  includeLineNumbers: boolean,
+  configuration: SessionConfiguration,
 ) => {
+  const breadIdentifier = configuration.breadIdentifier
   let editableFileContext1: FileContext = {
     filePathRelativeToWorkspace: 'src/hello-world.ts',
     content: `function helloWorld() {
-  // ${breadIdentifier} pass name to be greeted
+  // @${breadIdentifier} pass name to be greeted
   console.log('Hello World');
 }`,
   }
 
   let editableFileContext2: FileContext = {
     filePathRelativeToWorkspace: 'src/main.ts',
-    content: `// ${breadIdentifier} use hello world from a helper module and use environment variable to get the user name`,
+    content: `// @${breadIdentifier} use hello world from a helper module and use environment variable to get the user name`,
   }
 
-  if (includeLineNumbers) {
+  if (configuration.includeLineNumbers) {
     editableFileContext1 =
       transformFileContextWithLineNumbers(editableFileContext1)
     editableFileContext2 =
       transformFileContextWithLineNumbers(editableFileContext2)
+  }
+
+  let optionalAlgorithm1 = ''
+  let optionalAlgorithm2 = ''
+  if (false) {
+    optionalAlgorithm1 = `<description>
+Context: function
+Input: name: thing to be greeted of type string
+Output: void
+Algorithm:
+Print out "Hello " followed by the name
+</description>`
+    optionalAlgorithm2 = `<description>
+Context: top level code
+Algorithm:
+Import hello function from helper module
+Get user name from environment variable USER_NAME
+Call hello function with user name
+</description>`
   }
 
   const fileContextPromptPart1 = mapFileContextToXml(editableFileContext1)
@@ -142,34 +144,30 @@ const typescriptHelloWorldParametrizationMultiFileExample = (
   const rangeToReplace1 = extractMatchingLineRange(
     editableFileContext1.content,
     'function helloWorld() {',
-    '};',
+    '}',
   )
 
   const rangeToReplace2 = extractMatchingLineRange(
     editableFileContext2.content,
-    '// ${breadIdentifier} use hello world from a helper module and use environment variable to get the user name',
-    '// ${breadIdentifier} use hello world from a helper module and use environment variable to get the user name',
+    `// @${breadIdentifier} use hello world from a helper module and use environment variable to get the user name`,
+    `// @${breadIdentifier} use hello world from a helper module and use environment variable to get the user name`,
   )
 
-  return `Given these inputs:
+  return `Input: 
 ${fileContextPromptPart1}
 ${fileContextPromptPart2}
 
-Given a task: Make changes based on ${breadIdentifier} mentions.
+Output:
+<task>
+Add a parameter to \`helloWorld\` function to pass the name to be greeted.
+Use the updated function in \`main.ts\` to greet the user found in the \`USER_NAME\` environment variable defaulting to \`World\`.
+</task>
 
-Good output is:
 <change>
 <path>src/hello-world.ts</path>
 <range-to-replace>
 ${rangeToReplace1}
-</range-to-replace>
-<description>
-Context: function
-Input: name: thing to be greeted of type string
-Output: void
-Algorithm:
-Print out "Hello " followed by the name
-</description>
+</range-to-replace>${optionalAlgorithm1}
 <replacement>
 function hello(name: string) {
     console.log(\`Hello \${name}\`);
@@ -180,14 +178,7 @@ function hello(name: string) {
 <path>src/main.ts</path>
 <range-to-replace>
 ${rangeToReplace2}
-</range-to-replace>
-<description>
-Context: top level code
-Algorithm:
-Import hello function from helper module
-Get user name from environment variable USER_NAME
-Call hello function with user name
-</description>
+</range-to-replace>${optionalAlgorithm2}
 <replacement>
 import { hello } from './helper';
 const name = process.env.USER_NAME || 'World';
@@ -208,12 +199,12 @@ hello(name);
  * names.
  */
 const editMiddleOfAJsxExpressionEnsureIndentIsPreserved = (
-  breadIdentifier: string,
-  includeLineNumbers: boolean,
+  configuration: SessionConfiguration,
 ) => {
   let editableFileContext: FileContext = {
     filePathRelativeToWorkspace: 'counter.ts',
-    content: `const Counter: React.FC = () => {
+    content: `// @task use a single div instead of a list to show the count
+const Counter: React.FC = () => {
   const [count, setCount] = useState<number>(0);
 
   return (
@@ -231,11 +222,23 @@ const editMiddleOfAJsxExpressionEnsureIndentIsPreserved = (
 };`,
   }
 
-  if (includeLineNumbers) {
+  if (configuration.includeLineNumbers) {
     editableFileContext =
       transformFileContextWithLineNumbers(editableFileContext)
   }
   const fileContextPromptPart = mapFileContextToXml(editableFileContext)
+
+  let optionalAlgorithm = ''
+  if (false) {
+    /* Change this condition based on your logic for including optional
+       description. */
+    optionalAlgorithm = `<description>
+  Context: jsx subexpression
+  Symbols in scope: count, setCount
+  Algorithm:
+  Replace the unordered list with a single div showing the count value
+  </description>`
+  }
 
   const rangeToReplace = extractMatchingLineRange(
     editableFileContext.content,
@@ -243,23 +246,19 @@ const editMiddleOfAJsxExpressionEnsureIndentIsPreserved = (
     '</ul>',
   )
 
-  return `Given this input:
+  return `Input:
 ${fileContextPromptPart}
 
-Given a task: Refactor the code to use a single div instead of a list
+Output:
+<task>
+Use a single div instead of a list to show the count.
+</task>
 
-Good output is:
 <change>
 <path>counter.ts</path>
 <range-to-replace>
 ${rangeToReplace}
-</range-to-replace>
-<description>
-Context: jsx subexpression
-Symbols in scope: count, setCount
-Algorithm:
-Show count value in a div
-</description>
+</range-to-replace>${optionalAlgorithm}
 <replacement>
       <div>{count}</div>
 </replacement>
@@ -267,7 +266,80 @@ Show count value in a div
 `
 }
 
-const detailedPseudocodeAndTruncation = (
+/**
+ * Encode the file contexts into a prompt for the model
+ * @param fileContexts - The files to encode
+ * @param includeLineNumbers - Whether to include line numbers in the prompt. Keeping this as a parameter to quantify improvements or regressions
+ */
+
+function mapFileContextToXml(fileContext: FileContext): string {
+  return (
+    '<file>\n' +
+    `<path>${fileContext.filePathRelativeToWorkspace}</path>\n` +
+    `<content>\n${fileContext.content}\n</content>\n` +
+    '</file>'
+  )
+}
+
+/** I'm using a content based to find the target range because the line
+ * numbers are implicit and I don't want to keep truck of them in case they
+ * change in the future or their format changes.
+ *
+ * This function extracts the target range from the content passed in and
+ * truncates it if it's over five lines.
+ *
+ * Not exactly sure how I will handle cases when we will stop providing
+ * content in the range to replace. Could be handled similarly except for
+ * dropping the content of the line.
+ *
+ * The algorithm is roughly:
+ * Split content within the editable file content into lines
+ * Find the line with the content from the first line for the range to
+ * replace, in our case space <ul>
+ * Find the line with the content from the last line for the range to replace
+ * Concatenate hold the lines within the range and put into a variable.
+ */
+function extractMatchingLineRange(
+  content: string,
+  startTerm: string,
+  endTerm: string,
+): string {
+  const lines = content.split('\n')
+  const startLineIndex = lines.findIndex((line) => line.includes(startTerm))
+  const endLineIndex = lines.findIndex((line) => line.includes(endTerm))
+  const lineRange = lines.slice(startLineIndex, endLineIndex + 1)
+
+  /* Including two lines in the front and in the end because the last line
+   * would often be a closing bracket which might make it harder for the modal
+   * to reason about the range ending
+   *
+   * Currently unused
+   */
+  if (lineRange.length > 6) {
+    const truncatedLineRange = [
+      ...lineRange.slice(0, 2),
+      '<truncated/>',
+      ...lineRange.slice(lineRange.length - 2),
+    ]
+    return truncatedLineRange.join('\n')
+  }
+
+  return lineRange.join('\n')
+}
+
+/**
+ * UNUSED, I'm stripping out the algorithm for chain of thought to speed up the
+ * changes and set baseline performance without the algorithms with the new
+ * updated prompt. I'm also removing truncation.
+ *
+ * - Maybe don't focus on truncation because we don't really need it with line
+ * ranges?
+ * - This will additionally remove the distraction of the model needing to know
+ * how to truncate the code, good for the demos
+ *
+ * Remember this algorithm is not parametrized, and is always included
+ */
+const UNUSED_detailedPseudocodeAndTruncation = (
   breadIdentifier: string,
   includeLineNumbers: boolean,
 ) => {
@@ -333,62 +405,3 @@ function deduplicate(arr: number[]): number[] {
 </replacement>
 </change>`
 }
-
-/** I'm using a content based to find the target range because the line
- * numbers are implicit and I don't want to keep truck of them in case they
- * change in the future or their format changes.
- *
- * This function extracts the target range from the content passed in and
- * truncates it if it's over five lines.
- *
- * Not exactly sure how I will handle cases when we will stop providing
- * content in the range to replace. Could be handled similarly except for
- * dropping the content of the line.
- *
- * The algorithm is roughly:
- * Split content within the editable file content into lines
- * Find the line with the content from the first line for the range to
- * replace, in our case space <ul>
- * Find the line with the content from the last line for the range to replace
- * Concatenate hold the lines within the range and put into a variable.
- */
-function extractMatchingLineRange(
-  content: string,
-  startTerm: string,
-  endTerm: string,
-): string {
-  const lines = content.split('\n')
-  const startLineIndex = lines.findIndex((line) => line.includes(startTerm))
-  const endLineIndex = lines.findIndex((line) => line.includes(endTerm))
-  const lineRange = lines.slice(startLineIndex, endLineIndex + 1)
-
-  /* Including two lines in the front and in the end because the last line
-   * would often be a closing bracket which might make it harder for the modal
-   * to reason about the range ending
-   */
-  if (lineRange.length > 6) {
-    const truncatedLineRange = [
-      ...lineRange.slice(0, 2),
-      '<truncated/>',
-      ...lineRange.slice(lineRange.length - 2),
-    ]
-    return truncatedLineRange.join('\n')
-  }
-
-  return lineRange.join('\n')
-}
-
-const allDiffV1Examples = (
-  breadIdentifier: string,
-  includeLineNumbers: boolean,
-) => [
-  typescriptHelloWorldParametrizationMultiFileExample(
-    breadIdentifier,
-    includeLineNumbers,
-  ),
-  editMiddleOfAJsxExpressionEnsureIndentIsPreserved(
-    breadIdentifier,
-    includeLineNumbers,
-  ),
-  detailedPseudocodeAndTruncation(breadIdentifier, includeLineNumbers),
-]

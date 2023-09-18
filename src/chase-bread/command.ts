@@ -50,10 +50,13 @@ export async function completeInlineTasksCommand() {
    * renamed document manager to be a generic context manager)
    */
   const dotBreadFileUris = await findAndCollectDotBreadFiles(breadIdentifier)
-  await sessionContext.documentManager.addDocuments(
-    '.bread files',
-    dotBreadFileUris,
+  const breadFileBlobs = await Promise.all(
+    dotBreadFileUris.map(async (uri) => {
+      const document = await vscode.workspace.openTextDocument(uri)
+      return document.getText()
+    }),
   )
+  sessionContext.documentManager.addBlobContexts(breadFileBlobs)
 
   // Opened tabs
   const openTabsFileUris = openedTabs()
@@ -74,10 +77,8 @@ export async function completeInlineTasksCommand() {
     fileUrisWithProblems,
   )
 
-  console.log('fileManager', sessionContext.documentManager.dumpState())
-
   /* Provide optional problem context + prompt
-     Refactor: Move all prompts out of the command */
+  Refactor: This should move to a static context provider */
   const problemContext = diagnosticsAlongWithTheirFileContexts
     .flatMap(({ uri, diagnostic }) => {
       if (diagnostic.severity !== vscode.DiagnosticSeverity.Error) {
@@ -87,41 +88,39 @@ export async function completeInlineTasksCommand() {
 
       return [
         `File: ${filePathRelativeToWorkspace}
-Error message: ${diagnostic.message}
-Range:
-- Line start ${diagnostic.range.start.line}
-- Line end ${diagnostic.range.end.line}
-${
-  diagnostic.relatedInformation
-    ?.map((info) => `Related info: ${info.message}`)
-    .join('\n') ?? ''
-}
-`,
+  Error message: ${diagnostic.message}
+  Range:
+  - Line start ${diagnostic.range.start.line}
+  - Line end ${diagnostic.range.end.line}
+  ${
+    diagnostic.relatedInformation
+      ?.map((info) => `Related info: ${info.message}`)
+      .join('\n') ?? ''
+  }
+  `,
       ]
     })
     .join('\n')
 
-  const compilationErrorContextAndPrompt =
-    problemContext.length === 0
-      ? undefined
-      : `Here's a list of compilation errors in some of the files:
-${problemContext}
+  if (problemContext.length !== 0) {
+    const compilationErrorContext = `Here's a list of compilation errors in some of the files:
+  ${problemContext}
+  
+  - Most likely this is due to a refactor user has started but not finished
+  - Based on @${breadIdentifier} mentions and the errors you should guess what was the refactor in the first place
+  - Collect all relevant information about the refactor that might help you fix the errors
+  
+  Addressing errors:
+  - Often the location of the error is not the place that you want to make changes to
+  - Make sure you're not masking the compile error, but rather making necessary changes to the logic of the program
+  `
 
-- Most likely this is due to a refactor user has started but not finished
-- Based on @${breadIdentifier} mentions and the errors you should guess what was the refactor in the first place
-- Collect all relevant information about the refactor that might help you fix the errors
+    sessionContext.documentManager.addBlobContexts([compilationErrorContext])
+  }
 
-Addressing errors:
-- Often the location of the error is not the place that you want to make changes to
-- Make sure you're not masking the compile error, but rather making required changes to the logic of the program
-`
+  console.log('fileManager', sessionContext.documentManager.dumpState())
 
-  await startMultiFileEditing(
-    `${compilationErrorContextAndPrompt ?? ''}
-
-Your task is tagged with @${breadIdentifier}. Do not make any changes not directly requested by your task. Do not remove comments from code.`,
-    sessionContext,
-  )
+  await startMultiFileEditing(sessionContext)
 
   await queueAnAppendToDocument(
     sessionContext.markdownHighLevelFeedbackDocument,

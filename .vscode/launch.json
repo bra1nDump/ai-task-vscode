@@ -14,6 +14,7 @@
 				"${workspaceFolder}/testing-sandbox",
 				"${workspaceFolder}/testing-sandbox/helloWorld.ts",
 				"--extensionDevelopmentPath=${workspaceFolder}",
+				"--disable-extensions", // Disables other extensions
 			],
 			"envFile": "${workspaceFolder}/.env",
 			"outFiles": [

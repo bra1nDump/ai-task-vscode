@@ -15,15 +15,9 @@
 
 # Next up
 
-- Flatten and simplified the prompt
-- Make the pseudocode go before the target range. Also have it described the changes to the algorithm of the entire algorithm.
-- Configure if we want pseudocode or not
-
 ## Record multi file edit
 
-- Take notes on what videos you want to record. Record three while you do the following:
-- Watch all the demo videos you have recorded so far
-- Look through some examples of the generations that were successful and worthy responses
+- Take notes on what videos you want to record. Record three while you do the following
 
 Things to showcase
 
@@ -147,6 +141,13 @@ Can I run tsc using a javascript, so from the extension code itself? .. probably
 
 # Done
 
+- Were not actually that useful :D I should probably record new ones and actually watch how they come out
+  - Watch all the demo videos you have recorded so far
+  - Look through some examples of the generations that were successful and worthy responses
+
+- Flatten and simplified the prompt
+- Make the pseudocode go before the target range. Also have it described the changes to the algorithm of the entire algorithm.
+- Configure if we want pseudocode or not
 - Continue to line range targets
 - Content based matching has bugged out when there were multiple matches within the same file of the same string
 - Remove plan craziness with custom list parsing and simply use `<plan>` tags

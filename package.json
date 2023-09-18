@@ -3,7 +3,7 @@
   "displayName": "birds",
   "publisher": "bra1nDump",
   "description": "Leave breakcrumbs across the codebase and have llm type for you inline",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "license": "Business Source License 1.1",
   "icon": "icon-v1.png",
   "repository": {
@@ -57,7 +57,7 @@
     "tsc": "tsc -p . --outDir out",
     "watch-tsc": "tsc -p . -w --outDir out",
     "lint": "eslint . --ext ts --fix",
-    "codegen:prompt-checkpoints": "MULTI_FILE_PROMPT_VERSION=v1-separate-task-and-changes node ./out/script-generate-prompt-checkpoint.js"
+    "codegen:prompt-checkpoints": "MULTI_FILE_PROMPT_VERSION=v2-unified-task-changes node ./out/script-generate-prompt-checkpoint.js"
   },
   "devDependencies": {
     "@types/glob": "^8.1.0",

@@ -13,15 +13,13 @@ import { queueAnAppendToDocument } from 'helpers/vscode'
 import { map as mapAsync } from 'ix/asynciterable/operators'
 import { createMultiFileEditingMessages } from './prompt'
 
-export async function startMultiFileEditing(
-  taskPrompt: string,
-  sessionContext: SessionContext,
-) {
-  const fileContexts = sessionContext.documentManager.getFileContexts()
+export async function startMultiFileEditing(sessionContext: SessionContext) {
+  const fileContexts = sessionContext.documentManager.getEditableFileContexts()
+  const blobContexts = sessionContext.documentManager.getBlobContexts()
 
   const messages = createMultiFileEditingMessages(
     fileContexts,
-    taskPrompt,
+    blobContexts,
     sessionContext.configuration,
   )
 

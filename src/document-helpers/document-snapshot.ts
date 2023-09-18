@@ -151,6 +151,7 @@ import {
   Range,
   TextDocument,
   TextDocumentContentChangeEvent,
+  Disposable,
 } from 'vscode'
 
 import { Result, resultMap } from '../helpers/result'
@@ -175,7 +176,7 @@ export class DocumentSnapshot {
    * Having cline numbers is useful for:
    * - Disambiguating between lines with the same
    * - Speeding up process of targeting LLM changes to specific lines
-   * - Splitting multi file editing into tasks of targeting and editing
+  //  * - Splitting multi file editing into tasks of targeting and editing
    * separately
    *
    * Potential issues:
@@ -185,6 +186,7 @@ export class DocumentSnapshot {
    * - More tokens in the input and output
    */
   public fileSnapshotForLlm: FileContext
+  public documentWatchSubscription: Disposable
 
   private contentChanges: TextDocumentContentChangeEvent[] = []
 
@@ -206,13 +208,15 @@ export class DocumentSnapshot {
       )
     }
 
-    workspace.onDidChangeTextDocument((change) => {
-      if (change.document !== document) {
-        return
-      }
+    this.documentWatchSubscription = workspace.onDidChangeTextDocument(
+      (change) => {
+        if (change.document !== document) {
+          return
+        }
 
-      this.contentChanges.push(...change.contentChanges)
-    })
+        this.contentChanges.push(...change.contentChanges)
+      },
+    )
   }
 
   toCurrentDocumentLineRange(

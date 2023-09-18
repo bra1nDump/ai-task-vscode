@@ -10,13 +10,12 @@ import { FileContext } from './file-context'
  * The heavy lifting is really done by DocumentSnapshot, this simply manages
  * all the documents for the session.
  */
-export class SessionDocumentManager {
+export class SessionContextManager {
   // Using strength so get lookup succeeds even if the uri is different object
-  private uriToDocumentsSnapshots: Map<string, DocumentSnapshot>
+  private uriToDocumentsSnapshots = new Map<string, DocumentSnapshot>()
+  private blobContexts: string[] = []
 
-  constructor(public includeLineNumbers: boolean) {
-    this.uriToDocumentsSnapshots = new Map()
-  }
+  constructor(public includeLineNumbers: boolean) {}
 
   async addDocuments(source: string, uris: vscode.Uri[]) {
     const newUris = uris.filter(
@@ -46,6 +45,17 @@ export class SessionDocumentManager {
     await Promise.all(tasks)
   }
 
+  dispose() {
+    this.uriToDocumentsSnapshots.forEach(
+      (documentSnapshot) =>
+        void documentSnapshot.documentWatchSubscription.dispose(),
+    )
+  }
+
+  addBlobContexts(blobContexts: string[]) {
+    this.blobContexts = blobContexts
+  }
+
   getDocumentSnapshot(uri: vscode.Uri): DocumentSnapshot | undefined {
     return this.uriToDocumentsSnapshots.get(uri.path)
   }
@@ -54,10 +64,14 @@ export class SessionDocumentManager {
    * Doesn't really belong here by this the most convenient place to put it in
    * the meantime
    */
-  getFileContexts(): FileContext[] {
+  getEditableFileContexts(): FileContext[] {
     return Array.from(this.uriToDocumentsSnapshots.values()).map(
       (documentSnapshot) => documentSnapshot.fileSnapshotForLlm,
     )
+  }
+
+  getBlobContexts(): string[] {
+    return this.blobContexts
   }
 
   // Debugging

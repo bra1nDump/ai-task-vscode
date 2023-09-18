@@ -2,7 +2,7 @@ import * as vscode from 'vscode'
 import { LlmGeneratedPatchXmlV1, TargetRange } from './types'
 import { ResolvedChange } from 'multi-file-edit/types'
 import { findSingleFileMatchingPartialPath } from 'helpers/vscode'
-import { SessionDocumentManager } from 'document-helpers/document-manager'
+import { SessionContextManager } from 'document-helpers/document-manager'
 import { vscodeRangeToLineRange } from 'document-helpers/document-snapshot'
 
 /**
@@ -25,7 +25,7 @@ import { vscodeRangeToLineRange } from 'document-helpers/document-snapshot'
  * understanding the problem well enough.
  */
 export const makeToResolvedChangesTransformer = (
-  sessionDocumentManager: SessionDocumentManager,
+  sessionDocumentManager: SessionContextManager,
 ) =>
   async function (
     multiFileChangeSet: LlmGeneratedPatchXmlV1,

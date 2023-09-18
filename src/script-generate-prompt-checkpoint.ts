@@ -54,7 +54,9 @@ export function codeGeneratePromptCheckpoint(version: string) {
     }
     const exampleMessages = createMultiFileEditingMessages(
       [exampleFileContext],
-      'Example task (refactor, move the task to the prompt file so I can also check point it)',
+      [
+        'Example compilation errors, their formatting is done outside the prompt',
+      ],
       {
         breadIdentifier: 'crust',
         includeLineNumbers,

@@ -1,4 +1,4 @@
-import { SessionDocumentManager } from 'document-helpers/document-manager'
+import { SessionContextManager } from 'document-helpers/document-manager'
 import * as vscode from 'vscode'
 
 export interface SessionConfiguration {
@@ -21,7 +21,7 @@ export interface SessionContext {
    */
   markdownLowLevelFeedbackDocument: vscode.TextDocument
 
-  documentManager: SessionDocumentManager
+  documentManager: SessionContextManager
 
   /**
    * When the user closes the editor with high level feedback this is our
@@ -72,7 +72,7 @@ export async function startSession(): Promise<SessionContext> {
 
   /* Create document manager that will help us backdate edits throughout this
      sessiong */
-  const documentManager = new SessionDocumentManager(true)
+  const documentManager = new SessionContextManager(true)
 
   // Create an event emitter to notify anyone interested in session aborts
   const sessionAbortedEventEmitter = new vscode.EventEmitter<void>()
@@ -138,11 +138,13 @@ export async function closeSession(
   await sessionContext.markdownHighLevelFeedbackDocument.save()
   await sessionContext.markdownLowLevelFeedbackDocument.save()
 
-  // Dispose all resources
+  // Dispose all subscriptions
   sessionContext.subscriptions.forEach(
     (subscription) => void subscription.dispose(),
   )
+  void sessionContext.documentManager.dispose()
 
+  // Dispose event emitters
   sessionContext.sessionAbortedEventEmitter.dispose()
 
   sessionContext.sessionEndedEventEmitter.fire()

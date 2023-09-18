@@ -1,8 +1,8 @@
 # v1-separate-task-and-changes - no-lines
 
-Generated at: 9/15/2023
+Generated at: 9/17/2023
 
-Commit Hash: ba42b7c4379872d4286dd47b70f39a08d6d4b5d5
+Commit Hash: 292d56f831d70f97821f1f1a26f1442993d9b6a9
 
 ## system
 
@@ -25,7 +25,7 @@ Given these inputs:
 <path>src/hello-world.ts</path>
 <content>
 function helloWorld() {
-  // crust pass name to be greeted
+  // @crust pass name to be greeted
   console.log('Hello World');
 }
 </content>
@@ -33,7 +33,7 @@ function helloWorld() {
 <file>
 <path>src/main.ts</path>
 <content>
-// crust use hello world from a helper module and use environment variable to get the user name
+// @crust use hello world from a helper module and use environment variable to get the user name
 </content>
 </file>
 
@@ -43,7 +43,10 @@ Good output is:
 <change>
 <path>src/hello-world.ts</path>
 <range-to-replace>
-
+function helloWorld() {
+  // @crust pass name to be greeted
+  console.log('Hello World');
+}
 </range-to-replace>
 <description>
 Context: function
@@ -61,7 +64,7 @@ function hello(name: string) {
 <change>
 <path>src/main.ts</path>
 <range-to-replace>
-
+// @crust use hello world from a helper module and use environment variable to get the user name
 </range-to-replace>
 <description>
 Context: top level code
@@ -193,7 +196,7 @@ console.log('Hello world')
 
 ## user
 
-Example task (refactor, move the task to the prompt file so I can also check point it)
+Your task is tagged with @task. Do not make any changes not directly requested by your task. Do not remove comments from code.
 
 ## system
 
