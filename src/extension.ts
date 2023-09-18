@@ -18,7 +18,7 @@ export function activate(context: vscode.ExtensionContext) {
        could also be multiline and bread mention can be anywhere */
     const isRunInLine = (document: vscode.TextDocument, line: number) => {
       const lineText = document.lineAt(line).text
-      return lineText.endsWith('@run')
+      return lineText.includes('@run')
     }
 
     if (
