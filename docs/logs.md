@@ -8,6 +8,23 @@
 - Split a function into two for pagination
 - Error handling code
 
+===============================================================================
+ Language            Files        Lines         Code     Comments       Blanks
+===============================================================================
+ JavaScript              2          136           85           29           22
+ JSON                    2          111          111            0            0
+ Shell                   1            2            1            1            0
+ Plain Text              1            4            0            4            0
+ TypeScript             37         4654         3063         1122          469
+-------------------------------------------------------------------------------
+ Markdown               22         2048            0         1546          502
+ |- JSON                 1            9            9            0            0
+ |- TypeScript           2          107           73           28            6
+ (Total)                           2164           82         1574          508
+===============================================================================
+ Total                  65         6955         3260         2702          993
+===============================================================================
+
 # September 13 - Trying out on a real project, result satisfactory, contemplating about prompt benchmarking
 
 Content below is duplicated in [[prompt-testing]]
