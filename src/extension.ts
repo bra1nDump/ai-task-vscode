@@ -18,18 +18,19 @@ export function activate(context: vscode.ExtensionContext) {
        could also be multiline and bread mention can be anywhere */
     const isRunInLine = (document: vscode.TextDocument, line: number) => {
       const lineText = document.lineAt(line).text
-      // const breadIdentifier = getBreadIdentifier()
-
       return lineText.endsWith('@run')
     }
 
     if (
       event.contentChanges.length > 0 &&
-      event.contentChanges[0].text !== '' && // not a delete
-      // event.contentChanges.every((change) => change.text === '\n') &&
+      // only trigger on new line or space
+      (event.contentChanges[0].text === '\n' ||
+        event.contentChanges[0].text === ' ') &&
+      // only trigger if @run is in the line
       isRunInLine(event.document, event.contentChanges[0].range.start.line)
     ) {
-      // await undoInsertChanges([event])
+      /* Previously I was undoing the enter change,
+         but it introduces additional jitter to the user experience */
       void vscode.commands.executeCommand('birds.completeInlineTasks')
     }
   })

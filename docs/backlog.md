@@ -15,6 +15,10 @@
 
 # Next up
 
+- Flatten and simplified the prompt
+- Make the pseudocode go before the target range. Also have it described the changes to the algorithm of the entire algorithm.
+- Configure if we want pseudocode or not
+
 ## Record multi file edit
 
 - Take notes on what videos you want to record. Record three while you do the following:

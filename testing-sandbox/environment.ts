@@ -1,5 +1,5 @@
 const userMap = {
-  // @bread Add a especial entry -1 for 'Unknown user'
+  // @task Add a especial entry -1 for 'Unknown user'
   '1': 'John',
   '2': 'Jane',
   '3': 'Bob',
@@ -12,7 +12,7 @@ const userMap = {
   '10': 'Victor',
 }
 
-// @bread Use this function to get the current user's name. If user id was not supplied, default to user id for unknown user
+// @task Use this function to get the current user's name. If user id was not supplied, default to user id for unknown user
 export function getCurrentUserName() {
   return userMap[process.env.USER_ID!]
 }
