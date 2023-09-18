@@ -48,18 +48,11 @@ export interface FileChange {
 
 export interface LlmGeneratedPatchXmlV1 {
   /**
-   * @crust
-   * - I have updated the type to be a string instead of a string array, make changes acordingly across the files\
-   *   to account for this change, including the fixes to address the compilation errors due to this refactor.
-   * - First You should update the parsing code to support it. Now you should parse the plan using the helper to extract xml elements for a tag <plan>. You should get rid of regex matching in that parsing code.
-   * - Next update the code where we print out the plan to use the new format.
-   *   Currently we are processing a stream of different versions of the parsed LlmGeneratedPatchXmlV1.
-   *   As the time goes on the stream will have more and more content within the plan. We have a for
-   *   loop that iterates over the plan items - get rid of the for lop but keep the set to keep track of
-   *   last printed plan version. We also don't need to find the matching plan anymore.
-   *   And we don't need the set anymore actually. Replace it with a let lastPlanVersion = ''
+   * @task
+   * - I have updated the type to be a string instead of a string array, I am also ditching markdown list format for the plan and now it will be free form within <plan> tags make changes acordingly across the files.
+   * - Simplify code for printing out the plan, make sure you are still printint out the delta and not the entire plan
    */
-  plan: string[]
+  plan: string
   changes: FileChange[]
   /** Not used now, but it's much easier to add a new field to an object type versus an array */
   isStreamFinalizedUnused: boolean
