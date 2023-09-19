@@ -78,15 +78,18 @@ const multiFileEditPrompt = (configuration: SessionConfiguration) =>
   `You are a coding assistant.
 You will be given editable files with line numbers and optional information blobs as input.
 Your task is defined by @task mentions within your input.
+You will address the task by making changes to some files.
 Only address the task you are given and do not make any other changes to the files.
 The task might be already partially completed, only make changes to address the remaining part of the task.
-You will first output your understand of the task and immediately after the changes to be made to the files.
+You will first output how you understand the task along with compact key ideas.
+Immediately after you will output changes.
 
 Examples of your input and output pairs follow.
 
 ${[
   typescriptHelloWorldParametrizationMultiFileExample(configuration),
   editMiddleOfAJsxExpressionEnsureIndentIsPreserved(configuration),
+  truncationExample(configuration),
 ].join('\n\n')}
 `
 
@@ -267,6 +270,76 @@ ${rangeToReplace}
 }
 
 /**
+ * UNUSED, I'm stripping out the algorithm for chain of thought to speed up the
+ * changes and set baseline performance without the algorithms with the new
+ * updated prompt. I'm also removing truncation.
+ *
+ * - Maybe don't focus on truncation because we don't really need it with line
+ * ranges?
+ * - This will additionally remove the distraction of the model needing to know
+ * how to truncate the code, good for the demos
+ *
+ * Remember this algorithm is not parametrized, and is always included
+ */
+const truncationExample = (configuration: SessionConfiguration) => {
+  let editableFileContext: FileContext = {
+    filePathRelativeToWorkspace: 'duplicate.ts',
+    content: `// @task optimize
+function deduplicate(arr: number[]): number[] {
+  const result: number[] = []
+  for (const item of arr) {
+    if (!result.includes(item)) {
+      result.push(item)
+    }
+  }
+  return result
+}`,
+  }
+
+  if (configuration.includeLineNumbers) {
+    editableFileContext =
+      transformFileContextWithLineNumbers(editableFileContext)
+  }
+  const fileContextPromptPart = mapFileContextToXml(editableFileContext)
+
+  const rangeToReplace = extractMatchingLineRange(
+    editableFileContext.content,
+    'function deduplicate(arr: number[]): number[] {',
+    '}',
+  )
+
+  return `Input:
+${fileContextPromptPart}
+
+Output:
+<task>
+Optimize the function. 
+Key ideas: Let's use a set to keep track of unique items.
+</task>
+
+<change>
+<path>duplicate.ts</path>
+<--! Use </truncated> to shorten the range to replace if they are longer than 6 lines. Never truncate replacement. -->
+<range-to-replace>
+${rangeToReplace}
+</range-to-replace>
+<replacement>
+function deduplicate(arr: number[]): number[] {
+  const uniqueSet = new Set<number>();
+  const result: number[] = [];
+  for (const item of arr) {
+    if (!uniqueSet.has(item)) {
+      result.push(item);
+      uniqueSet.add(item);
+    }
+  }
+  return result;
+}
+</replacement>
+</change>`
+}
+
+/**
  * Encode the file contexts into a prompt for the model
  * @param fileContexts - The files to encode
  * @param includeLineNumbers - Whether to include line numbers in the prompt. Keeping this as a parameter to quantify improvements or regressions
@@ -325,83 +398,4 @@ function extractMatchingLineRange(
   }
 
   return lineRange.join('\n')
-}
-
-/**
- * UNUSED, I'm stripping out the algorithm for chain of thought to speed up the
- * changes and set baseline performance without the algorithms with the new
- * updated prompt. I'm also removing truncation.
- *
- * - Maybe don't focus on truncation because we don't really need it with line
- * ranges?
- * - This will additionally remove the distraction of the model needing to know
- * how to truncate the code, good for the demos
- *
- * Remember this algorithm is not parametrized, and is always included
- */
-const UNUSED_detailedPseudocodeAndTruncation = (
-  breadIdentifier: string,
-  includeLineNumbers: boolean,
-) => {
-  let editableFileContext: FileContext = {
-    filePathRelativeToWorkspace: 'duplicate.ts',
-    content: `function deduplicate(arr: number[]): number[] {
-  const result: number[] = [];
-  for (const item of arr) {
-    if (!result.includes(item)) {
-      result.push(item);
-    }
-  }
-  return result;
-};`,
-  }
-
-  if (includeLineNumbers) {
-    editableFileContext =
-      transformFileContextWithLineNumbers(editableFileContext)
-  }
-  const fileContextPromptPart = mapFileContextToXml(editableFileContext)
-
-  const rangeToReplace = extractMatchingLineRange(
-    editableFileContext.content,
-    'function deduplicate(arr: number[]): number[] {',
-    '};',
-  )
-
-  return `Given this file:
-${fileContextPromptPart}
-
-And the task to optimize the code, the following is an acceptable change to generate.
-<change>
-<path>duplicate.ts</path>
-<range-to-replace>
-${rangeToReplace}
-</range-to-replace>
-<description>
-Context: function
-Input: arr: array of numbers
-Output: array of numbers with duplicates removed
-Algorithm:
-initialize a set to track unique numbers uniqueSet
-initialize result array
-for each item in arr
-  if uniqueSet does not contain item
-    add item to uniqueSet
-    add item to result
-return result
-</description>
-<replacement>
-function deduplicate(arr: number[]): number[] {
-  const uniqueSet = new Set<number>();
-  const result: number[] = [];
-  for (const item of arr) {
-    if (!uniqueSet.has(item)) {
-      result.push(item);
-      uniqueSet.add(item);
-    }
-  }
-  return result;
-}
-</replacement>
-</change>`
 }

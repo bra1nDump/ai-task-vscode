@@ -7,6 +7,7 @@ export interface SessionConfiguration {
 }
 
 export interface SessionContext {
+  id: string
   configuration: SessionConfiguration
 
   /**
@@ -118,6 +119,7 @@ export async function startSession(): Promise<SessionContext> {
   )
 
   return {
+    id: new Date().toISOString(),
     configuration: {
       breadIdentifier: getBreadIdentifier(),
       includeLineNumbers: true,
@@ -137,6 +139,12 @@ export async function closeSession(
 ): Promise<void> {
   await sessionContext.markdownHighLevelFeedbackDocument.save()
   await sessionContext.markdownLowLevelFeedbackDocument.save()
+
+  /* Schedule closing the editors matching the documents
+     Communicate to the user that the editors will be closed */
+  setTimeout(() => {
+    vscode.window.visibleTextEditors[0].hide
+  }, 2000)
 
   // Dispose all subscriptions
   sessionContext.subscriptions.forEach(

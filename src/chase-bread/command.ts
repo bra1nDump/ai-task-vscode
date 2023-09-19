@@ -4,7 +4,7 @@ import {
   findAndCollectDotBreadFiles,
 } from 'document-helpers/file-search'
 import { openedTabs } from 'helpers/vscode'
-import { getBreadIdentifier } from 'session'
+import { SessionContext, getBreadIdentifier } from 'session'
 import { queueAnAppendToDocument } from 'helpers/vscode'
 import { closeSession, startSession } from 'session'
 import { startMultiFileEditing } from 'multi-file-edit/v1'
@@ -20,8 +20,17 @@ import { projectDiagnosticEntriesWithAffectedFileContext } from 'chase-bugs/diag
  * Parse the diffs
  * Apply them to the current file in place
  */
-export async function completeInlineTasksCommand() {
+export async function completeInlineTasksCommand(this: {
+  sessionRegistry: Map<string, SessionContext>
+}) {
+  if (this.sessionRegistry.size !== 0) {
+    console.log(`Existing session running, most likely a bug with @run + enter`)
+    return
+  }
+
   const sessionContext = await startSession()
+  this.sessionRegistry.set(sessionContext.id, sessionContext)
+
   void queueAnAppendToDocument(
     sessionContext.markdownHighLevelFeedbackDocument,
     '> 🐦: Bread is being chased by professional crumbs elliminators\n',
@@ -128,4 +137,5 @@ export async function completeInlineTasksCommand() {
   )
 
   await closeSession(sessionContext)
+  this.sessionRegistry.delete(sessionContext.id)
 }

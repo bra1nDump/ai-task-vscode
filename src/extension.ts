@@ -1,14 +1,21 @@
 import { completeInlineTasksCommand } from 'chase-bread/command'
+import { SessionContext } from 'session'
 import * as vscode from 'vscode'
 
 export function activate(context: vscode.ExtensionContext) {
   console.log('activating bread extension')
 
+  // Poor men's dependency injection
+  const sessionRegistry = new Map<string, SessionContext>()
+  const commandWithBoundSession = completeInlineTasksCommand.bind({
+    sessionRegistry,
+  })
+
   // Commands also need to be defined in package.json
   context.subscriptions.unshift(
     vscode.commands.registerCommand(
       'birds.completeInlineTasks',
-      completeInlineTasksCommand,
+      commandWithBoundSession,
     ),
   )
 
@@ -50,7 +57,7 @@ export function activate(context: vscode.ExtensionContext) {
         console.log('triggering command trough @run mention')
         /* Previously I was undoing the enter change,
          but it introduces additional jitter to the user experience */
-        void vscode.commands.executeCommand('birds.completeInlineTasks')
+        void commandWithBoundSession()
       }
     }),
   )
