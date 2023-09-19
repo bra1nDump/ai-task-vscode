@@ -5,6 +5,8 @@ import { AsyncIterableX, from, last } from 'ix/asynciterable'
 import { filter, map as mapAsync } from 'ix/asynciterable/operators'
 import { multicast } from './ix-multicast'
 import { promiseToResult } from './catchAsync'
+import { ChatCompletionChunk } from 'openai/resources/chat'
+import { Result, error, success } from './result'
 
 export type OpenAiMessage = OpenAI.Chat.Completions.ChatCompletionMessageParam
 
@@ -36,7 +38,9 @@ export interface LlmPartialResponse {
 export async function streamLlm(
   messages: OpenAiMessage[],
   logger: (text: string) => Promise<void>,
-): Promise<[AsyncIterableX<LlmPartialResponse>, AbortController]> {
+): Promise<
+  Result<[AsyncIterableX<LlmPartialResponse>, AbortController], Error>
+> {
   // Ensure the key is provided
   let key: string | undefined =
     process.env.OPENAI_API_KEY ??
@@ -49,14 +53,14 @@ export async function streamLlm(
     })
   }
   if (!key) {
-    throw new Error('No OpenAI API key provided')
+    return error(new Error('No OpenAI API key provided'))
   }
 
   /* Ensure we are not already running a stream,
      we want to avoid large bills if there's a bug and we start too many
      streams at once */
   if (isStreamRunning) {
-    throw new Error('Stream is already running')
+    return error(new Error('Stream is already running'))
   }
   isStreamRunning = true
 
@@ -78,14 +82,23 @@ export async function streamLlm(
   )
 
   if (streamResult.kind === 'failure') {
+    console.log(JSON.stringify(streamResult.error, null, 2))
     isStreamRunning = false
-    throw streamResult.error
+    return error(new Error(streamResult.error.message))
   }
   const stream = streamResult.value
 
   let currentContent = ''
   const simplifiedStream = from(stream).pipe(
-    mapAsync((part) => {
+    mapAsync((part: ChatCompletionChunk) => {
+      if (part.choices[0]?.finish_reason) {
+        /* We are done
+         * Refactor: Update the return type to represent different kinds of
+         * stream terminations.
+         */
+        console.log(part.choices[0]?.finish_reason)
+      }
+
       // Refactor: These details should have stayed in openai.ts
       const delta = part.choices[0]?.delta?.content
       if (!delta) {
@@ -136,5 +149,5 @@ export async function streamLlm(
       isStreamRunning = false
     })
 
-  return [multicastStream, stream.controller]
+  return success([multicastStream, stream.controller])
 }

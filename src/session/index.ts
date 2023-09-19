@@ -142,9 +142,11 @@ export async function closeSession(
 
   /* Schedule closing the editors matching the documents
      Communicate to the user that the editors will be closed */
-  setTimeout(() => {
-    vscode.window.visibleTextEditors[0].hide
-  }, 2000)
+  /* setTimeout(() => {
+   * hide is deprecated and the method suggested instead is to close active
+   * editor - not what I want :(
+       vscode.window.visibleTextEditors[0].hide()
+     }, 2000) */
 
   // Dispose all subscriptions
   sessionContext.subscriptions.forEach(

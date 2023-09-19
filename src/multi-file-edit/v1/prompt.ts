@@ -84,14 +84,21 @@ The task might be already partially completed, only make changes to address the 
 You will first output how you understand the task along with compact key ideas.
 Immediately after you will output changes.
 
+Changes format notes:
+Use </truncated> to shorten <range-to-replace> if it is longer than 5 lines. Never truncate replacement.
+
 Examples of your input and output pairs follow.
 
 ${[
-  typescriptHelloWorldParametrizationMultiFileExample(configuration),
+  typescriptHelloWorldParametrizationMultiFileExampleV2WithInsert(
+    configuration,
+  ),
   editMiddleOfAJsxExpressionEnsureIndentIsPreserved(configuration),
   truncationExample(configuration),
 ].join('\n\n')}
 `
+/* Add comments within the prompt more easily
+   .replace(/####.*####\n/g, '') */
 
 /*
 I think generating these examples from source code would be more reliable.
@@ -158,6 +165,7 @@ Call hello function with user name
 
   return `Input: 
 ${fileContextPromptPart1}
+
 ${fileContextPromptPart2}
 
 Output:
@@ -172,8 +180,8 @@ Use the updated function in \`main.ts\` to greet the user found in the \`USER_NA
 ${rangeToReplace1}
 </range-to-replace>${optionalAlgorithm1}
 <replacement>
-function hello(name: string) {
-    console.log(\`Hello \${name}\`);
+export function hello(name: string) {
+  console.log(\`Hello \${name}\`);
 }
 </replacement>
 </change>
@@ -182,6 +190,74 @@ function hello(name: string) {
 <range-to-replace>
 ${rangeToReplace2}
 </range-to-replace>${optionalAlgorithm2}
+<replacement>
+import { hello } from './helper';
+const name = process.env.USER_NAME || 'World';
+hello(name);
+</replacement>
+</change>
+`
+}
+
+const typescriptHelloWorldParametrizationMultiFileExampleV2WithInsert = (
+  configuration: SessionConfiguration,
+) => {
+  const breadIdentifier = configuration.breadIdentifier
+  let greeterFileContext: FileContext = {
+    filePathRelativeToWorkspace: 'src/greet.ts',
+    content: ``,
+  }
+
+  let mainFileContext: FileContext = {
+    filePathRelativeToWorkspace: 'src/main.ts',
+    content: `// @${breadIdentifier} Refactor by extracting and parametrizing a greeting function into a helper file
+console.log('Hello World');
+`,
+  }
+
+  if (configuration.includeLineNumbers) {
+    greeterFileContext = transformFileContextWithLineNumbers(greeterFileContext)
+    mainFileContext = transformFileContextWithLineNumbers(mainFileContext)
+  }
+
+  const greeterTargetRange = extractMatchingLineRange(
+    greeterFileContext.content,
+    '',
+    '',
+  )
+
+  const rangeToReplace2 = extractMatchingLineRange(
+    mainFileContext.content,
+    `// @${breadIdentifier} Refactor by extracting and parametrizing a greeting function into a helper file`,
+    `console.log('Hello World');`,
+  )
+
+  return `Input: 
+${mapFileContextToXml(mainFileContext)}
+
+${mapFileContextToXml(greeterFileContext)}
+
+Output:
+<task>
+Move greeting code from \`main.ts\` to \`greeter.ts\`. Parametrize the greeting function to accept a name to be greeted. Use the new function in \`main.ts\` to greet the user found in the \`USER_NAME\` environment variable defaulting to \`World\`.
+</task>
+
+<change>
+<path>src/greet.ts</path>
+<range-to-replace>
+${greeterTargetRange}
+</range-to-replace>
+<replacement>
+export function hello(name: string) {
+    console.log(\`Hello \${name}\`);
+}
+</replacement>
+</change>
+<change>
+<path>src/main.ts</path>
+<range-to-replace>
+${rangeToReplace2}
+</range-to-replace>
 <replacement>
 import { hello } from './helper';
 const name = process.env.USER_NAME || 'World';
@@ -293,7 +369,7 @@ function deduplicate(arr: number[]): number[] {
     }
   }
   return result
-}`,
+};`,
   }
 
   if (configuration.includeLineNumbers) {
@@ -305,8 +381,12 @@ function deduplicate(arr: number[]): number[] {
   const rangeToReplace = extractMatchingLineRange(
     editableFileContext.content,
     'function deduplicate(arr: number[]): number[] {',
-    '}',
+    '};',
   )
+
+  /* <--! Use </truncated> to shorten the range to replace if they are longer
+     than 6 lines. Never truncate replacement.
+     --> */
 
   return `Input:
 ${fileContextPromptPart}
@@ -319,7 +399,6 @@ Key ideas: Let's use a set to keep track of unique items.
 
 <change>
 <path>duplicate.ts</path>
-<--! Use </truncated> to shorten the range to replace if they are longer than 6 lines. Never truncate replacement. -->
 <range-to-replace>
 ${rangeToReplace}
 </range-to-replace>

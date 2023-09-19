@@ -25,4 +25,8 @@
         "node_modules",
         "**/.bread"
     ],
+    "[markdown]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
+    },
 }

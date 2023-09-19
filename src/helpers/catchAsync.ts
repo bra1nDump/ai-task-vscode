@@ -1,3 +1,5 @@
+import { APIError } from 'openai/error'
+
 export type Result<Value, Error> =
   | { kind: 'success'; value: Value }
   | { kind: 'failure'; error: Error }
@@ -10,13 +12,13 @@ export function failure<Value, Error>(error: Error): Result<Value, Error> {
   return { kind: 'failure', error }
 }
 
-export async function promiseToResult<Value, Error = string>(
+export async function promiseToResult<Value>(
   promise: Promise<Value>,
-): Promise<Result<Value, Error>> {
+): Promise<Result<Value, APIError>> {
   try {
     const value = await promise
     return success(value)
   } catch (error) {
-    return failure(error as Error)
+    return failure(error as APIError)
   }
 }
