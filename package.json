@@ -1,11 +1,11 @@
 {
-  "name": "birds",
-  "displayName": "birds",
+  "name": "ai-task",
+  "displayName": "AI Task - Multifile edits",
   "publisher": "bra1nDump",
-  "description": "Leave breakcrumbs across the codebase and have llm type for you inline",
-  "version": "0.0.7",
+  "description": "Leave comments across your codebase with @task mentions and have AI address them, even if it requires multi-file changes",
+  "version": "0.0.9",
   "license": "Business Source License 1.1",
-  "icon": "icon-v1.png",
+  "icon": "icon-v2.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/bra1nDump/bread"
@@ -23,22 +23,22 @@
   "contributes": {
     "commands": [
       {
-        "command": "birds.completeInlineTasks",
+        "command": "ai-task.completeInlineTasks",
         "title": "Task String AI: Complete inline tasks"
       }
     ],
     "configuration": {
       "properties": {
-        "birds.taskMentionIdentifier": {
+        "ai-task.taskMentionIdentifier": {
           "type": "string",
           "default": "task",
           "description": "Override the keyword the LLM uses when searching for its task"
         },
-        "birds.openaiApiKey": {
+        "ai-task.openaiApiKey": {
           "type": "string",
           "description": "OpenAI API key"
         },
-        "birds.additionalExcludedDirectories": {
+        "ai-task.additionalExcludedDirectories": {
           "type": "array",
           "default": [],
           "description": "Directories to exclude when searching for files to pass to the prompt"

@@ -1,6 +1,6 @@
 Given this inputted repeatedly produced correct output.
 
-Birds failed twice and on the third try succeeded
+ai-task failed twice and on the third try succeeded
 Fourth time also succeeded, but selected too much context and truncated output
 
 It will also try to change other functions. It would repeatedly target the entire function as a replacement target

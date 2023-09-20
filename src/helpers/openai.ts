@@ -44,7 +44,7 @@ export async function streamLlm(
   // Ensure the key is provided
   let key: string | undefined =
     process.env.OPENAI_API_KEY ??
-    vscode.workspace.getConfiguration('birds').get('openaiApiKey')
+    vscode.workspace.getConfiguration('ai-task').get('openaiApiKey')
   if (typeof key !== 'string') {
     // Give the user a chance to enter the key
     key = await vscode.window.showInputBox({
@@ -139,8 +139,7 @@ export async function streamLlm(
     .catch((error: Error) => {
       console.error(error)
       void logger(
-        `\n# [error occurred in stream]:\n\`\`\`md\n${
-          error as unknown as any
+        `\n# [error occurred in stream]:\n\`\`\`md\n${error as unknown as any
         }\`\`\`\n`,
       )
       return undefined

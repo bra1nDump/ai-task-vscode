@@ -37,13 +37,13 @@ Commit hash e22b341a115ef540287d120695682205aec96da5
 
 Commit hash 0c08816c64bfced3f7564a7c5491be127bf184b4
 
-## birds repository, branch plan-refactor-demo-checkpoin
+## ai-task repository, branch plan-refactor-demo-checkpoin
 
 ### Task - Refactor a type and automatically fixed compilation errors
 
 Commit hash 5fd3413edf64c1fb2d68ed0e9b2cad1d193ae5b9
 
-## [Demo worthy] birds repository, branch use-case-refactor-function-parameter-to-be-passed-as-config-object
+## [Demo worthy] ai-task repository, branch use-case-refactor-function-parameter-to-be-passed-as-config-object
 
 ### Task - Refactor a function to accept a config object
 
@@ -65,7 +65,7 @@ I think what I can start with is keeping bookmarks of branches where my simple u
 
 Don't seem like a very nice thing to have. I estimate the time to set it up to be around two days.
 Prompt food also has nice interface where you can run it from within javascript (it itself is written in typescript)
-https://promptfoo.dev/docs/usage/node-package
+<https://promptfoo.dev/docs/usage/node-package>
 
 What it will basically provide me is iterating over a list of tests where the test variable is the test name.
 

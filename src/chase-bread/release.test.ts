@@ -4,7 +4,7 @@ import * as vscode from 'vscode'
 suite('VSCode Extension Command Tests', function () {
   // Increased timeout since these are using LLM an are thus slow
   this.timeout(60_000)
-  test('birds.completeInlineTasks command', async () => {
+  test('ai-task.completeInlineTasks command', async () => {
     /*
     Assuming there's a file called "helloWorld.ts" in the root workspace:
 
@@ -21,15 +21,15 @@ suite('VSCode Extension Command Tests', function () {
 
     const releaseCommand = await vscode.commands
       .getCommands(true)
-      .then((commands) => commands.includes('birds.completeInlineTasks'))
+      .then((commands) => commands.includes('ai-task.completeInlineTasks'))
 
     assert.ok(
       releaseCommand,
-      'Command "birds.completeInlineTasks" is not registered.',
+      'Command "ai-task.completeInlineTasks" is not registered.',
     )
 
-    await vscode.commands.executeCommand('birds.completeInlineTasks')
-    console.log('Command "birds.completeInlineTasks" finished running')
+    await vscode.commands.executeCommand('ai-task.completeInlineTasks')
+    console.log('Command "ai-task.completeInlineTasks" finished running')
 
     const helloWorldUri = vscode.Uri.joinPath(
       vscode.workspace.workspaceFolders![0].uri,

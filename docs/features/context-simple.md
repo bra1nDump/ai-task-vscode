@@ -86,7 +86,7 @@ class ShellContextProvider implements ContextProvider<PlainBlob> {
 
   async resolve(withParameter: string): Promise<ContextItem<PlainBlob>> {
     // Run the shell command
-    const terminal = vscode.window.createTerminal('birds')
+    const terminal = vscode.window.createTerminal('ai-task')
     terminal.sendText(withParameter)
     // ?? No idea how to get the response from the terminal! I think it is opend as a text editor so we can read it from there ??
   }
@@ -125,7 +125,7 @@ type Session = {
 # Archive
 
 The rough idea is I want to create some sort of compilation step that I will use later on to compile bread scripts
-For now I want to start using this idea by compiling a fake script that simply references @<context provider expression>
+For now I want to start using this idea by compiling a fake script that simply references `@<context provider expression>`
 and has a written task of the goal that needs to be accomplished.
 An example of a script for bread chasing
 
@@ -149,7 +149,7 @@ I would say yes, because this is closer to what other projects are doing and thi
 
 Consider this script as a replacement for bread chasing command.
 
-```
+```txt
 # This is a context provider will pull all the files with @bread mentions. This provider will also erase itself from the prompt resulting from this script.
 @files-with-bread
 

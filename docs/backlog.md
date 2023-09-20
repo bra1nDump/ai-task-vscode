@@ -15,6 +15,8 @@
 
 # Next up
 
+- Rebrand - ai-task, to show the extension on video update image
+  - New Icon, new identifier, new name
 - Remove content and just keep line numbers as ranges (speed) [1h]
 - Create a file if it's not there yet (cool looking) [1h]
 - Suggest respecting original indentation [20min]
@@ -33,9 +35,9 @@
 
 ## Promote, Recruit Cofounders - REALLY DON'T WANT TO DO THIS, BUT THIS IS ESSENTIAL
 
+- Contact the embeddings person from habr, contact vlad
 - Manually go over popular repositories in the space vscode extensions find top contributors
 - Send them an email from a personal email sending the GitHub page + Discord
-- Contact the embeddings person from habr, contact vlad
 
 # Bread expressions
 
@@ -66,12 +68,15 @@
 
 ## UX
 
+- Onboarding
 - Add play button to @bread comments - instead of @run
 - Delay scroll into view until there's only a single match ? I thought it would already do that
 - Indentation should ideally be taken into account when generating diffs to match the indentation preferred by the user. This is low priority since type script does not care about it
 - Preview also scrolls up all the time as we are re-writing the document. I wonder if we were to append to the document instead of write to fs scroll would be preserved
 - Preview for the high level oftentimes flickers. Not sure what causes itb but try larger outputs
   - we rewriting the entire file. Workaround documented in append function
+- Provide token count on the input and provide approximate price
+- Add discord server link to hight level output
 
 ## [Partially done with multi-file edit, focus on other things for now] Type at cursor - allows me to replace continue for personal use
 
@@ -82,7 +87,7 @@
 
 ## Record Type at cursor
 
-## Developer experience working on Birds
+## Developer experience working on ai-task
 
 - Prevent starting a debug session if compilation failed. It's really annoying to accidentally tried debugging a simple compile error during runtime and not knowing about the compile error
 - Logging is still kinda broken
@@ -100,21 +105,8 @@
 This is a complex task that will require rewriting roughly 1/3 of the code base if not more
 Will function calling help me getter faster? I would not need to deal with Xml parsing, but I will have to deal with new apis and parsing partial JSON
 
-## Bug fixes - need to have editor opened for this to work currently
-
-- Run tsc oursleves instead of relying on the language server
-  - Problem matcher is super simple, so just re-implement it and run tsc
-  - tsc is 40mb, lets not bundle typescript into the extnesion :D
-  - <https://chat.openai.com/share/f1d8b474-6d84-4c2a-86f6-91a5a3317aeb>
-- Only provide errors, not warnings from the compiler
-- Provide a better prompt for fixing refactors. Example:
-- You should not revert the refactor of plan: string back to string[] to fix the problem
-- You should output only 3 ways you can think of fixing the problem
-- Keep in mind that when something breaks due to a refactor, you should usually avoid trying to fix the problem right there and think about implications of the refactor and how to fix the problem in a way that will be inline with what the refactor was trying to achieve
-
 ## Uncategorized
 
-- Provide token count on the input and provide approximate price
 - Improve new line character usage across the code base. This will suck because we print many logs relying on \n. For now I will just fix the code that has to do with line splitting for range calculation because that definitely needs to be robust.
 - Create a company and apply for open eye credits
 

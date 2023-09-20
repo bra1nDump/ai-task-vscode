@@ -2,7 +2,10 @@
     "default": true,
     "first-line-h1": false,
     "single-h1": false,
-    "line-length": false
+    "line-length": false,
+    "no-space-in-code": false,
+    "no-bare-urls": false,
+    "no-alt-text": false
     // Unfortunately the rule of zero lines below is not respected :(
     // "blanks-around-headings": {
     //     "lines_below": 0,

@@ -75,7 +75,7 @@ export async function findAndCollectDotBreadFiles(
  */
 
 async function safeWorkspaceQueryAllFiles(): Promise<vscode.Uri[]> {
-  const config = vscode.workspace.getConfiguration('birds')
+  const config = vscode.workspace.getConfiguration('ai-task')
 
   const defaultExcludedDirectories = [
     'node_modules',

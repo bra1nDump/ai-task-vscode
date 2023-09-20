@@ -42,7 +42,7 @@ export async function completeInlineTasksCommand(this: {
     await findAndCollectBreadMentionedFiles(breadIdentifier)
   if (fileUrisWithBreadMentions.length === 0) {
     void vscode.window.showErrorMessage(
-      `No bread found, birds are getting hungry. Remember to add @${breadIdentifier} mention to at least one file in the workspace.`,
+      `No bread found, ai-task are getting hungry. Remember to add @${breadIdentifier} mention to at least one file in the workspace.`,
     )
     await closeSession(sessionContext)
     return
@@ -101,11 +101,10 @@ export async function completeInlineTasksCommand(this: {
   Range:
   - Line start ${diagnostic.range.start.line}
   - Line end ${diagnostic.range.end.line}
-  ${
-    diagnostic.relatedInformation
-      ?.map((info) => `Related info: ${info.message}`)
-      .join('\n') ?? ''
-  }
+  ${diagnostic.relatedInformation
+          ?.map((info) => `Related info: ${info.message}`)
+          .join('\n') ?? ''
+        }
   `,
       ]
     })
@@ -133,7 +132,7 @@ export async function completeInlineTasksCommand(this: {
 
   await queueAnAppendToDocument(
     sessionContext.markdownHighLevelFeedbackDocument,
-    '\n\n> Your bread was appreciated by the birds, pleasure doing business with you - Bird representative\n',
+    '\n\n> Your bread was appreciated by the ai-task, pleasure doing business with you - Bird representative\n',
   )
 
   await closeSession(sessionContext)

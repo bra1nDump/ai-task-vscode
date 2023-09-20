@@ -1,49 +1,45 @@
-# Birds - bread and code loving government robots
+# AI-Task VSCode Extension
 
-- Have LLMs make multi-file edits that don't suck
-  - Fast: Applies patches instead of regenerating entire contents
-  - Automatic: Detects ranges in the file that should be updated
-- Instructions in-line instead of switching to a sidebar chat or entering in a popup
-- Directory specific context files like `components/team-patterns.birds.md`
-- What you see is what you get. Everything is in the file system making it easy to share and version control
+## Have LLMs make multi-file edits that don't suck
 
-# Demo (Click to play YouTube video)
+Features
 
-[![Demo showing multi-file edit + bulk compile error fixing](https://img.youtube.com/vi/t2evckJtRgM/0.jpg)](https://youtu.be/t2evckJtRgM)
+- Automatic: Detects ranges in the file that should be updated
+- Multi-file: Can edit/create multiple files at once
+- Fast: Applies patches instead of regenerating entire file contents
+- Fix compile errors: Fix trivial errors in bulk resulting from a refactor
 
-# Coming Soon
+# How to use it
 
-- Stream the changes as they come in so you can see the changes as they happen
-- Automatically follow compile errors and fix them
-- Creating a language server for auto complete in bread comments and files
-- Create context providers like @url some-project.com to provide context to the birds
+- Add a comment like `// @task split the function below into a helper and the main function, move helper to a new file`
+- You can add multiple tasks across multiple files
+- To execute on the task type `@run` followed by a space ` `
+
+![](./demo.gif)
+[A complete video is on YouTube](https://youtu.be/wD8ZdIJ9p0Y)
+
+# Connect with the team
+
+[Join the Discord to ask questions, or just lurk :D](https://discord.gg/D8V6Rc63wQ)
+
+## Coming soon
+
+- Creating a language server for auto complete in @task comments and files
+- Support creating brand new files and running shell commands
+- Context providers like @url "docs.apple.com" or @semantic-search "function that adds line number to a file"
 - Create tools, for example /tsc that llm can choose to run to gather more context or accomplish side effects
 - Using VSCode Notebook as the chat interface
 
-# Why birds?
-
-We all know that birds are government robots. And since clearly military is 'always' the best at everything, we have decided to use birds to help us with our code. I would argue the government did make one mistake when programming birds - they made them love breadcrumbs.
-
-Sprinkle some @bread crumbs around your code base to get the birds attention. Birds will then start to work on your code. They will make changes to your code and leave comments on the changes they made. You can then decide if you want to keep the changes or not.
-
-# Using the extension
-
-## High level
-
-- Leave comments with instructions mentioning `@bread` to include those files for potential edits
-- Instructions in `<directory>/*.birds.md` are included when files in the subdirectory is `@bread`ed
-- Is a side effect of the rule above, `workspace/*.birds.md` is included with every request
-
-## Try it out
-
-- Add a comment with instructions on how you want to modify the code, mention `@bread` to get the birds attention
-- Example comment: `// @bread add a parameter to this function and fix functions using it`
-- **Hit enter two times** after the comment or you can use the command birds.completeInlineTasks to invite the birds to munch on your code
-- Multi file editing is supported out of the box, just make sure you leave `@bread` somewhere in the files you want to edit
+[More complete list of upcoming features](./docs/backlog.md)
 
 # Development
 
-> :warning: **License restricting commercial distribution**: This project currently uses Business Source License 1.1. I currently don't know where I want to take this project, so I'm using this license for the time being to protect myself from someone else taking it and making money off of it. If you want to use this project for commercial purposes, please contact me by email in my profile.
+## Why consider contributing?
+
+- [Bets setting this project aside from competition](./docs/bets.md)
+- In the case this becomes a company **your shares will be determined using LLM value scoring of your commit history, on the same terms as anyone elses who contributed**. The algorithm is not set in stone, this is more of a promise to implement it at some point [equity splitting](./docs/equity.md).
+
+> :warning: **License restricting commercial distribution**: This project currently uses Business Source License 1.1. I currently don't know where I want to take this project, so I'm using this license for the time being to protect it from people/companies freely taking code from it and making money off of it. If you want to use this project for commercial purposes, please contact me by email in my github profile or though discord. I can give you a commercial license for free, or licence a piece of code you are interested in specifically. I'm open to other suggestions as well.
 
 ## Running
 
@@ -51,30 +47,6 @@ Sprinkle some @bread crumbs around your code base to get the birds attention. Bi
 npm install
 ```
 
-As this is a VSCode extension, you need to run it from within VSCode.
-
-Open the project in VSCode and open debug view (Ctrl+Shift+D).
-
-To run the extension: Then select `Extension` and press `F5` or hit play.
-To run tests: Then select `Tests` and press `F5` or hit play. If you only want to run a single test suite, within the test suite files use mocha `suite.only` or `test.only`
-
-**NOTE** Sometimes currently the watch tasks seemed to fail, but I'm pretty sure I'm just overriding the out folder ..., anyways it sometimes causes the tests to not be found in out folder
-
-## Linting
-
-Using ESLint
-And prettier as an ESLint plugin <https://github.com/prettier/eslint-plugin-prettier>
-
-# Publishing
-
-Exntension <https://marketplace.visualstudio.com/items?itemName=bra1ndump.birds>
-
-Publisher url <https://marketplace.visualstudio.com/manage/publishers/bra1ndump> Run vsce publish from the project root. It will ask for authentication token which you can get from azure here <https://dev.azure.com/bra1ndump/_usersSettings/tokens>. You can't access as the old one, just generate the new one (look at the scopes requested on the old one. Market Place > Manage).
-Docs: <https://code.visualstudio.com/api/working-with-extensions/publishing-extension>
-
-Had to place icon in the root of the project, downsized using free service: <https://imresizer.com>
-
-## Ideas
-
-See [docs](./docs/) for idea documentation.
-See [diff](src/diff/docs/) for ideas on how to create patches using llm.
+- Open the project in VSCode and open debug view (Ctrl+Shift+D).
+- To run the extension: Then select `Sandbox` and press `F5` or hit play.
+- To run tests: Then select `Tests` and press `F5` or hit play. If you only want to run a single test suite, within the test suite files use mocha `suite.only` or `test.only`

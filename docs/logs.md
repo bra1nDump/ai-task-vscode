@@ -11,18 +11,21 @@
 ===============================================================================
  Language            Files        Lines         Code     Comments       Blanks
 ===============================================================================
- JavaScript              2          136           85           29           22
+
+JavaScript              2          136           85           29           22
  JSON                    2          111          111            0            0
  Shell                   1            2            1            1            0
  Plain Text              1            4            0            4            0
  TypeScript             37         4654         3063         1122          469
 -------------------------------------------------------------------------------
- Markdown               22         2048            0         1546          502
+
+Markdown               22         2048            0         1546          502
  |- JSON                 1            9            9            0            0
  |- TypeScript           2          107           73           28            6
  (Total)                           2164           82         1574          508
 ===============================================================================
- Total                  65         6955         3260         2702          993
+
+Total                  65         6955         3260         2702          993
 ===============================================================================
 
 # September 13 - Trying out on a real project, result satisfactory, contemplating about prompt benchmarking
@@ -185,7 +188,7 @@ Update selections looks actually pretty self contained,
 
 It has many abstractions already, but whats more important it has 2 really strong vscode super experts + open source experts.
 Approach - take this one feature - range updater out of the repo.
-Later suggest factoring this out into its own package, and factor out other abstractions that are needed by both birds and cursorless.
+Later suggest factoring this out into its own package, and factor out other abstractions that are needed by both ai-task and cursorless.
 Cursorless is a good name actually - it can be cursorless-voice and simply cursorless - the llm way of editing your codebase.
 Voice / precise mode will deal with referencing tokens /
 Create a separate project within the cursorless organization

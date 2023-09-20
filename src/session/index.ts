@@ -102,7 +102,7 @@ export async function startSession(): Promise<SessionContext> {
   void vscode.window.withProgress(
     {
       location: vscode.ProgressLocation.Notification,
-      title: 'Birds are chasing your bread',
+      title: 'ai-task are chasing your bread',
       cancellable: true,
     },
     async (_progress, cancellationToken) => {
@@ -238,7 +238,7 @@ async function createAndOpenEmptyDocument(
    for the session instead of just the bread */
 export function getBreadIdentifier(): string {
   const breadIdentifierFromWorkspace = vscode.workspace
-    .getConfiguration('birds')
+    .getConfiguration('ai-task')
     .get('taskMentionIdentifier')
 
   /* We are using the environment override for simplified manual and automated

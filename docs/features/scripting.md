@@ -72,11 +72,11 @@ export async function run(userAndPrimitiveScripts) {
 ```
 
 - More advanced users can set up typescript, or I can provide bootstrapping tool. They can extend users and primitive script by types
-- They can also import the @types/birds package to get autocomplete and type safety for the system primitives
+- They can also import the @types/ai-task package to get autocomplete and type safety for the system primitives
 
 # Technical challenges
 
-# Run scripts with interpreter within VSCode,
+# Run scripts with interpreter within VSCode
 
 - Can I make the script debugable then?
 - I think there's a flag that you can pass to debug extensions. I have no idea what this flag is for VSCode, or how to give it the files where you can accept breakpoints in.

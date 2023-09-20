@@ -12,7 +12,7 @@
     "typescript.tsc.autoDetect": "off",
     // Setup python path for IntelliSense
     "python.defaultInterpreterPath": "server/.venv/bin/python3",
-    "birds.additionalExcludedDirectories": [
+    "ai-task.additionalExcludedDirectories": [
         "prompt-engineering",
         "testing-sandbox",
         "docs"

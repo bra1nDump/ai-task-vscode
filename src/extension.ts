@@ -14,7 +14,7 @@ export function activate(context: vscode.ExtensionContext) {
   // Commands also need to be defined in package.json
   context.subscriptions.unshift(
     vscode.commands.registerCommand(
-      'birds.completeInlineTasks',
+      'ai-task.completeInlineTasks',
       commandWithBoundSession,
     ),
   )
@@ -25,7 +25,7 @@ export function activate(context: vscode.ExtensionContext) {
      * inserts - if the previous line was a list item
      */
     /* vscode.commands.registerCommand(
-         'birds.onEnterKey',
+         'ai-task.onEnterKey',
          (textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) => {
            // Insert a line of text at the current cursor position
            const position = textEditor.selection.active
