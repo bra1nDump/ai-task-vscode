@@ -29,7 +29,12 @@
 			"request": "launch",
 			"args": [
 				"${workspaceFolder}/../github-search-join",
-				"--extensionDevelopmentPath=${workspaceFolder}"
+				"--extensionDevelopmentPath=${workspaceFolder}",
+				// Remove all extensions that distract from recording the video, but keep github copilot for tab completion - its a feature when creating the task!
+				"--disable-extension",
+				"eamodio.gitlens",
+				"--disable-extension",
+				"pokey.cursorless"
 			],
 			"envFile": "${workspaceFolder}/.env",
 			"outFiles": [

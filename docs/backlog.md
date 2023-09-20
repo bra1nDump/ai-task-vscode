@@ -15,19 +15,18 @@
 
 # Next up
 
-## Record multi file edit
+- Remove content and just keep line numbers as ranges (speed) [1h]
+- Create a file if it's not there yet (cool looking) [1h]
+- Suggest respecting original indentation [20min]
 
-- Take notes on what videos you want to record. Record three while you do the following
-
-Things to showcase
-
-- Multi file edit
-- Simple compile error fix after a data structure factor
-- Referencing project wide context
+## Record 3 more takes on the main video [2hr + 2hr editing] NO DAVINCI RESOLVE
 
 ## Release - REALLY DON'T WANT TO DO THIS, BUT THIS IS ESSENTIAL
 
 - Make repository public on GitHub
+- Re-brand to ai-task
+  - .task.context ?
+- Add a gif to the readme
 - Create issues for some of my todos here
 - Style discord server, add basic documentation
 - Ping friends asking to try it
@@ -36,15 +35,7 @@ Things to showcase
 
 - Manually go over popular repositories in the space vscode extensions find top contributors
 - Send them an email from a personal email sending the GitHub page + Discord
-
-## Type at cursor - allows me to replace continue for personal use
-
-- For example current model does not support inserts only some sort of replacement
-- The simplest version is to keep reusing the multi file edit prompt and simply instruct to replace a single line with the comment /run
-- We can also get rid of the planning stage (maybe we should also inject at using /plan directive)
-- Maybe also take into account the @bread files + diagnostics
-
-## Record Type at cursor
+- Contact the embeddings person from habr, contact vlad
 
 # Bread expressions
 
@@ -63,6 +54,7 @@ Things to showcase
 ## Targeting
 
 - For example if I only want to modify the given function, specify @function, if I only want to modify the following block, specify @block
+- Show a similar preview as copilot does
 - This would be useful for inline generations
 
 ## Language server draft for @bread context, and target ranges @function, @block
@@ -70,23 +62,25 @@ Things to showcase
 - Reuse the context provider definitions to provide autocomplete
 - Find an existing language server that does something similar
 
-# Prompt engineering
-
-- Probably unifying multi file patch generation and task extraction into a single prompt is the most impactful things for multi file edits
-- One of the issues I have experienced is the task extraction is not very reliable. Maybe I should manually extract a task using the @crust comments and provide it in a separate message to the model to highlight its importance.
-- @crust or @bread are not very descriptive of what they re for. Maybe I should use @task instead
-
 # Later
 
 ## UX
 
-- Add a comment with the line saying you can use command+z to undo the change
+- Add play button to @bread comments - instead of @run
 - Delay scroll into view until there's only a single match ? I thought it would already do that
-- If you cancel the execution, the preview should clothes, also once the execution finishes the preview should close also
 - Indentation should ideally be taken into account when generating diffs to match the indentation preferred by the user. This is low priority since type script does not care about it
 - Preview also scrolls up all the time as we are re-writing the document. I wonder if we were to append to the document instead of write to fs scroll would be preserved
 - Preview for the high level oftentimes flickers. Not sure what causes itb but try larger outputs
   - we rewriting the entire file. Workaround documented in append function
+
+## [Partially done with multi-file edit, focus on other things for now] Type at cursor - allows me to replace continue for personal use
+
+- For example current model does not support inserts only some sort of replacement
+- The simplest version is to keep reusing the multi file edit prompt and simply instruct to replace a single line with the comment /run
+- We can also get rid of the planning stage (maybe we should also inject at using /plan directive)
+- Maybe also take into account the @bread files + diagnostics
+
+## Record Type at cursor
 
 ## Developer experience working on Birds
 
@@ -118,29 +112,26 @@ Will function calling help me getter faster? I would not need to deal with Xml p
 - You should output only 3 ways you can think of fixing the problem
 - Keep in mind that when something breaks due to a refactor, you should usually avoid trying to fix the problem right there and think about implications of the refactor and how to fix the problem in a way that will be inline with what the refactor was trying to achieve
 
-### Problem matchers
-
-Use tsc directly with a problem matcher to get the errors?
-How to get problem matcher to work?
-Can I run tsc using a javascript, so from the extension code itself? .. probably a bad idea
-<https://github.com/microsoft/vscode/blob/41e940f76f5deda197bc5930b044c55607ba1cbc/extensions/typescript-language-features/package.json#L1520-L1550>
-
 ## Uncategorized
 
 - Provide token count on the input and provide approximate price
 - Improve new line character usage across the code base. This will suck because we print many logs relying on \n. For now I will just fix the code that has to do with line splitting for range calculation because that definitely needs to be robust.
-- Typing @run should start executing
-- Add play button to @bread comments
-- Explore UIs
-  - stop button up top
-  - notebook interface
-- Show input where you can augment the instructions with anything one off
-- Workspace changes
-  - Adding a new file
 - Create a company and apply for open eye credits
 
 # Done
 
+- If you cancel the execution, the preview should close, also once the execution finishes the preview should close also
+  - Not sure if its quite possible, or desired, done
+
+## Record multi file edit
+
+- Take notes on what videos you want to record. Record three while you do the following
+
+Things to showcase
+
+- Multi file edit
+- Simple compile error fix after a data structure factor
+- Referencing project wide context
 - Were not actually that useful :D I should probably record new ones and actually watch how they come out
   - Watch all the demo videos you have recorded so far
   - Look through some examples of the generations that were successful and worthy responses

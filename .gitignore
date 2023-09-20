@@ -11,5 +11,6 @@ node_modules
 
 # Ignore all videos - they are too big
 **/*.m4v
+**/*.mov
 **/*.mkv
 **/*.wfp
