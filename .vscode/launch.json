@@ -86,6 +86,7 @@
 		},
 		/////////////////////// Unit tests ///////////////////////
 		// Docs: https://code.visualstudio.com/api/working-with-extensions/testing-extension
+		// test/runTest.ts has the same configuration, but is for running tests in the terminal / CI
 		{
 			"name": "Tests",
 			"type": "extensionHost",

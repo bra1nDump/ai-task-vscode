@@ -1,13 +1,9 @@
-# AI-Task VSCode Extension
+# LLMs multi-file edits that doesn't suck
 
-## Have LLMs make multi-file edits that don't suck
-
-Features
-
-- Automatic: Detects ranges in the file that should be updated
-- Multi-file: Can edit/create multiple files at once
-- Fast: Applies patches instead of regenerating entire file contents
-- Fix compile errors: Fix trivial errors in bulk resulting from a refactor
+- **Automatic**: Detects ranges in the file that should be updated
+- **Multi-file**: Can edit/create multiple files at once
+- **Fast**: Applies patches instead of regenerating entire file contents
+- **Fix compile errors**: Fix trivial errors in bulk resulting from a refactor
 
 # How to use it
 

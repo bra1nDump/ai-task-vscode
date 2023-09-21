@@ -40,11 +40,10 @@ suite('VSCode Extension Command Tests', function () {
     const helloWorldDocumentText = helloWorldDocument.getText()
     assert.equal(
       helloWorldDocumentText,
-      `// @bread Parametrize this function with a name
-export function helloWorld(name: string) {
+      `export function helloWorld(name: string) {
   console.log(\`Hello \${name}!\`)
 }
-  `,
+`,
     )
   })
 })

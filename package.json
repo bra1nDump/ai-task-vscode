@@ -48,15 +48,16 @@
   },
   "keybindings": [],
   "scripts": {
-    "webpack:base": "webpack --config ./configurations/webpack.config.js",
+    "webpack:base": "webpack --config configurations/webpack.config.js",
     "webpack:watch": "npm run webpack:base -- --watch",
     "bundle:prod": "npm run webpack:base -- --mode production --devtool false",
     "package": "./node_modules/.bin/vsce package --ignoreFile configurations/.vscodeignore --no-dependencies --allow-star-activation",
-    "publish": "npm run package && echo 'add testing - currently broken' && npm run package && ./node_modules/.bin/vsce publish --allow-star-activation",
+    "publish": "npm run package && npm run test && npm run package && ./node_modules/.bin/vsce publish --allow-star-activation",
     "install-local": "node scripts/install-local.mjs 'code-insiders'",
     "tsc": "tsc -p . --outDir out",
     "watch-tsc": "tsc -p . -w --outDir out",
-    "lint": "eslint . --ext ts --fix",
+    "lint": "eslint . --config configurations/.eslintrc.js --ext ts --fix",
+    "test": "node out/test/runTest.js",
     "codegen:prompt-checkpoints": "MULTI_FILE_PROMPT_VERSION=v2-unified-task-changes node ./out/script-generate-prompt-checkpoint.js"
   },
   "devDependencies": {
@@ -69,6 +70,7 @@
     "@typescript-eslint/parser": "^6.4.0",
     "@vscode/test-electron": "^2.3.2",
     "@vscode/vsce": "^2.20.1",
+    "dotenv": "^16.3.1",
     "eslint": "^8.41.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-comment-length": "^1.6.1",

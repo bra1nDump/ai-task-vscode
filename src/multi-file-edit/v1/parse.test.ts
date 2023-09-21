@@ -110,7 +110,7 @@ hello(name);
     assert.ok(patch)
     const firstChange = patch.changes[0].change
 
-    assert.equal(firstChange.description?.length, 0)
+    assert.equal(firstChange.description, undefined)
   })
 
   // We don't want the tag to stream in and get shown to the user
