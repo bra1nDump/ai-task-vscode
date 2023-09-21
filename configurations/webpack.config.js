@@ -6,11 +6,11 @@
 const resolve = require("path").resolve;
 const fs = require("fs");
 
-///
-/// Generate the alias object for all the folders in the 'src' folder to use absolute import paths
-///
-/// Assumes the script is executed from the root of the project
-const srcDir = resolve(process.cwd(), "src");
+// Assumes the script is executed from the root of the project
+const projectRoot = process.cwd();
+
+// Generate the alias object for all the folders in the 'src' folder to use absolute import paths
+const srcDir = resolve(projectRoot, "src");
 
 // Read the directories in the 'src' folder
 // To allow absolute imports from all the folders in 'src'
@@ -40,7 +40,7 @@ const extensionConfig = {
   entry: "./src/extension.ts", // the entry point of this extension, 📖 -> https://webpack.js.org/configuration/entry-context/
   output: {
     // the bundle is stored in the 'dist' folder (check package.json), 📖 -> https://webpack.js.org/configuration/output/
-    path: resolve(__dirname, "dist"),
+    path: resolve(projectRoot, "dist"),
     filename: "extension.js",
     libraryTarget: "commonjs2",
   },

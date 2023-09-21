@@ -28,7 +28,7 @@
 		{
 			"label": "watch-tsc-and-rebundle",
 			"dependsOn": [
-				"npm: watch",
+				"npm: webpack:watch",
 				"npm: watch-tsc"
 			],
 			"problemMatcher": [],

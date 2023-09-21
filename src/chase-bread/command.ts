@@ -33,7 +33,7 @@ export async function completeInlineTasksCommand(this: {
 
   void queueAnAppendToDocument(
     sessionContext.markdownHighLevelFeedbackDocument,
-    '> 🐦: Bread is being chased by professional crumbs elliminators\n',
+    '> Running ai-task\n',
   )
 
   // Functionality specific to bread mentions
@@ -133,7 +133,7 @@ export async function completeInlineTasksCommand(this: {
 
   await queueAnAppendToDocument(
     sessionContext.markdownHighLevelFeedbackDocument,
-    '\n\n> Your bread was appreciated by the ai-task, pleasure doing business with you - Bird representative\n',
+    '\n\n> Done\n',
   )
 
   await closeSession(sessionContext)

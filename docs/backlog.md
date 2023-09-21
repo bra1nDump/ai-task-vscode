@@ -16,8 +16,20 @@
 
 # Next up
 
-- Test the extension works after the renaming
-- Clean up top level directory in github - too many files are in the way of scrolling to the demos
+## Release - REALLY DON'T WANT TO DO THIS, BUT THIS IS ESSENTIAL
+
+- Create issues for some of my todos here
+- Style discord server, add basic documentation
+- Ping friends asking to try it
+
+## Promote, Recruit Cofounders - REALLY DON'T WANT TO DO THIS, BUT THIS IS ESSENTIAL
+
+- Contact the embeddings person from habr, contact vlad
+- Manually go over popular repositories in the space vscode extensions find top contributors
+- Send them an email from a personal email sending the GitHub page + Discord
+
+## Flashy simple features
+
 - Remove content and just keep line numbers as ranges (speed) [1h]
   - Instead work on the truncation mechanism to truncate more aggressively
 - Create a file if it's not there yet (cool looking) [1h]
@@ -40,18 +52,6 @@ writeEmitter.fire('\x1b[10;20H*');
 ## Record gifs for new file + cmd 3 more takes on the main video [2hr + 2hr editing] NO DAVINCI RESOLVE ?
 
 Do I really need this? The gif is okaish right now
-
-## Release - REALLY DON'T WANT TO DO THIS, BUT THIS IS ESSENTIAL
-
-- Create issues for some of my todos here
-- Style discord server, add basic documentation
-- Ping friends asking to try it
-
-## Promote, Recruit Cofounders - REALLY DON'T WANT TO DO THIS, BUT THIS IS ESSENTIAL
-
-- Contact the embeddings person from habr, contact vlad
-- Manually go over popular repositories in the space vscode extensions find top contributors
-- Send them an email from a personal email sending the GitHub page + Discord
 
 # Bread expressions
 
@@ -125,6 +125,9 @@ Will function calling help me getter faster? I would not need to deal with Xml p
 - Create a company and apply for open eye credits
 
 # Done
+
+- Test the extension works after the renaming
+- Clean up top level directory in github - too many files are in the way of scrolling to the demos
 
 - Make repository public on GitHub
 - Re-brand to ai-task

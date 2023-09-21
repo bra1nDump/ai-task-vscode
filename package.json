@@ -3,7 +3,7 @@
   "displayName": "AI Task - Multifile edits",
   "publisher": "bra1nDump",
   "description": "Leave comments across your codebase with @task mentions and have AI address them, even if it requires multi-file changes",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "license": "Business Source License 1.1",
   "icon": "icon-v2.png",
   "repository": {
@@ -44,9 +44,15 @@
           "description": "Directories to exclude when searching for files to pass to the prompt"
         }
       }
-    }
+    },
+    "keybindings": [
+      {
+        "command": "ai-task.completeInlineTasks",
+        "key": "ctrl+y",
+        "mac": "cmd+y"
+      }
+    ]
   },
-  "keybindings": [],
   "scripts": {
     "webpack:base": "webpack --config configurations/webpack.config.js",
     "webpack:watch": "npm run webpack:base -- --watch",
