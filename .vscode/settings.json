@@ -1,40 +1,26 @@
 // Place your settings in this file to overwrite default and user settings.
 {
-    "files.exclude": {
-        "out": false, // set this to true to hide the "out" folder with the compiled JS files
-        "dist": false // set this to true to hide the "dist" folder with the compiled JS files
-    },
-    "search.exclude": {
-        "out": true, // set this to false to include "out" folder in search results
-        "dist": true // set this to false to include "dist" folder in search results
-    },
-    // Turn off tsc task auto detection since we have the necessary tasks as npm scripts
-    "typescript.tsc.autoDetect": "off",
-    // Setup python path for IntelliSense
-    "python.defaultInterpreterPath": "server/.venv/bin/python3",
+    // Ignore these paths when considering files to be added as context to the llm prompt
     "ai-task.additionalExcludedDirectories": [
         "prompt-engineering",
         "testing-sandbox",
         "docs"
     ],
     /**
-    * Foam is an extension to VSCode that helps you organize your thoughts and connect your ideas using a [[wiki-style links]] and [[markdown]]
-    */
-    "foam.files.ignore": [
-        ".vscode**/*",
-        "node_modules",
-        "**/.task"
-    ],
+     * TypeScript
+     */
+    // Same options as in https://eslint.org/docs/latest/integrate/nodejs-api#parameters
     "eslint.options": {
         "overrideConfigFile": "./configurations/.eslintrc.js"
     },
-    // "eslint.execArgv": [
-    //     "--config",
-    //     "configurations/.eslintrc.js"
-    // ],
     "[typescript]": {
         "editor.defaultFormatter": "dbaeumer.vscode-eslint"
     },
+    // Turn off tsc task auto detection since we have the necessary tasks as npm scripts
+    "typescript.tsc.autoDetect": "off",
+    /**
+    * Markdownlint is a Visual Studio Code extension that includes a library of rules to encourage standards and consistency for Markdown files. It also provides a cli that we can use later during CI.
+    */
     "[markdown]": {
         "editor.formatOnSave": true,
         "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
@@ -43,4 +29,12 @@
         "extends": "./configurations/.markdownlint.json"
     },
     "markdownlint.ignore": "./configurations/.markdownlintignore",
+    /**
+    * Foam is an extension to VSCode that helps you organize your thoughts and connect your ideas using a [[wiki-style links]] and [[markdown]]
+    */
+    "foam.files.ignore": [
+        ".vscode**/*",
+        "node_modules",
+        "**/.task"
+    ],
 }
