@@ -58,7 +58,7 @@ export function codeGeneratePromptCheckpoint(version: string) {
         'Example compilation errors, their formatting is done outside the prompt',
       ],
       {
-        breadIdentifier: 'crust',
+        taskIdentifier: 'task',
         includeLineNumbers,
       },
     )

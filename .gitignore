@@ -7,7 +7,7 @@ node_modules
 .env
 
 # Ignore all sessions including from testing
-**/.bread/sessions
+**/.task/sessions
 
 # Ignore all videos - they are too big
 **/*.m4v

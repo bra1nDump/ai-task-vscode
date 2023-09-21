@@ -23,10 +23,24 @@
     "foam.files.ignore": [
         ".vscode**/*",
         "node_modules",
-        "**/.bread"
+        "**/.task"
     ],
+    "eslint.options": {
+        "overrideConfigFile": "./configurations/.eslintrc.js"
+    },
+    // "eslint.execArgv": [
+    //     "--config",
+    //     "configurations/.eslintrc.js"
+    // ],
+    "[typescript]": {
+        "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
     "[markdown]": {
         "editor.formatOnSave": true,
-        "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
+        "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
     },
+    "markdownlint.config": {
+        "extends": "./configurations/.markdownlint.json"
+    },
+    "markdownlint.ignore": "./configurations/.markdownlintignore",
 }

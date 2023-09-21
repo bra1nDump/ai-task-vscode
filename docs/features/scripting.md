@@ -23,7 +23,7 @@ Primitives are implemented within the core of the extension
     "name": "Attach to Extension Host to debug your bread script",
     "port": 9229,
     "outFiles": [
-        "${workspaceFolder}/.bread/**/*.js"
+        "${workspaceFolder}/.task/**/*.js"
     ],
 },
 ```

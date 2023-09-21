@@ -3,7 +3,7 @@
 # User flow
 
 - Leave breadcrumbs in the code
-- Run llm (feed the ai-task) providing it all files with breadcrumbs and the .bread file contents
+- Run llm (feed the ai-task) providing it all files with breadcrumbs and the .task file contents
 - Generate a diff in a smart way to make the changes to the input files
 - Apply the changes (keep the bread)
 
@@ -82,5 +82,5 @@ The most reliable (but still finicky) way that I found is with simple find and r
   - A prompt for generating diffs
   - Code to parse the diff format
   - VScode command to apply the diff
-- Code to assemble the prompt from the breadcrumbs, .bread file and diff generation prompt
+- Code to assemble the prompt from the breadcrumbs, .task file and diff generation prompt
 - VSCode birb command to release the bots

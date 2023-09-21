@@ -1,6 +1,7 @@
 import * as vscode from 'vscode'
 
 import { getDocumentText } from 'helpers/vscode'
+import { getBreadIdentifier } from 'session'
 
 /**
  * Find all files in the workspace with @breadIdentifier mention
@@ -82,7 +83,7 @@ async function safeWorkspaceQueryAllFiles(): Promise<vscode.Uri[]> {
     '.git',
     'out',
     'dist',
-    '.bread',
+    `.${getBreadIdentifier()}`,
     '.vscode-test',
   ]
   const additionalExcludedDirectories =

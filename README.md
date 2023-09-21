@@ -15,7 +15,7 @@ Features
 - You can add multiple tasks across multiple files
 - To execute on the task type `@run` followed by a space ` `
 
-![](./demo.gif)
+![](docs/assets/demo.gif)
 [A complete video is on YouTube](https://youtu.be/wD8ZdIJ9p0Y)
 
 # Connect with the team

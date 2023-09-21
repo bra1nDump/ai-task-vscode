@@ -7,28 +7,42 @@
 # Next milestones
 
 - [done] Published extension
-- Have a novel feature - probably working multi file edits
-- Recorded impressive demo video + gif for readme
-- Release project on GitHub
+- [done] Have a novel feature - probably working multi file edits
+- [done] Recorded demo video showing basic usage + gif for readme
+- [done] Release project on GitHub
 - Found a single demo user
+- Reached out to 5 potential collaborators
 - Replaced continue on the current project
 
 # Next up
 
-- Rebrand - ai-task, to show the extension on video update image
-  - New Icon, new identifier, new name
+- Test the extension works after the renaming
+- Clean up top level directory in github - too many files are in the way of scrolling to the demos
 - Remove content and just keep line numbers as ranges (speed) [1h]
+  - Instead work on the truncation mechanism to truncate more aggressively
 - Create a file if it's not there yet (cool looking) [1h]
+- Create a cmd tag to run a shell command
+
+```ts
+const writeEmitter = new vscode.EventEmitter<string>();
+const pty: vscode.Pseudoterminal = {
+  onDidWrite: writeEmitter.event,
+  open: () => writeEmitter.fire('\x1b[31mHello world\x1b[0m'),
+  close: () => {}
+};
+vscode.window.createTerminal({ name: 'My terminal', pty });
+// Example: Move the cursor to the 10th row and 20th column and write an asterisk
+writeEmitter.fire('\x1b[10;20H*');
+```
+
 - Suggest respecting original indentation [20min]
 
-## Record 3 more takes on the main video [2hr + 2hr editing] NO DAVINCI RESOLVE
+## Record gifs for new file + cmd 3 more takes on the main video [2hr + 2hr editing] NO DAVINCI RESOLVE ?
+
+Do I really need this? The gif is okaish right now
 
 ## Release - REALLY DON'T WANT TO DO THIS, BUT THIS IS ESSENTIAL
 
-- Make repository public on GitHub
-- Re-brand to ai-task
-  - .task.context ?
-- Add a gif to the readme
 - Create issues for some of my todos here
 - Style discord server, add basic documentation
 - Ping friends asking to try it
@@ -111,6 +125,14 @@ Will function calling help me getter faster? I would not need to deal with Xml p
 - Create a company and apply for open eye credits
 
 # Done
+
+- Make repository public on GitHub
+- Re-brand to ai-task
+  - .task.context ?
+- Add a gif to the readme
+
+- Rebrand - ai-task, to show the extension on video update image
+  - New Icon, new identifier, new name
 
 - If you cancel the execution, the preview should close, also once the execution finishes the preview should close also
   - Not sure if its quite possible, or desired, done

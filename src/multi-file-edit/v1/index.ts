@@ -13,6 +13,8 @@ import { queueAnAppendToDocument } from 'helpers/vscode'
 import { map as mapAsync } from 'ix/asynciterable/operators'
 import { createMultiFileEditingMessages } from './prompt'
 
+// @task print hello world on the next line @run
+
 export async function startMultiFileEditing(sessionContext: SessionContext) {
   const fileContexts = sessionContext.documentManager.getEditableFileContexts()
   const blobContexts = sessionContext.documentManager.getBlobContexts()
@@ -37,7 +39,7 @@ export async function startMultiFileEditing(sessionContext: SessionContext) {
 
   const logFilePath = (fileContext: FileContext) => {
     const path = fileContext.filePathRelativeToWorkspace
-    // Assumes we are in .bread/sessions
+    // Assumes we are in .task/sessions
     void highLevelLogger(`- [${path}](../../${path})\n`)
   }
 
@@ -49,9 +51,9 @@ export async function startMultiFileEditing(sessionContext: SessionContext) {
 
   /* Provider pointer to low level log for debugging,
    * it wants a relative to workspace path for some reason The document path is
-   * .bread/sessions/<id>-<weekday>.raw.md,
+   * .task/sessions/<id>-<weekday>.raw.md,
    * so we need to go up two levels since the markdown file we are outputing to
-   * is in .bread/sessions as well Likely not windows friendly as it uses /
+   * is in .task/sessions as well Likely not windows friendly as it uses /
    */
   const relativePath = vscode.workspace.asRelativePath(
     sessionContext.markdownLowLevelFeedbackDocument.uri.path,

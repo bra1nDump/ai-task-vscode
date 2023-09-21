@@ -53,7 +53,7 @@ export async function completeInlineTasksCommand(this: {
     fileUrisWithBreadMentions,
   )
 
-  /* .bread files Ideally will want to signal to the document manager that this
+  /* .task files Ideally will want to signal to the document manager that this
    * file is not editable. As well as providing a way to extract these context
    * only files separately from the editable files (and blobs, we should
    * renamed document manager to be a generic context manager)
@@ -101,10 +101,11 @@ export async function completeInlineTasksCommand(this: {
   Range:
   - Line start ${diagnostic.range.start.line}
   - Line end ${diagnostic.range.end.line}
-  ${diagnostic.relatedInformation
-          ?.map((info) => `Related info: ${info.message}`)
-          .join('\n') ?? ''
-        }
+  ${
+    diagnostic.relatedInformation
+      ?.map((info) => `Related info: ${info.message}`)
+      .join('\n') ?? ''
+  }
   `,
       ]
     })

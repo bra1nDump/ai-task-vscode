@@ -118,7 +118,7 @@ export function tabsToUris(tabs: readonly vscode.Tab[]): vscode.Uri[] {
     if (
       tab.input instanceof vscode.TabInputText &&
       tab.input.uri.scheme === 'file' &&
-      !tab.input.uri.path.includes('.bread/sessions')
+      !tab.input.uri.path.includes('.task/sessions')
     ) {
       return [tab.input.uri]
     } else {

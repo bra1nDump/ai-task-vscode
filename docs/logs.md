@@ -271,7 +271,7 @@ Issue: @bread document is shown in editor on first append. Use vscode.workspace.
 - Assume we are the only ones writing to the file.
 - DONT MODIFY OTHER FUNCTIONS, ONLY THIS ONE
 
-[.bread/sessions/8-31-23, 10-12 AM.raw.md](../.bread/sessions/8-31-23,\ 10-12\ AM.raw.md)
+[.task/sessions/8-31-23, 10-12 AM.raw.md](../.task/sessions/8-31-23,\ 10-12\ AM.raw.md)
 
 Did not respect part of the instruction to maintain map of contents
 

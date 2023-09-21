@@ -2,7 +2,7 @@ import { SessionContextManager } from 'document-helpers/document-manager'
 import * as vscode from 'vscode'
 
 export interface SessionConfiguration {
-  breadIdentifier: string
+  taskIdentifier: string
   includeLineNumbers: boolean
 }
 
@@ -121,7 +121,7 @@ export async function startSession(): Promise<SessionContext> {
   return {
     id: new Date().toISOString(),
     configuration: {
-      breadIdentifier: getBreadIdentifier(),
+      taskIdentifier: getBreadIdentifier(),
       includeLineNumbers: true,
     },
     markdownHighLevelFeedbackDocument: sessionMarkdownHighLevelFeedbackDocument,
@@ -141,11 +141,19 @@ export async function closeSession(
   await sessionContext.markdownLowLevelFeedbackDocument.save()
 
   /* Schedule closing the editors matching the documents
-     Communicate to the user that the editors will be closed */
+     Communicate to the user that the editors will be closed 
+     
+     We can also try closing the tab https://code.visualstudio.com/api/references/vscode-api#TabGroups
+     I'm wondering if hide is not available only within code insiders
+
+   * Either way not sure if we should be closing the feedback preview, copilot
+   * or continue don't really close their sidebar once they're don
+     */
   /* setTimeout(() => {
    * hide is deprecated and the method suggested instead is to close active
    * editor - not what I want :(
        vscode.window.visibleTextEditors[0].hide()
+
      }, 2000) */
 
   // Dispose all subscriptions
@@ -188,9 +196,10 @@ async function findMostRecentSessionLogIndexPrefix(
 }
 
 async function createSessionLogDocuments() {
+  const taskMagicIdentifier = getBreadIdentifier()
   const sessionsDirectory = vscode.Uri.joinPath(
     vscode.workspace.workspaceFolders![0].uri,
-    '.bread/sessions',
+    `.${taskMagicIdentifier}/sessions`,
   )
 
   const nextIndex =
@@ -250,7 +259,7 @@ export function getBreadIdentifier(): string {
   const safeAtBreadIdentifierOverride =
     typeof atBreadIdentifierOverride === 'string'
       ? atBreadIdentifierOverride
-      : '@bread'
+      : '@' + 'task' // Avoiding the magic string by splitting into half
 
   return safeAtBreadIdentifierOverride
 }

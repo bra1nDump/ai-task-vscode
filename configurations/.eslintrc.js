@@ -41,6 +41,21 @@ module.exports = {
         tabSize: 2,
       },
     ],
+
+    // https://github.com/prettier/eslint-plugin-prettier#options
+    // I'm including options here just to avoid having to have a separate .prettierrc.js file
+    'prettier/prettier': [
+      'error',
+      {
+        trailingComma: 'all',
+        semi: false,
+        singleQuote: true,
+        plugins: [],
+        importOrder: [],
+        importOrderSeparation: true,
+        importOrderSortSpecifiers: true,
+      },
+    ],
   },
 
   ignorePatterns: [

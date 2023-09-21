@@ -108,7 +108,7 @@ This schema would be enforced, configuration would be easier
 const typescriptHelloWorldParametrizationMultiFileExample = (
   configuration: SessionConfiguration,
 ) => {
-  const breadIdentifier = configuration.breadIdentifier
+  const breadIdentifier = configuration.taskIdentifier
   let editableFileContext1: FileContext = {
     filePathRelativeToWorkspace: 'src/hello-world.ts',
     content: `function helloWorld() {
@@ -202,7 +202,7 @@ hello(name);
 const typescriptHelloWorldParametrizationMultiFileExampleV2WithInsert = (
   configuration: SessionConfiguration,
 ) => {
-  const breadIdentifier = configuration.breadIdentifier
+  const breadIdentifier = configuration.taskIdentifier
   let greeterFileContext: FileContext = {
     filePathRelativeToWorkspace: 'src/greet.ts',
     content: ``,

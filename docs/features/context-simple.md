@@ -12,7 +12,7 @@ The rich context is simply a string that can be expanded into more context + a p
 
 ```ts
 // This would be either a virtual script created by the command runner,
-// or the .bread.md file, or chunk off text from within @bread comment
+// or the .task.md file, or chunk off text from within @bread comment
 type ContextExpression = string
 
 type ExpandedContext = {
