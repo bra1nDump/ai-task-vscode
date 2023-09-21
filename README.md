@@ -16,7 +16,8 @@
 
 # How to try it
 
-[Install in your VSCode (will try to open vscode)](vscode:extension/bra1ndump.ai-task)
+[Install from VSCode Marketplace](https://marketplace.visualstudio.com/items?itemName=bra1ndump.ai-task)
+
 [Join the discord to tell me why copilot is better, ask questions, or just lurk :D](https://discord.gg/D8V6Rc63wQ)
 
 ## Coming soon
