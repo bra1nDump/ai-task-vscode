@@ -5,7 +5,7 @@
 - **Fast**: Applies patches instead of regenerating entire file contents
 - **Fix compile errors**: Fix trivial errors in bulk resulting from a refactor
 
-# How to use it
+# How it works
 
 - Add a comment like `// @task split the function below into a helper and the main function, move helper to a new file`
 - You can add multiple tasks across multiple files
@@ -14,9 +14,10 @@
 ![](docs/assets/demo.gif)
 [A complete video is on YouTube](https://youtu.be/wD8ZdIJ9p0Y)
 
-# Connect with the team
+# How to try it
 
-[Join the Discord to ask questions, or just lurk :D](https://discord.gg/D8V6Rc63wQ)
+[Install in your VSCode (will try to open vscode)](vscode:extension/bra1ndump.ai-task)
+[Join the discord to tell me why copilot is better, ask questions, or just lurk :D](https://discord.gg/D8V6Rc63wQ)
 
 ## Coming soon
 

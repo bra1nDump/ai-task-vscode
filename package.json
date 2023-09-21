@@ -58,7 +58,7 @@
     "webpack:watch": "npm run webpack:base -- --watch",
     "bundle:prod": "npm run webpack:base -- --mode production --devtool false",
     "package": "./node_modules/.bin/vsce package --ignoreFile configurations/.vscodeignore --no-dependencies --allow-star-activation",
-    "publish": "npm run package && npm run test && npm run package && ./node_modules/.bin/vsce publish --allow-star-activation",
+    "publish": "npm run package && npm run test && npm run package && ./node_modules/.bin/vsce publish --allow-star-activation --githubBranch main",
     "install-local": "node scripts/install-local.mjs 'code-insiders'",
     "tsc": "tsc -p . --outDir out",
     "watch-tsc": "tsc -p . -w --outDir out",
