@@ -27,14 +27,14 @@
 - Create tools, for example /tsc that llm can choose to run to gather more context or accomplish side effects
 - Using VSCode Notebook as the chat interface
 
-[More complete list of upcoming features](./docs/backlog.md)
+[More complete list of upcoming features](docs/backlog.md)
 
 # Development
 
 ## Why consider contributing?
 
-- [Bets setting this project aside from competition](./docs/bets.md)
-- In the case this becomes a company **your shares will be determined using LLM value scoring of your commit history, on the same terms as anyone elses who contributed**. The algorithm is not set in stone, this is more of a promise to implement it at some point [equity splitting](./docs/equity.md).
+- [Bets setting this project aside from competition](docs/bets.md)
+- In the case this becomes a company **your shares will be determined using LLM value scoring of your commit history, on the same terms as anyone elses who contributed**. The algorithm is not set in stone, this is more of a promise to implement it at some point [equity splitting](docs/equity.md).
 
 > :warning: **License restricting commercial distribution**: This project currently uses Business Source License 1.1. I currently don't know where I want to take this project, so I'm using this license for the time being to protect it from people/companies freely taking code from it and making money off of it. If you want to use this project for commercial purposes, please contact me by email in my github profile or though discord. I can give you a commercial license for free, or licence a piece of code you are interested in specifically. I'm open to other suggestions as well.
 

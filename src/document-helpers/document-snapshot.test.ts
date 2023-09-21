@@ -192,10 +192,8 @@ Line 5
          * range. We are emulating the optimization we're doing on the apply
          * edits where we convert a replacement to an insertat
          */
+        const currentContent = editor.document.getText(currentTargetRange.value)
         await editor.edit((editBuilder) => {
-          const currentContent = editor.document.getText(
-            currentTargetRange.value,
-          )
           if (content.startsWith(currentContent)) {
             const delta = content.slice(currentContent.length)
 
