@@ -51,6 +51,7 @@ writeEmitter.fire('\x1b[10;20H*');
 
 ## Record gifs for new file + cmd 3 more takes on the main video [2hr + 2hr editing] NO DAVINCI RESOLVE ?
 
+- Improve the coloring to look better on gif, improve the gif quality
 Do I really need this? The gif is okaish right now
 
 # Bread expressions

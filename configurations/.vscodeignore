@@ -1,15 +1,17 @@
 # This file gets used during packaging to exclude unnecessary files from the extension bundle
-**/.vscode/**
-**/.vscode-test/**
-**/.task/**
-**/docs/**
-**/out/**
-**/node_modules/**
-**/src/**
-**/.gitignore
-**/webpack.config.js
-**/tsconfig.json
-**/.eslintrc.json
-**/*.map
-**/*.ts
-**/testing-sandbox/**
+.vscode/
+.vscode-test/
+
+out/
+node_modules/
+src/
+.gitignore
+webpack.config.js
+tsconfig.json
+configurations/
+
+# Project specific folders
+.task/
+docs/
+testing-sandbox/
+prompt-engineering/

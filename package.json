@@ -54,17 +54,21 @@
     ]
   },
   "scripts": {
+    "------------section-build------------": "",
     "webpack:base": "webpack --config configurations/webpack.config.js",
     "webpack:watch": "npm run webpack:base -- --watch",
     "bundle:prod": "npm run webpack:base -- --mode production --devtool false",
-    "package": "./node_modules/.bin/vsce package --ignoreFile configurations/.vscodeignore --no-dependencies --ignoreFile  configurations/.vscodeignore--allow-star-activation --githubBranch main",
-    "__comment__": "I think publish also packages it",
-    "publish": "npm run tsc && npm run test && ./node_modules/.bin/vsce publish --no-dependencies --ignoreFile  configurations/.vscodeignore --allow-star-activation --githubBranch main",
-    "install-local": "node scripts/install-local.mjs 'code-insiders'",
     "tsc": "tsc -p . --outDir out",
     "watch-tsc": "tsc -p . -w --outDir out",
-    "lint": "eslint . --config configurations/.eslintrc.js --ext ts --fix",
+    "build": "npm run tsc && npm run bundle:prod",
+    "------------section-test------------": "",
     "test": "node out/test/runTest.js",
+    "------------section-extension-packaging-and-publishing------------": "Refactor: move package + publishing to the install-local script and have it accept --publish --package-and-install-local",
+    "package": "./node_modules/.bin/vsce package --ignoreFile configurations/.vscodeignore --no-dependencies --ignoreFile  configurations/.vscodeignore --allow-star-activation --githubBranch main",
+    "publish": "npm run test && npm run bundle:prod ./node_modules/.bin/vsce publish --no-dependencies --ignoreFile  configurations/.vscodeignore --allow-star-activation --githubBranch main",
+    "install-local": "node scripts/install-local.mjs 'code-insiders'",
+    "------------section-other------------": "",
+    "lint": "eslint . --config configurations/.eslintrc.js --ext ts --fix",
     "codegen:prompt-checkpoints": "MULTI_FILE_PROMPT_VERSION=v2-unified-task-changes node ./out/script-generate-prompt-checkpoint.js"
   },
   "devDependencies": {
