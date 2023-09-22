@@ -4,7 +4,8 @@
     "ai-task.additionalExcludedDirectories": [
         "prompt-engineering",
         "testing-sandbox",
-        "docs"
+        "docs",
+        "README.md"
     ],
     /**
      * TypeScript

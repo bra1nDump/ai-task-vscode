@@ -21,6 +21,7 @@ import { projectDiagnosticEntriesWithAffectedFileContext } from 'chase-bugs/diag
  * Apply them to the current file in place
  */
 export async function completeInlineTasksCommand(this: {
+  extensionContext: vscode.ExtensionContext
   sessionRegistry: Map<string, SessionContext>
 }) {
   if (this.sessionRegistry.size !== 0) {
@@ -28,7 +29,7 @@ export async function completeInlineTasksCommand(this: {
     return
   }
 
-  const sessionContext = await startSession()
+  const sessionContext = await startSession(this.extensionContext)
   this.sessionRegistry.set(sessionContext.id, sessionContext)
 
   void queueAnAppendToDocument(

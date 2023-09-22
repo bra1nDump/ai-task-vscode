@@ -8,6 +8,7 @@ export function activate(context: vscode.ExtensionContext) {
   // Poor men's dependency injection
   const sessionRegistry = new Map<string, SessionContext>()
   const commandWithBoundSession = completeInlineTasksCommand.bind({
+    extensionContext: context,
     sessionRegistry,
   })
 

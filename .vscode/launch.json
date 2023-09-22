@@ -16,7 +16,6 @@
 				"--extensionDevelopmentPath=${workspaceFolder}",
 				"--disable-extensions", // Disables other extensions
 			],
-			"envFile": "${workspaceFolder}/.env",
 			"outFiles": [
 				"${workspaceFolder}/dist/**/*.js"
 			],
@@ -36,7 +35,6 @@
 				"--disable-extension",
 				"pokey.cursorless"
 			],
-			"envFile": "${workspaceFolder}/.env",
 			"outFiles": [
 				"${workspaceFolder}/dist/**/*.js"
 			],
@@ -50,7 +48,6 @@
 				"${workspaceFolder}/../git-history-to-blog",
 				"--extensionDevelopmentPath=${workspaceFolder}"
 			],
-			"envFile": "${workspaceFolder}/.env",
 			"outFiles": [
 				"${workspaceFolder}/dist/**/*.js"
 			],
@@ -64,7 +61,6 @@
 				"${workspaceFolder}/../show-me-chatgpt-plugin",
 				"--extensionDevelopmentPath=${workspaceFolder}"
 			],
-			"envFile": "${workspaceFolder}/.env",
 			"outFiles": [
 				"${workspaceFolder}/dist/**/*.js"
 			],
@@ -78,7 +74,6 @@
 				"${workspaceFolder}/../mermaid-laid-out-graph",
 				"--extensionDevelopmentPath=${workspaceFolder}"
 			],
-			"envFile": "${workspaceFolder}/.env",
 			"outFiles": [
 				"${workspaceFolder}/dist/**/*.js"
 			],

@@ -8,6 +8,10 @@ export interface SessionConfiguration {
 
 export interface SessionContext {
   id: string
+
+  /**
+   * Necessary for access to secrets to store API key the user enters */
+  extensionContext: vscode.ExtensionContext
   configuration: SessionConfiguration
 
   /**
@@ -49,7 +53,9 @@ export interface SessionContext {
   subscriptions: vscode.Disposable[]
 }
 
-export async function startSession(): Promise<SessionContext> {
+export async function startSession(
+  context: vscode.ExtensionContext,
+): Promise<SessionContext> {
   const {
     sessionMarkdownHighLevelFeedbackDocument,
     sessionMarkdownLowLevelFeedbackDocument,
@@ -120,6 +126,7 @@ export async function startSession(): Promise<SessionContext> {
 
   return {
     id: new Date().toISOString(),
+    extensionContext: context,
     configuration: {
       taskIdentifier: getBreadIdentifier(),
       includeLineNumbers: true,

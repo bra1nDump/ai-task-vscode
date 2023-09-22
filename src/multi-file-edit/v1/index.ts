@@ -62,7 +62,7 @@ export async function startMultiFileEditing(sessionContext: SessionContext) {
     `\n\n[Raw LLM input + response](../../${relativePath}) [Debug]\n`,
   )
 
-  const streamResult = await streamLlm(messages, lowLevelLogger)
+  const streamResult = await streamLlm(messages, lowLevelLogger, sessionContext)
   if (streamResult.type === 'error') {
     void highLevelLogger(`\n\n${streamResult.error.message}\n`)
     sessionContext.sessionAbortedEventEmitter.fire()

@@ -16,6 +16,10 @@
 
 # Next up
 
+- Actually save the API key that the user enters
+- Allow excluding files and not only directories for the @task magic search
+- Tested the extension works end to end
+
 ## Release - REALLY DON'T WANT TO DO THIS, BUT THIS IS ESSENTIAL
 
 - Create issues for some of my todos here

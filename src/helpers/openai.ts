@@ -7,6 +7,8 @@ import { multicast } from './ix-multicast'
 import { promiseToResult } from './catchAsync'
 import { ChatCompletionChunk } from 'openai/resources/chat'
 import { Result, error, success } from './result'
+import { SessionContext } from 'session'
+import { undefinedIfStringEmpty } from './optional'
 
 export type OpenAiMessage = OpenAI.Chat.Completions.ChatCompletionMessageParam
 
@@ -37,20 +39,30 @@ export interface LlmPartialResponse {
  */
 export async function streamLlm(
   messages: OpenAiMessage[],
+  /* I don't need the logger if I will be passing the entire session,
+     Probably the session itself should contain the logger as a property /
+     method */
   logger: (text: string) => Promise<void>,
+  session: SessionContext,
 ): Promise<
   Result<[AsyncIterableX<LlmPartialResponse>, AbortController], Error>
 > {
   // Ensure the key is provided
   let key: string | undefined =
     process.env.OPENAI_API_KEY ??
-    vscode.workspace.getConfiguration('ai-task').get('openaiApiKey')
+    undefinedIfStringEmpty(
+      vscode.workspace.getConfiguration('ai-task').get('openaiApiKey'),
+    ) ??
+    (await session.extensionContext.secrets.get('openaiApiKey'))
   if (typeof key !== 'string' || key.length === 0) {
     // Give the user a chance to enter the key
     key = await vscode.window.showInputBox({
       prompt: 'Please enter your OpenAI API key',
       ignoreFocusOut: true,
     })
+    if (key) {
+      await session.extensionContext.secrets.store('openaiApiKey', key)
+    }
   }
   if (!key) {
     return error(new Error('No OpenAI API key provided'))
