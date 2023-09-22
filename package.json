@@ -65,7 +65,7 @@
     "test": "node out/test/runTest.js",
     "------------section-extension-packaging-and-publishing------------": "Refactor: move package + publishing to the install-local script and have it accept --publish --package-and-install-local",
     "package": "./node_modules/.bin/vsce package --ignoreFile configurations/.vscodeignore --no-dependencies --ignoreFile  configurations/.vscodeignore --allow-star-activation --githubBranch main",
-    "publish": "npm run test && npm run bundle:prod ./node_modules/.bin/vsce publish --no-dependencies --ignoreFile  configurations/.vscodeignore --allow-star-activation --githubBranch main",
+    "publish": "npm run test && npm run bundle:prod && ./node_modules/.bin/vsce publish --no-dependencies --ignoreFile  configurations/.vscodeignore --allow-star-activation --githubBranch main",
     "install-local": "node scripts/install-local.mjs 'code-insiders'",
     "------------section-other------------": "",
     "lint": "eslint . --config configurations/.eslintrc.js --ext ts --fix",
