@@ -16,9 +16,7 @@
 
 # Next up
 
-- Actually save the API key that the user enters
 - Allow excluding files and not only directories for the @task magic search
-- Tested the extension works end to end
 
 ## Release - REALLY DON'T WANT TO DO THIS, BUT THIS IS ESSENTIAL
 
@@ -130,6 +128,9 @@ Will function calling help me getter faster? I would not need to deal with Xml p
 - Create a company and apply for open eye credits
 
 # Done
+
+- Actually save the API key that the user enters
+- Tested the extension works end to end
 
 - Test the extension works after the renaming
 - Clean up top level directory in github - too many files are in the way of scrolling to the demos

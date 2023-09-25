@@ -14,3 +14,7 @@ node_modules
 **/*.mov
 **/*.mkv
 **/*.wfp
+
+# Ignore more personal notes for other people's privacy
+**/**private**/*
+**/**private*
