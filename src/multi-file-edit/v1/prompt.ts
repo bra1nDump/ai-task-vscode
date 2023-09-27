@@ -87,7 +87,8 @@ You will first output how you understand the task along with compact key ideas.
 Immediately after you will output changes.
 
 Changes format notes:
-Use </truncated> to shorten <range-to-replace> if it is longer than 5 lines. Never truncate replacement.
+Use </truncated> to shorten <range-to-replace> if it is longer than 5 lines.
+Never use </truncated> or other means of truncation within <replacement> - type out entire content.
 
 Examples of your input and output pairs follow.
 
@@ -98,7 +99,10 @@ ${[
   editMiddleOfAJsxExpressionEnsureIndentIsPreserved(configuration),
   truncationExample(configuration),
   allowingToCreateNewFilesAndRunShellCommands(configuration),
-].join('\n\n')}
+]
+  // Some examples might be empty based on the configuration, skip them
+  .filter((example) => example !== '')
+  .join('\n\n')}
 `
 /* Add comments within the prompt more easily
    .replace(/####.*####\n/g, '') */
@@ -424,8 +428,13 @@ function deduplicate(arr: number[]): number[] {
 function allowingToCreateNewFilesAndRunShellCommands(
   configuration: SessionConfiguration,
 ) {
-  if (configuration.includeLineNumbers === false) {
-    console.log('This example requires line numbers')
+  if (
+    configuration.includeLineNumbers === false ||
+    configuration.enableNewFilesAndShellCommands === false
+  ) {
+    console.log(
+      'Skipping new file and command example because of configuration',
+    )
     /* Ideally we should return undefined here to signal to not include this
        example */
     return ''

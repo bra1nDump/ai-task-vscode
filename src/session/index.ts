@@ -4,6 +4,7 @@ import * as vscode from 'vscode'
 export interface SessionConfiguration {
   taskIdentifier: string
   includeLineNumbers: boolean
+  enableNewFilesAndShellCommands: boolean
 }
 
 export interface SessionContext {
@@ -141,6 +142,7 @@ export async function startSession(
     configuration: {
       taskIdentifier: getBreadIdentifier(),
       includeLineNumbers: true,
+      enableNewFilesAndShellCommands: true,
     },
     markdownHighLevelFeedbackDocument: sessionMarkdownHighLevelFeedbackDocument,
     markdownLowLevelFeedbackDocument: sessionMarkdownLowLevelFeedbackDocument,

@@ -60,6 +60,7 @@ export function codeGeneratePromptCheckpoint(version: string) {
       {
         taskIdentifier: 'task',
         includeLineNumbers,
+        enableNewFilesAndShellCommands: true,
       },
     )
 
