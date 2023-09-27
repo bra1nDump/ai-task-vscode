@@ -21,10 +21,17 @@ export function projectDiagnosticEntriesWithAffectedFileContext(): DiagnosticEnt
 
   for (const [uri, fileDiagnostics] of diagnostics) {
     for (const fileDiagnostic of fileDiagnostics) {
+      // Unless it's an error or a warning we don't care
       if (
         fileDiagnostic.severity !== vscode.DiagnosticSeverity.Error &&
         fileDiagnostic.severity !== vscode.DiagnosticSeverity.Warning
       ) {
+        continue
+      }
+
+      // If it comes from a linter we don't care
+      if (fileDiagnostic.source !== 'typescript') {
+        console.log(`fileDiagnostic.source ${fileDiagnostic.source}`)
         continue
       }
 

@@ -95,7 +95,7 @@ async function safeWorkspaceQueryAllFiles(): Promise<vscode.Uri[]> {
 
   const allFilesInWorkspace = await vscode.workspace.findFiles(
     '**/*.{ts,md,js,jsx,tsx,html,css,scss,less,json,yml,yaml}',
-    `**/{${excludedDirectories.join(',')}}/**/*`,
+    `**/{${excludedDirectories.join(',')}}`,
     1000,
   )
 
@@ -106,4 +106,13 @@ async function safeWorkspaceQueryAllFiles(): Promise<vscode.Uri[]> {
   }
 
   return allFilesInWorkspace
+}
+
+export async function getFilesContent(uris: vscode.Uri[]): Promise<string[]> {
+  return Promise.all(
+    uris.map(async (uri) => {
+      const document = await vscode.workspace.openTextDocument(uri)
+      return document.getText()
+    }),
+  )
 }

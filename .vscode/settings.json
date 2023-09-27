@@ -5,7 +5,8 @@
         "prompt-engineering",
         "testing-sandbox",
         "docs",
-        "README.md"
+        "README.md",
+        "package.json",
     ],
     /**
      * TypeScript

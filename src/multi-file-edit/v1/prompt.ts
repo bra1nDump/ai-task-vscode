@@ -77,7 +77,9 @@ export function createMultiFileEditingMessages(
 const multiFileEditPrompt = (configuration: SessionConfiguration) =>
   `You are a coding assistant.
 You will be given editable files with line numbers and optional information blobs as input.
-Your task is defined by @task mentions within your input.
+Your task is defined by @${
+    configuration.taskIdentifier
+  } mentions within your input.
 You will address the task by making changes to some files.
 Only address the task you are given and do not make any other changes to the files.
 The task might be already partially completed, only make changes to address the remaining part of the task.
@@ -282,7 +284,7 @@ const editMiddleOfAJsxExpressionEnsureIndentIsPreserved = (
 ) => {
   let editableFileContext: FileContext = {
     filePathRelativeToWorkspace: 'counter.ts',
-    content: `// @task use a single div instead of a list to show the count
+    content: `// @${configuration.taskIdentifier} use a single div instead of a list to show the count
 const Counter: React.FC = () => {
   const [count, setCount] = useState<number>(0);
 
@@ -360,7 +362,7 @@ ${rangeToReplace}
 const truncationExample = (configuration: SessionConfiguration) => {
   let editableFileContext: FileContext = {
     filePathRelativeToWorkspace: 'duplicate.ts',
-    content: `// @task optimize
+    content: `// @${configuration.taskIdentifier} optimize
 function deduplicate(arr: number[]): number[] {
   const result: number[] = []
   for (const item of arr) {

@@ -98,6 +98,7 @@
     "webpack-cli": "^5.1.1"
   },
   "dependencies": {
+    "dedent": "^1.5.1",
     "ix": "^5.0.0",
     "openai": "^4.0.0"
   }
