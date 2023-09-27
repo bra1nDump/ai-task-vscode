@@ -4,7 +4,7 @@ import {
   findAndCollectDotBreadFiles,
   getFilesContent,
 } from 'document-helpers/file-search'
-import { openedTabs } from 'helpers/vscode'
+import { openedTabs } from 'helpers/openedTabs'
 import { SessionContext, getBreadIdentifier } from 'session'
 import { queueAnAppendToDocument } from 'helpers/vscode'
 import { closeSession, startSession } from 'session'
@@ -71,7 +71,7 @@ export async function completeInlineTasksCommand(this: {
 
   /* Include open tabs if the user requested */
   const includeTabs = breadMentionsFilesContent.some((fileContent) =>
-    fileContent.includes('@tabs'),
+    fileContent.includes('@' + 'tabs'),
   )
   if (includeTabs) {
     const openTabsFileUris = openedTabs()
@@ -84,14 +84,11 @@ export async function completeInlineTasksCommand(this: {
   /* Provide problems context
     /* Include files with errors if the user requested */
   const includeErrors = breadMentionsFilesContent.some((fileContent) =>
-    fileContent.includes('@errors'),
+    fileContent.includes('@' + 'errors'),
   )
   if (includeErrors) {
     const diagnosticsAlongWithTheirFileContexts =
       projectDiagnosticEntriesWithAffectedFileContext()
-    const fileUrisWithProblems = diagnosticsAlongWithTheirFileContexts.map(
-      (x) => x.uri,
-    )
     const filesWithErrors = diagnosticsAlongWithTheirFileContexts.map(
       (x) => x.uri,
     )

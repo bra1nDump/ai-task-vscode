@@ -4,6 +4,7 @@ import { Change, LlmGeneratedPatchXmlV1 } from './types'
 import { makeToResolvedChangesTransformer } from './resolveTargetRange'
 import { SessionContextManager } from 'document-helpers/document-manager'
 import { findSingleFileMatchingPartialPath } from 'helpers/vscode'
+import { safeWorkspaceQueryAllFiles } from 'document-helpers/file-search'
 
 export async function resolveAndApplyChangesToSingleFile(
   changes: Change[],
@@ -38,13 +39,15 @@ export async function resolveAndApplyChangesToSingleFile(
 export async function resolveAndApplyChangesToMultipleFiles(
   patch: LlmGeneratedPatchXmlV1,
 ) {
-  const documentUris = await Promise.all(
-    patch.changes.map((fileChange) =>
+  const allWorkspaceUris = await safeWorkspaceQueryAllFiles()
+  const documentUris = patch.changes.map(
+    (fileChange) =>
       findSingleFileMatchingPartialPath(
+        allWorkspaceUris,
         fileChange.filePathRelativeToWorkspace!,
-      ).then((x) => x!),
-    ),
+      )!,
   )
+
   /* Still prototyping stick into the old API which does not include line
      numbers */
   const sessionDocumentManager = new SessionContextManager(false)

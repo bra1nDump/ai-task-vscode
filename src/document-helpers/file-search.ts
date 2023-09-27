@@ -75,7 +75,7 @@ export async function findAndCollectDotBreadFiles(
  *   this also needs recursive search so ... later
  */
 
-async function safeWorkspaceQueryAllFiles(): Promise<vscode.Uri[]> {
+export async function safeWorkspaceQueryAllFiles(): Promise<vscode.Uri[]> {
   const config = vscode.workspace.getConfiguration('ai-task')
 
   const defaultExcludedDirectories = [

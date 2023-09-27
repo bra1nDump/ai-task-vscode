@@ -27,81 +27,81 @@ import { vscodeRangeToLineRange } from 'document-helpers/document-snapshot'
 export const makeToResolvedChangesTransformer = (
   sessionDocumentManager: SessionContextManager,
 ) =>
-  async function (
-    multiFileChangeSet: LlmGeneratedPatchXmlV1,
-  ): Promise<ResolvedChange[]> {
+  /* There's no more asynchronous code below, remove a sink and promise code.
+     Only update ranges that actually need to change @task @run   */
+  function (multiFileChangeSet: LlmGeneratedPatchXmlV1): ResolvedChange[] {
     /* Refactor: xml generator is already better represented with a flat set of
      * changes let's update the rest of the code including this function to
      * reflect that
      */
-    const changesGroupedByFile = await Promise.all(
-      multiFileChangeSet.changes.map(
-        async ({
-          change,
+    const changesGroupedByFile = multiFileChangeSet.changes.map(
+      ({
+        change,
+        filePathRelativeToWorkspace,
+        isStreamFinilized,
+      }): ResolvedChange[] => {
+        /* Find the matching document snapshot,
+         * we need those to perform an edit with an outdated range
+         */
+        if (!filePathRelativeToWorkspace) {
+          return []
+        }
+        const allEditableUris = sessionDocumentManager.getEditableFileUris()
+        const fileUri = findSingleFileMatchingPartialPath(
+          allEditableUris,
           filePathRelativeToWorkspace,
-          isStreamFinilized,
-        }): Promise<ResolvedChange[]> => {
-          /* Find the matching document snapshot,
-           * we need those to perform an edit with an outdated range
-           */
-          if (!filePathRelativeToWorkspace) {
-            return []
-          }
-          const fileUri = await findSingleFileMatchingPartialPath(
-            filePathRelativeToWorkspace,
+        )
+        if (!fileUri) {
+          return []
+        }
+
+        const documentSnapshot =
+          sessionDocumentManager.getDocumentSnapshot(fileUri)
+        if (!documentSnapshot) {
+          throw new Error(
+            `Document ${
+              fileUri.fsPath
+            } not found in session. Files in the session: ${sessionDocumentManager.dumpState()} Unable to modify files but were not added to the snapshot. This is most likely a bug or LLM might have produced a bogus file path to modify.`,
           )
-          if (!fileUri) {
-            return []
-          }
+        }
 
-          const documentSnapshot =
-            sessionDocumentManager.getDocumentSnapshot(fileUri)
-          if (!documentSnapshot) {
-            throw new Error(
-              `Document ${
-                fileUri.fsPath
-              } not found in session. Files in the session: ${sessionDocumentManager.dumpState()} Unable to modify files but were not added to the snapshot. This is most likely a bug or LLM might have produced a bogus file path to modify.`,
-            )
-          }
+        // Collect all the result changes for this file so far
 
-          // Collect all the result changes for this file so far
+        const rangeToReplace = findTargetRangeInFileWithContent(
+          change.oldChunk,
+          documentSnapshot.fileSnapshotForLlm.content,
+          documentSnapshot.document.eol,
+        )
 
-          const rangeToReplace = findTargetRangeInFileWithContent(
-            change.oldChunk,
-            documentSnapshot.fileSnapshotForLlm.content,
-            documentSnapshot.document.eol,
+        if (!rangeToReplace) {
+          return []
+        }
+
+        // Use the DocumentSnapshot to adjust the range to current time
+        const lineRangedToReplace = vscodeRangeToLineRange(rangeToReplace)
+        const rangeInCurrentDocument =
+          documentSnapshot.toCurrentDocumentRange(lineRangedToReplace)
+
+        /* TODO: We really should not be throwing an error here.
+         * Instead we should somehow report this change as not resolved
+         */
+        if (rangeInCurrentDocument.type === 'error') {
+          throw new Error(
+            `Range is out of bounds of the document ${fileUri.fsPath}\nError: ${rangeInCurrentDocument.error}`,
           )
+        }
 
-          if (!rangeToReplace) {
-            return []
-          }
+        const resolvedChange: ResolvedChange = {
+          fileUri: fileUri,
+          descriptionForHuman: change.description,
+          rangeToReplace: rangeInCurrentDocument.value,
+          rangeToReplaceIsFinal: change.oldChunk.isStreamFinalized,
+          replacement: change.newChunk.content,
+          replacementIsFinal: isStreamFinilized,
+        }
 
-          // Use the DocumentSnapshot to adjust the range to current time
-          const lineRangedToReplace = vscodeRangeToLineRange(rangeToReplace)
-          const rangeInCurrentDocument =
-            documentSnapshot.toCurrentDocumentRange(lineRangedToReplace)
-
-          /* TODO: We really should not be throwing an error here.
-           * Instead we should somehow report this change as not resolved
-           */
-          if (rangeInCurrentDocument.type === 'error') {
-            throw new Error(
-              `Range is out of bounds of the document ${fileUri.fsPath}\nError: ${rangeInCurrentDocument.error}`,
-            )
-          }
-
-          const resolvedChange: ResolvedChange = {
-            fileUri: fileUri,
-            descriptionForHuman: change.description,
-            rangeToReplace: rangeInCurrentDocument.value,
-            rangeToReplaceIsFinal: change.oldChunk.isStreamFinalized,
-            replacement: change.newChunk.content,
-            replacementIsFinal: isStreamFinilized,
-          }
-
-          return [resolvedChange]
-        },
-      ),
+        return [resolvedChange]
+      },
     )
 
     return changesGroupedByFile.flatMap((x) => x)

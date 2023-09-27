@@ -26,30 +26,19 @@ export async function getFilePossiblyDirtyContent(
   return document.getText()
 }
 
-export function getFullFileRange(fileText: string): vscode.Range {
-  return new vscode.Range(
-    0,
-    0,
-    fileText.split('\n').length - 1,
-    fileText.length,
-  )
+export function findFilesMatchingPartialPath(
+  allPossibleUris: vscode.Uri[],
+  path: string,
+): vscode.Uri[] {
+  return allPossibleUris.filter((uri) => uri.path.includes(path))
 }
 
-export async function findFilesMatchingPartialPath(
+export function findSingleFileMatchingPartialPath(
+  allPossibleUris: vscode.Uri[],
   path: string,
-): Promise<vscode.Uri[]> {
-  const workspaceFilesWithMatchingNames = await vscode.workspace.findFiles(
-    `**/${path}`,
-  )
-
-  return workspaceFilesWithMatchingNames
-}
-
-export async function findSingleFileMatchingPartialPath(
-  path: string,
-): Promise<vscode.Uri | undefined> {
-  const matchingFiles = await findFilesMatchingPartialPath(path)
-  if (matchingFiles.length > 1) {
+): vscode.Uri | undefined {
+  const matchingFiles = findFilesMatchingPartialPath(allPossibleUris, path)
+  if (matchingFiles.length > 1 || matchingFiles.length === 0) {
     return undefined
   }
 
@@ -94,35 +83,4 @@ export async function queueAnAppendToDocument(
   pendingEdits.set(document.uri.toString(), editPromise)
 
   await editPromise
-}
-/**
- * Read all documents opened as tabs in vscode.
- * Useful when the setting suggests to include all open files in the workspace
- * on performing tasks
- *
- * Bug: does not respect ignored files, hack - ignore markdown files.
- * Proper fix - we want to have a registry of files in the project we consider
- * to be included in context. Currently we do a safeWorkspaceSearch for that
- * but we don't want to do it every time.
- *
- * Intermediate solution: store the uris of 'good' files in the session context.
- */
-
-export function openedTabs(): vscode.Uri[] {
-  const tabs = vscode.window.tabGroups.all.flatMap((tabGroup) => tabGroup.tabs)
-  return tabsToUris(tabs)
-}
-
-export function tabsToUris(tabs: readonly vscode.Tab[]): vscode.Uri[] {
-  return tabs.flatMap((tab) => {
-    if (
-      tab.input instanceof vscode.TabInputText &&
-      tab.input.uri.scheme === 'file' &&
-      !tab.input.uri.path.includes('.task/sessions')
-    ) {
-      return [tab.input.uri]
-    } else {
-      return []
-    }
-  })
 }

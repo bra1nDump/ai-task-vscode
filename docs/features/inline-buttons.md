@@ -1,0 +1,1 @@
+![Alt text](../assets/inline-button-vscode-profile-native.png)

@@ -15,8 +15,6 @@
 
 # Next up
 
-- Allow excluding files and not only directories for the @task magic search
-
 ## Flashy simple features
 
 - Create a file if it's not there yet (cool looking) [1h]
@@ -80,6 +78,12 @@ Will function calling help me getter faster? I would not need to deal with Xml p
 - Create a company and apply for open ai credits
 
 # Done
+
+- Allow excluding files and not only directories for the @task magic search
+- Trouble should performance
+  - Profile extension
+  - Comment out various application loops until the slowness goes away (it seems like this is where the bottleneck is)
+    - It might also be within the range tracking, because more edits are performed. If range tracking is the issue we might have to have a similar approach to registering a range to be updated as cursorless does
 
 - Logging is still kinda broken
   - \` appear in strange places (aka right after some </file> closes)

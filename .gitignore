@@ -6,6 +6,9 @@ node_modules
 *.DS_Store
 .env
 
+# Ignore profiling
+**/*profile
+
 # Ignore all sessions including from testing
 **/.task/sessions
 
@@ -18,3 +21,4 @@ node_modules
 # Ignore more personal notes for other people's privacy
 **/**private**/*
 **/**private*
+
