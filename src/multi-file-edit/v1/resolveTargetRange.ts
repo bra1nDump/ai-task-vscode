@@ -73,6 +73,7 @@ export const makeToResolvedChangesTransformer = (
             filePathRelativeToWorkspace,
           )
           async function RACY_createNewEmptyFile() {
+            console.log('Creating new file', newFileUri.fsPath)
             await vscode.workspace.fs.writeFile(newFileUri, new Uint8Array())
             // VSCode is known to be slow to update the file system
             await new Promise((resolve) => setTimeout(resolve, 50))

@@ -32,6 +32,9 @@ export function run(): Promise<void> {
   const mocha = new Mocha({
     ui: 'tdd',
     color: true,
+    /* Default to higher timeout due to many sleeps in the codebase when
+       applying changes */
+    timeout: 5000,
   })
 
   const testsRoot = path.resolve(__dirname, '../..')

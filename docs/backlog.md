@@ -15,23 +15,6 @@
 
 # Next up
 
-## Flashy simple features
-
-- Create a file if it's not there yet (cool looking) [1h]
-- Create a cmd tag to run a shell command
-
-```ts
-const writeEmitter = new vscode.EventEmitter<string>();
-const pty: vscode.Pseudoterminal = {
-  onDidWrite: writeEmitter.event,
-  open: () => writeEmitter.fire('\x1b[31mHello world\x1b[0m'),
-  close: () => {}
-};
-vscode.window.createTerminal({ name: 'My terminal', pty });
-// Example: Move the cursor to the 10th row and 20th column and write an asterisk
-writeEmitter.fire('\x1b[10;20H*');
-```
-
 - Suggest respecting original indentation [20min]
 - Refine the truncation mechanism to truncate more aggressively
 
@@ -46,6 +29,7 @@ writeEmitter.fire('\x1b[10;20H*');
 
 ## UX - Product
 
+- Keep reference to a terminal, don't keep creating new ones
 - Copy the style of open-interpreter
 - Onboarding
 - Add play button to @bread comments - instead of @run
@@ -78,6 +62,23 @@ Will function calling help me getter faster? I would not need to deal with Xml p
 - Create a company and apply for open ai credits
 
 # Done
+
+## Flashy simple features
+
+- Create a file if it's not there yet (cool looking) [1h]
+- Create a cmd tag to run a shell command
+
+```ts
+const writeEmitter = new vscode.EventEmitter<string>();
+const pty: vscode.Pseudoterminal = {
+  onDidWrite: writeEmitter.event,
+  open: () => writeEmitter.fire('\x1b[31mHello world\x1b[0m'),
+  close: () => {}
+};
+vscode.window.createTerminal({ name: 'My terminal', pty });
+// Example: Move the cursor to the 10th row and 20th column and write an asterisk
+writeEmitter.fire('\x1b[10;20H*');
+```
 
 - Allow excluding files and not only directories for the @task magic search
 - Trouble should performance

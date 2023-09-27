@@ -14,7 +14,8 @@ import { runTerminalCommand } from 'multi-file-edit/applyResolvedChange'
 
 suite('Apply Patch Tests', function () {
   this.timeout(20_000)
-  const setupEditorWithContent = makeTemporaryFileWriterAndOpener('test.txt')
+  const setupEditorWithContent =
+    makeTemporaryFileWriterAndOpener('tmp/test.txt')
 
   const cleanTmpDirectory = () => {
     const temporaryFolder = path.join(
@@ -33,13 +34,13 @@ suite('Apply Patch Tests', function () {
 
   // This setup code is clunky
   beforeEach(async () => {
+    cleanTmpDirectory()
+
     /* We need to close the editor, otherwise when we reopen it from the same
      * ur I it will ignore the contents of the file on disk and use the
      * contents from the editor which are dirty after the last test
      */
     await vscode.commands.executeCommand('workbench.action.closeAllEditors')
-
-    cleanTmpDirectory()
   })
 
   afterEach(() => {

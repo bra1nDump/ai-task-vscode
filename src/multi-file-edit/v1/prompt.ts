@@ -80,6 +80,7 @@ You will be given editable files with line numbers and optional information blob
 Your task is defined by @${
     configuration.taskIdentifier
   } mentions within your input.
+Tasks might mention @${'run'}, @${'tabs'} and others - these are how the user starts the task and adds additional information, these are not directly related to the task.
 Your output should address the task by making file changes, creating new files and running shell commands (assume macOS).
 Only address the task you are given and do not make any other changes.
 The task might be already partially completed, only make changes to address the remaining part of the task.
@@ -94,7 +95,7 @@ You will first output how you understand the task along with compact key ideas.
 Immediately after you will output changes.
 ####
 
-Changes format notes:
+Format notes:
 Use </truncated> to shorten <range-to-replace> if it is longer than 5 lines.
 Never use </truncated> or other means of truncation within <replacement> - type out entire content.
 
@@ -451,7 +452,7 @@ function allowingToCreateNewFilesAndRunShellCommands(
   const breadIdentifier = configuration.taskIdentifier
   let editableFileContext: FileContext = {
     filePathRelativeToWorkspace: 'src/hello-world.ts',
-    content: `// @${breadIdentifier} create a main file that calls hello world and run it using node
+    content: `// @${breadIdentifier} create a main file that calls hello world. Then compile and run it using node.
 function helloWorld() {
   console.log('Hello World');
 }`,

@@ -27,14 +27,18 @@ suite('VSCode Extension Command Tests', function () {
       vscode.workspace.workspaceFolders![0].uri,
       'readme.md',
     )
-    const tsTestOutputUri = vscode.Uri.joinPath(
+    const lsTestOutputUri = vscode.Uri.joinPath(
       vscode.workspace.workspaceFolders![0].uri,
-      'ts-test-output.txt',
+      'ls-test-output.txt',
     )
 
     // In case previous run failed to clean up
-    await vscode.workspace.fs.delete(readmeUri)
-    await vscode.workspace.fs.delete(tsTestOutputUri)
+    try {
+      await vscode.workspace.fs.delete(readmeUri)
+      await vscode.workspace.fs.delete(lsTestOutputUri)
+    } catch (err) {
+      // Ignore errors
+    }
 
     // Testing command is registered
     const releaseCommand = await vscode.commands
@@ -49,6 +53,9 @@ suite('VSCode Extension Command Tests', function () {
     // Kicking off the command
     await vscode.commands.executeCommand('ai-task.completeInlineTasks')
     console.log('Command "ai-task.completeInlineTasks" finished running')
+
+    // Wait a bit before asserting
+    await new Promise((resolve) => setTimeout(resolve, 1000))
 
     // Test editing of existing files works
     const helloWorldUri = vscode.Uri.joinPath(
@@ -73,13 +80,12 @@ suite('VSCode Extension Command Tests', function () {
     assert.ok(readmeDocumentText.includes(`# User greeter app`))
 
     // Test running of commands works
-    const tsTestOutputDocument =
-      await vscode.workspace.openTextDocument(tsTestOutputUri)
-    const tsTestOutputDocumentText = tsTestOutputDocument.getText()
-    assert.ok(tsTestOutputDocumentText.includes(`helloWorld.ts`))
+    const lsTestOutputDocument =
+      await vscode.workspace.openTextDocument(lsTestOutputUri)
+    assert.ok(lsTestOutputDocument.getText().includes(`helloWorld.ts`))
 
     // Clean up after the test
     await vscode.workspace.fs.delete(readmeUri)
-    await vscode.workspace.fs.delete(tsTestOutputUri)
+    await vscode.workspace.fs.delete(lsTestOutputUri)
   })
 })
