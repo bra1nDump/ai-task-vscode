@@ -122,6 +122,18 @@ type Session = {
 }
 ```
 
+# Maybe archive?
+
+- Instead of by default pulling in tabs and compile errors manually specify them
+- Add context providers for
+  - @bread, @bugs, @clipboard
+  - Later @url, @search, @shell
+  - Complex @semantic "Code that ads line numbers to the code"
+  - Complex @dependencies (should probably be enabled by default, this would mean pulling in dependencies for first degree types used within the function)
+  - Think about auto completion, specifically for @url would probably want some fixed websites will use often. For instance I would include vscode Api docs
+  - Have them implement a common interface
+- Compile the script to get context instead of getting context manually within two available commands
+
 # Archive
 
 The rough idea is I want to create some sort of compilation step that I will use later on to compile bread scripts

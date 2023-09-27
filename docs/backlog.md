@@ -1,8 +1,7 @@
 # Features
 
 - Multifile edits by leaving around comments
-- Automatically fix compile errors
-- Seamlessly invoke inline completions based on comments
+- Automatically fix compile errors after refactorings
 
 # Next milestones
 
@@ -18,22 +17,8 @@
 
 - Allow excluding files and not only directories for the @task magic search
 
-## Release - REALLY DON'T WANT TO DO THIS, BUT THIS IS ESSENTIAL
-
-- Create issues for some of my todos here
-- Style discord server, add basic documentation
-- Ping friends asking to try it
-
-## Promote, Recruit Cofounders - REALLY DON'T WANT TO DO THIS, BUT THIS IS ESSENTIAL
-
-- Contact the embeddings person from habr, contact vlad
-- Manually go over popular repositories in the space vscode extensions find top contributors
-- Send them an email from a personal email sending the GitHub page + Discord
-
 ## Flashy simple features
 
-- Remove content and just keep line numbers as ranges (speed) [1h]
-  - Instead work on the truncation mechanism to truncate more aggressively
 - Create a file if it's not there yet (cool looking) [1h]
 - Create a cmd tag to run a shell command
 
@@ -50,41 +35,20 @@ writeEmitter.fire('\x1b[10;20H*');
 ```
 
 - Suggest respecting original indentation [20min]
+- Refine the truncation mechanism to truncate more aggressively
 
-## Record gifs for new file + cmd 3 more takes on the main video [2hr + 2hr editing] NO DAVINCI RESOLVE ?
+## Front page
 
-- Improve the coloring to look better on gif, improve the gif quality
-Do I really need this? The gif is okaish right now
+### Record gifs for new file + cmd 3 more takes on the main video [2hr + 2hr editing] NO DAVINCI RESOLVE ?
 
-# Bread expressions
+- Switch to mp4 - no looping needed
+- Does github readme has SEO?
 
-## Context providers (move to the context section)
+# Unsorted
 
-- Instead of by default pulling in tabs and compile errors manually specify them
-- Add context providers for
-  - @bread, @bugs
-  - Later @url, @search, @shell
-  - Complex @semantic "Code that ads line numbers to the code"
-  - Complex @dependencies (should probably be enabled by default, this would mean pulling in dependencies for first degree types used within the function)
-  - Think about auto completion, specifically for @url would probably want some fixed websites will use often. For instance I would include vscode Api docs
-  - Have them implement a common interface
-- Compile the script to get context instead of getting context manually within two available commands
+## UX - Product
 
-## Targeting
-
-- For example if I only want to modify the given function, specify @function, if I only want to modify the following block, specify @block
-- Show a similar preview as copilot does
-- This would be useful for inline generations
-
-## Language server draft for @bread context, and target ranges @function, @block
-
-- Reuse the context provider definitions to provide autocomplete
-- Find an existing language server that does something similar
-
-# Later
-
-## UX
-
+- Copy the style of open-interpreter
 - Onboarding
 - Add play button to @bread comments - instead of @run
 - Delay scroll into view until there's only a single match ? I thought it would already do that
@@ -95,22 +59,10 @@ Do I really need this? The gif is okaish right now
 - Provide token count on the input and provide approximate price
 - Add discord server link to hight level output
 
-## [Partially done with multi-file edit, focus on other things for now] Type at cursor - allows me to replace continue for personal use
-
-- For example current model does not support inserts only some sort of replacement
-- The simplest version is to keep reusing the multi file edit prompt and simply instruct to replace a single line with the comment /run
-- We can also get rid of the planning stage (maybe we should also inject at using /plan directive)
-- Maybe also take into account the @bread files + diagnostics
-
-## Record Type at cursor
-
 ## Developer experience working on ai-task
 
+- Create issues for some of my todos here
 - Prevent starting a debug session if compilation failed. It's really annoying to accidentally tried debugging a simple compile error during runtime and not knowing about the compile error
-- Logging is still kinda broken
-  - \` appear in strange places (aka right after some </file> closes)
-  - Files are not strictly ordered by timestamp, and the format all the title is to verbose
-  - Running two sessions within the same minute concatenates the two files
 
 ## Split target selection into a separate task - address speed, reliability and dumbness due to complex prompt
 
@@ -125,9 +77,14 @@ Will function calling help me getter faster? I would not need to deal with Xml p
 ## Uncategorized
 
 - Improve new line character usage across the code base. This will suck because we print many logs relying on \n. For now I will just fix the code that has to do with line splitting for range calculation because that definitely needs to be robust.
-- Create a company and apply for open eye credits
+- Create a company and apply for open ai credits
 
 # Done
+
+- Logging is still kinda broken
+  - \` appear in strange places (aka right after some </file> closes)
+  - Files are not strictly ordered by timestamp, and the format all the title is to verbose
+  - Running two sessions within the same minute concatenates the two files
 
 - Actually save the API key that the user enters
 - Tested the extension works end to end

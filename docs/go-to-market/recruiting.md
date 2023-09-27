@@ -10,3 +10,4 @@ Sort of coupled with go to market because the potential contributors are also a 
 - vscode code base contributors who are not on the court team getting paid by Microsoft already
 - Create issues with bounties
 - Find open source contributors too developer tools who are good with typescript and reach out to them one by one
+
