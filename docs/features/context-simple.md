@@ -1,6 +1,6 @@
 # Design
 
-Also see [[scripting]], that provides you access to actual javascript expressions to do things using low level tasks.
+Also see [[modes-scripting]], that provides you access to actual javascript expressions to do things using low level tasks.
 
 The rich context is simply a string that can be expanded into more context + a prompt.
 

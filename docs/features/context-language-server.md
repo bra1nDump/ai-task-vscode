@@ -1,3 +1,5 @@
+vscode.language.getDiagnostics() only returns diagnostics for opened tabs :/
+
 ### Problem matchers
 
 Use tsc directly with a problem matcher to get the errors? - better do language server straight up

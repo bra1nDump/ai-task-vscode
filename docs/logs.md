@@ -30,7 +30,7 @@ Total                  65         6955         3260         2702          993
 
 # September 13 - Trying out on a real project, result satisfactory, contemplating about prompt benchmarking
 
-Content below is duplicated in [[prompt-testing]]
+Content below is duplicated in [[devx-prompt-testing]]
 Having some reliable way to know which print is better is really nice.
 Ideally I would keep accumulating a list of inputs and desired outputs and then for each prompt iteration I would run the tests and see how many of them pass.
 More so I would want to see the quality of the passes.

@@ -1,3 +1,6 @@
+Why?
+Faster to generate changes
+
 ## Type at cursor - allows me to replace continue for personal use
 
 - For example current model does not support inserts only some sort of replacement
