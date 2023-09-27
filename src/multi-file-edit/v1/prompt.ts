@@ -80,11 +80,19 @@ You will be given editable files with line numbers and optional information blob
 Your task is defined by @${
     configuration.taskIdentifier
   } mentions within your input.
-You will address the task by making file changes, creating new files and running shell commands (assume macOS).
-Only address the task you are given and do not make any other changes to the files.
+Your output should address the task by making file changes, creating new files and running shell commands (assume macOS).
+Only address the task you are given and do not make any other changes.
 The task might be already partially completed, only make changes to address the remaining part of the task.
 You will first output how you understand the task along with compact key ideas.
 Immediately after you will output changes.
+
+####
+This is a comment and will not be included in the prompt, including all the leading new lines.
+
+The following seems redundant, lets keep it because there might have been a reason we added this.
+You will first output how you understand the task along with compact key ideas.
+Immediately after you will output changes.
+####
 
 Changes format notes:
 Use </truncated> to shorten <range-to-replace> if it is longer than 5 lines.
@@ -104,8 +112,8 @@ ${[
   .filter((example) => example !== '')
   .join('\n\n')}
 `
-/* Add comments within the prompt more easily
-   .replace(/####.*####\n/g, '') */
+    // Add comments within the prompt more easily
+    .replace(/\n*####[\s\S]*?####/g, '')
 
 /*
 I think generating these examples from source code would be more reliable.
