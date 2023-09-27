@@ -5,7 +5,18 @@ import { makeToResolvedChangesTransformer } from './resolveTargetRange'
 import { SessionContextManager } from 'document-helpers/document-manager'
 import { findSingleFileMatchingPartialPath } from 'helpers/vscode'
 import { safeWorkspaceQueryAllFiles } from 'document-helpers/file-search'
+import { startMultiFileEditing } from '.'
 
+/**
+ * This function is getting riduculous, I think its best to change testing
+ * strategy to use end to end tests for changes across multiple features.
+ *
+ * End to end tests will run slow, we can solve this by using caching for llm
+ * responses. Probably best done is a separate from openai.ts file with the
+ * same interface. Maybe it would be a wrapper around openai.ts?
+ * possiblyCachedOpenai.ts? Don't want prod control flow to be going through
+ * this though.
+ */
 export async function resolveAndApplyChangesToSingleFile(
   changes: Change[],
   editor: vscode.TextEditor,
@@ -64,6 +75,8 @@ export async function resolveAndApplyChangesToMultipleFiles(
       await applyResolvedChangesWhileShowingTheEditor(resolvedChange)
     }
   }
+
+  startMultiFileEditing
 }
 
 export const makeTemporaryFileWriterAndOpener = (temporaryFileName: string) => {

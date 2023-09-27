@@ -1,4 +1,4 @@
-import { completeInlineTasksCommand } from 'chase-bread/command'
+import { completeInlineTasksCommand } from 'commands/completeInlineTasks'
 import { SessionContext } from 'session'
 import * as vscode from 'vscode'
 

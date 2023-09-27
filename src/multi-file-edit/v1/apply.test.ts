@@ -10,6 +10,7 @@ import {
 import { parsePartialMultiFileEdit } from './parse'
 import * as fs from 'fs'
 import * as path from 'path'
+import { runTerminalCommand } from 'multi-file-edit/applyResolvedChange'
 
 suite('Apply Patch Tests', function () {
   this.timeout(20_000)
@@ -244,6 +245,7 @@ suite('Apply Patch Tests', function () {
     )
   })
 
+  // Split tests with both parsing + application into a separate file
   test('should correctly parse and apply a change', async () => {
     const payload = `
 <change>
@@ -392,5 +394,58 @@ export function getCurrentUserName() {
 `.replace(/ /g, '+'),
       'environment.ts',
     )
+  })
+
+  /* 
+   * Wait until we have cached llm responses setup to run e2e tests fast and
+   * avoid monkey patching or refactoring the code to be more testable
+   * 
+   * Test by hand :D
+   * 
+   * test('should correctly parse and apply a create file command', async () =>
+   * {
+       const createFileChange = `
+       <change>
+         <path>tmp/helloWorld.ts</path>
+   * <description>Creating a new file with Hello World content</description>
+   * <range-to-replace>
+         </range-to-replace>
+         <replacement>
+         // Hello World
+         console.log('Hello World');
+         </replacement>
+       </change>
+       `
+       const parsedChange = parsePartialMultiFileEdit(createFileChange)
+       const resolvedChanges = resolveAndApplyChangesToMultipleFiles */
+
+  /*   await startInteractiveMultiFileApplication()
+       // TODO: Implement the function to apply the change to create a new file */
+
+  //   // TODO: Check if the file is created with the correct content
+
+  /*   // TODO: Cleanup the created file
+     }) */
+
+  test('should correctly parse and apply a terminal command', async () => {
+    const terminalCommandChange = `
+    <terminal-command>
+    echo 'Hello, world!' > hello_world.txt
+    </terminal-command>
+    `
+    const parsedChange = parsePartialMultiFileEdit(terminalCommandChange)
+    runTerminalCommand(parsedChange.terminalCommands[0])
+
+    // Wait for the terminal command to finish
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+
+    const [fileUri] = await vscode.workspace.findFiles('hello_world.txt')
+    const fileContent = await vscode.workspace.fs
+      .readFile(fileUri)
+      .then((x) => x.toString())
+    assert.strictEqual(fileContent, 'Hello, world!\n')
+
+    // Cleanup
+    await vscode.workspace.fs.delete(fileUri)
   })
 })

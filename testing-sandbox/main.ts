@@ -1,1 +1,1 @@
-// @task implement so it will print out current user's name using helper functions
+// @task implement so it will print out current user's name using helper functions, also create a new readme.md file with the following contents: "# User greeter app". Finally run a terminal command "ls > ls-test-output.txt"

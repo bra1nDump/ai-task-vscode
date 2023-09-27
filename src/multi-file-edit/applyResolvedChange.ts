@@ -364,13 +364,15 @@ async function runTerminalCommands(
           context.markdownHighLevelFeedbackDocument,
           `\n### Running ${change.command}\n`,
         )
-        vscode.window
-          .createTerminal('AI-Task Extension')
-          .sendText(change.command)
+        runTerminalCommand(change.command)
         runCommands.add(index)
       }
     }
   }
+}
+
+export function runTerminalCommand(command: string) {
+  vscode.window.createTerminal('AI-Task Extension').sendText(command)
 }
 
 function debug(...args: any[]) {

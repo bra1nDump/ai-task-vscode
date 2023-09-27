@@ -40,6 +40,6 @@
     "foam.files.ignore": [
         ".vscode**/*",
         "node_modules",
-        "**/.task"
+        ".task/**/*",
     ],
 }
