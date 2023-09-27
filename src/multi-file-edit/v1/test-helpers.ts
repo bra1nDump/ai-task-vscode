@@ -23,6 +23,7 @@ export async function resolveAndApplyChangesToSingleFile(
         editor.document.uri,
       ),
     })),
+    terminalCommands: [],
 
     // Doesn't matter what we put here, plan is only for informational purposes
     task: '',
@@ -46,7 +47,7 @@ export async function resolveAndApplyChangesToMultipleFiles(
     (fileChange) =>
       findSingleFileMatchingPartialPath(
         allWorkspaceUris,
-        fileChange.filePathRelativeToWorkspace!,
+        fileChange.filePathRelativeToWorkspace,
       )!,
   )
 

@@ -103,19 +103,17 @@ hello(name);
     assert.ok(change2.oldChunk.fullContent.length)
   })
 
-  test('Almost empty patch', () => {
-    const almostEmptyPatch = '<change><r'
+  test('If path is not provided fully changes are not produced', () => {
+    const almostEmptyPatch = '<change><path>sr'
     const patch = parsePartialMultiFileEdit(almostEmptyPatch)
 
     assert.ok(patch)
-    const firstChange = patch.changes[0].change
-
-    assert.equal(firstChange.description, undefined)
+    assert.equal(patch.changes.length, 0)
   })
 
-  // We don't want the tag to stream in and get shown to the user
   test('Trailing tag that is not done printing yet gets dropped', () => {
-    const patchWithPartialClosingTag = '<change><range-to-replace>lol</ra'
+    const patchWithPartialClosingTag =
+      '<change><path>dummy/path.ts</path><range-to-replace>lol</ra'
     const patch = parsePartialMultiFileEdit(patchWithPartialClosingTag)
 
     assert.ok(patch)
@@ -129,7 +127,7 @@ hello(name);
   })
 
   test('Content is marked as finalized once it has a closing tag', () => {
-    const patchWithPartialClosingTag = `<file><change><range-to-replace>lol</range-to-replace><replacement></replacement></chan`
+    const patchWithPartialClosingTag = `<change><path>dummy/path.ts</path><range-to-replace>lol</range-to-replace><replacement></replacement></chan`
     const patch = parsePartialMultiFileEdit(patchWithPartialClosingTag)
 
     assert.ok(patch)
