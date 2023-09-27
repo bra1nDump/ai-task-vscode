@@ -30,8 +30,10 @@ export function projectDiagnosticEntriesWithAffectedFileContext(): DiagnosticEnt
       }
 
       // If it comes from a linter we don't care
-      if (fileDiagnostic.source !== 'typescript') {
-        console.log(`fileDiagnostic.source ${fileDiagnostic.source}`)
+      if (fileDiagnostic.source?.includes('lint')) {
+        console.log(
+          `fileDiagnostic.source is lint related ${fileDiagnostic.source}`,
+        )
         continue
       }
 

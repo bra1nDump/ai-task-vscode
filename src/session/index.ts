@@ -56,6 +56,17 @@ export interface SessionContext {
 export async function startSession(
   context: vscode.ExtensionContext,
 ): Promise<SessionContext> {
+  /* There's a hard assumption across the code base that there's at least one
+   * folder within the workspace. More like there's a single folder within the
+   * workspace. Abort early and say the extension does not support opening
+   * standalone files without a mounted workplace folder.
+   */
+  if (!vscode.workspace.workspaceFolders) {
+    throw new Error(
+      'ai-task needs at least one mounted workplace folder to work, apologies for this limitation',
+    )
+  }
+
   const {
     sessionMarkdownHighLevelFeedbackDocument,
     sessionMarkdownLowLevelFeedbackDocument,
