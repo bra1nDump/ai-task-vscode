@@ -17,19 +17,22 @@
     "[typescript]": {
         "editor.defaultFormatter": "dbaeumer.vscode-eslint"
     },
+    "[javascript]": {
+        "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
     // Turn off tsc task auto detection since we have the necessary tasks as npm scripts
     "typescript.tsc.autoDetect": "off",
     /**
     * Markdownlint is a Visual Studio Code extension that includes a library of rules to encourage standards and consistency for Markdown files. It also provides a cli that we can use later during CI.
     */
-    "[markdown]": {
-        "editor.formatOnSave": true,
-        "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
-    },
-    "markdownlint.config": {
-        "extends": "./configurations/.markdownlint.json"
-    },
-    "markdownlint.ignore": "./configurations/.markdownlintignore",
+    // "[markdown]": {
+    //     "editor.formatOnSave": true,
+    //     "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
+    // },
+    // "markdownlint.config": {
+    //     "extends": "./configurations/.markdownlint.json"
+    // },
+    // "markdownlint.ignore": "./configurations/.markdownlintignore",
     /**
     * Foam is an extension to VSCode that helps you organize your thoughts and connect your ideas using a [[wiki-style links]] and [[markdown]]
     */
