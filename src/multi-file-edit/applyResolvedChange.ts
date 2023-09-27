@@ -364,15 +364,18 @@ async function runTerminalCommands(
           context.markdownHighLevelFeedbackDocument,
           `\n### Running ${change.command}\n`,
         )
-        runTerminalCommand(change.command)
+        void runTerminalCommand(change.command)
         runCommands.add(index)
       }
     }
   }
 }
 
-export function runTerminalCommand(command: string) {
-  vscode.window.createTerminal('AI-Task Extension').sendText(command)
+export async function runTerminalCommand(command: string) {
+  const terminal = vscode.window.createTerminal('AI-Task Extension')
+  terminal.show()
+  await new Promise((resolve) => setTimeout(resolve, 200))
+  terminal.sendText(command)
 }
 
 function debug(...args: any[]) {

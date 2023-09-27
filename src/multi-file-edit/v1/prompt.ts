@@ -80,7 +80,7 @@ You will be given editable files with line numbers and optional information blob
 Your task is defined by @${
     configuration.taskIdentifier
   } mentions within your input.
-You will address the task by making changes to some files.
+You will address the task by making file changes, creating new files and running shell commands (assume macOS).
 Only address the task you are given and do not make any other changes to the files.
 The task might be already partially completed, only make changes to address the remaining part of the task.
 You will first output how you understand the task along with compact key ideas.
@@ -97,6 +97,7 @@ ${[
   ),
   editMiddleOfAJsxExpressionEnsureIndentIsPreserved(configuration),
   truncationExample(configuration),
+  allowingToCreateNewFilesAndRunShellCommands(configuration),
 ].join('\n\n')}
 `
 /* Add comments within the prompt more easily
@@ -418,6 +419,63 @@ function deduplicate(arr: number[]): number[] {
 }
 </replacement>
 </change>`
+}
+
+function allowingToCreateNewFilesAndRunShellCommands(
+  configuration: SessionConfiguration,
+) {
+  if (configuration.includeLineNumbers === false) {
+    console.log('This example requires line numbers')
+    /* Ideally we should return undefined here to signal to not include this
+       example */
+    return ''
+  }
+
+  const breadIdentifier = configuration.taskIdentifier
+  let editableFileContext: FileContext = {
+    filePathRelativeToWorkspace: 'src/hello-world.ts',
+    content: `// @${breadIdentifier} create a main file that calls hello world and run it using node
+function helloWorld() {
+  console.log('Hello World');
+}`,
+  }
+
+  if (configuration.includeLineNumbers) {
+    editableFileContext =
+      transformFileContextWithLineNumbers(editableFileContext)
+  }
+
+  const fileContextPromptPart = mapFileContextToXml(editableFileContext)
+  const resolvedRangeToReplace = extractMatchingLineRange(
+    '0:\n', // New file is empty
+    '0:',
+    '0:',
+  )
+
+  return `Input:
+${fileContextPromptPart}
+
+Output:
+<task>
+Create a main.ts file that uses helloWorld function.
+Compile it and run it using node.
+</task>
+
+<change>
+<path>main.ts</path>
+<range-to-replace>
+${resolvedRangeToReplace}
+</range-to-replace>
+<replacement>
+import { helloWorld } from './hello-world';
+helloWorld();
+</replacement>
+</change>
+
+<terminal-command>
+tsc main.ts && node main.js
+</terminal-command>
+`
 }
 
 /**

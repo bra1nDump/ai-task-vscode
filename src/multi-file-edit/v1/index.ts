@@ -2,7 +2,7 @@ import * as vscode from 'vscode'
 
 import { FileContext } from 'document-helpers/file-context'
 import { streamLlm } from 'helpers/openai'
-import { from } from 'ix/asynciterable'
+import { from, last } from 'ix/asynciterable'
 
 import { startInteractiveMultiFileApplication } from 'multi-file-edit/applyResolvedChange'
 import { parsePartialMultiFileEdit } from './parse'
@@ -105,6 +105,9 @@ export async function startMultiFileEditing(sessionContext: SessionContext) {
       parsedPatchStream,
       makeToResolvedChangesTransformer(sessionContext.documentManager),
     )
+    void last(patchSteam).then((value) => {
+      console.log(JSON.stringify(value, null, 2))
+    })
     await startInteractiveMultiFileApplication(patchSteam, sessionContext)
   }
 
