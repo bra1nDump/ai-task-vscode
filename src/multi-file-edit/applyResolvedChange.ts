@@ -1,8 +1,13 @@
 import * as vscode from 'vscode'
 import { AsyncIterableX, last as lastAsync } from 'ix/asynciterable'
+import { map as mapAsync } from 'ix/asynciterable/operators'
 import { SessionContext } from 'session'
 import { queueAnAppendToDocument } from 'helpers/vscode'
-import { ResolvedChange } from './types'
+import {
+  ResolvedChange,
+  ResolvedExistingFileEditChange,
+  ResolvedTerminalCommandChange,
+} from './types'
 import { targetRangeHighlightingDecoration } from './targetRangeHighlightingDecoration'
 
 /**
@@ -15,20 +20,36 @@ export async function startInteractiveMultiFileApplication(
   growingSetOfFileChanges: AsyncIterableX<ResolvedChange[]>,
   context: SessionContext,
 ) {
-  await Promise.allSettled([
-    /* It would be nice to have access to LLM stream here (or elsewhere )
-     * so we can show the user the prompt that was used to generate the
-     * changes, along with the changes This is to get more realtime feedback
-     * and for debugging
-     */
-    showFilesOnceWeKnowWeWantToModifyThem(growingSetOfFileChanges, context),
-    highlightTargetRangesAsTheyBecomeAvailable(
-      growingSetOfFileChanges,
-      context,
+  const existingFileEdits = growingSetOfFileChanges.pipe(
+    mapAsync((changes) =>
+      changes.filter(
+        (change): change is ResolvedExistingFileEditChange =>
+          change.type === 'ResolvedExistingFileEditChange',
+      ),
     ),
-    applyChangesAsTheyBecomeAvailable(growingSetOfFileChanges, context),
-    appendDescriptionsAsTheyBecomeAvailable(growingSetOfFileChanges, context),
-    showWarningWhenNoFileWasModified(growingSetOfFileChanges, context),
+  )
+  const terminalCommands = growingSetOfFileChanges.pipe(
+    mapAsync((changes) =>
+      changes.filter(
+        (change): change is ResolvedTerminalCommandChange =>
+          change.type === 'ResolvedTerminalCommandChange',
+      ),
+    ),
+  )
+  await Promise.allSettled([
+    Promise.allSettled([
+      /* It would be nice to have access to LLM stream here (or elsewhere )
+       * so we can show the user the prompt that was used to generate the
+       * changes, along with the changes This is to get more realtime feedback
+       * and for debugging
+       */
+      showFilesOnceWeKnowWeWantToModifyThem(existingFileEdits, context),
+      highlightTargetRangesAsTheyBecomeAvailable(existingFileEdits, context),
+      applyChangesAsTheyBecomeAvailable(existingFileEdits, context),
+      appendDescriptionsAsTheyBecomeAvailable(existingFileEdits, context),
+      showWarningWhenNoFileWasModified(existingFileEdits, context),
+    ]),
+    runTerminalCommands(terminalCommands, context),
   ])
 }
 
@@ -37,7 +58,7 @@ export type ChangeApplicationResult =
   | 'failedToApplyCanRetry'
 
 async function appendDescriptionsAsTheyBecomeAvailable(
-  growingSetOfFileChanges: AsyncIterableX<ResolvedChange[]>,
+  growingSetOfFileChanges: AsyncIterableX<ResolvedExistingFileEditChange[]>,
   context: SessionContext,
 ) {
   const changesWithFinalizedDescription = new Set<number>()
@@ -93,7 +114,7 @@ async function appendDescriptionsAsTheyBecomeAvailable(
 }
 
 async function applyChangesAsTheyBecomeAvailable(
-  growingSetOfFileChanges: AsyncIterableX<ResolvedChange[]>,
+  growingSetOfFileChanges: AsyncIterableX<ResolvedExistingFileEditChange[]>,
   context: SessionContext,
 ) {
   const appliedChangesIndices = new Set<number>()
@@ -124,7 +145,7 @@ async function applyChangesAsTheyBecomeAvailable(
 }
 
 async function highlightTargetRangesAsTheyBecomeAvailable(
-  growingSetOfFileChanges: AsyncIterableX<ResolvedChange[]>,
+  growingSetOfFileChanges: AsyncIterableX<ResolvedExistingFileEditChange[]>,
   context: SessionContext,
 ) {
   const shownEditorAndRevealedRange = new Set<number>()
@@ -209,7 +230,7 @@ async function highlightTargetRangesAsTheyBecomeAvailable(
 }
 
 async function showFilesOnceWeKnowWeWantToModifyThem(
-  growingSetOfFileChanges: AsyncIterableX<ResolvedChange[]>,
+  growingSetOfFileChanges: AsyncIterableX<ResolvedExistingFileEditChange[]>,
   context: SessionContext,
 ) {
   const shownChangeIndexes = new Set<string>()
@@ -230,7 +251,7 @@ async function showFilesOnceWeKnowWeWantToModifyThem(
 }
 
 async function showWarningWhenNoFileWasModified(
-  growingSetOfFileChanges: AsyncIterableX<ResolvedChange[]>,
+  growingSetOfFileChanges: AsyncIterableX<ResolvedExistingFileEditChange[]>,
   context: SessionContext,
 ) {
   const finalSetOfChangesToMultipleFiles = await lastAsync(
@@ -245,7 +266,7 @@ async function showWarningWhenNoFileWasModified(
 }
 
 export async function applyResolvedChangesWhileShowingTheEditor(
-  resolvedChange: ResolvedChange,
+  resolvedChange: ResolvedExistingFileEditChange,
 ): Promise<ChangeApplicationResult> {
   /* WARNING: The editor has to be shown before we can apply the changes!
      This is not very nice for parallelization.
@@ -329,6 +350,27 @@ export async function applyResolvedChangesWhileShowingTheEditor(
   return isApplicationSuccessful
     ? 'appliedSuccessfully'
     : 'failedToApplyCanRetry'
+}
+
+async function runTerminalCommands(
+  terminalCommands: AsyncIterableX<ResolvedTerminalCommandChange[]>,
+  context: SessionContext,
+) {
+  const runCommands = new Set<number>()
+  for await (const changesForMultipleFiles of terminalCommands) {
+    for (const [index, change] of changesForMultipleFiles.entries()) {
+      if (!runCommands.has(index)) {
+        void queueAnAppendToDocument(
+          context.markdownHighLevelFeedbackDocument,
+          `\n### Running ${change.command}\n`,
+        )
+        vscode.window
+          .createTerminal('AI-Task Extension')
+          .sendText(change.command)
+        runCommands.add(index)
+      }
+    }
+  }
 }
 
 function debug(...args: any[]) {

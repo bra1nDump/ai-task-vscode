@@ -8,7 +8,8 @@ import * as vscode from 'vscode'
  * type. This can be reused to represent closed tags on the passing stage as
  * well as stable fields in types like this one
  */
-export interface ResolvedChange {
+export interface ResolvedExistingFileEditChange {
+  type: 'ResolvedExistingFileEditChange'
   fileUri: vscode.Uri
   rangeToReplace: vscode.Range
   rangeToReplaceIsFinal: boolean
@@ -18,3 +19,13 @@ export interface ResolvedChange {
   /* Saving this reflector for when I have batch processing setup
      descriptionForHumanIsFinal: boolean */
 }
+
+export interface ResolvedTerminalCommandChange {
+  type: 'ResolvedTerminalCommandChange'
+  command: string
+  descriptionForHuman?: string
+}
+
+export type ResolvedChange =
+  | ResolvedExistingFileEditChange
+  | ResolvedTerminalCommandChange

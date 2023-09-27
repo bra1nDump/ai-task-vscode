@@ -1,6 +1,10 @@
 import * as vscode from 'vscode'
 import { LlmGeneratedPatchXmlV1, TargetRange } from './types'
-import { ResolvedChange } from 'multi-file-edit/types'
+import {
+  ResolvedChange,
+  ResolvedExistingFileEditChange,
+  ResolvedTerminalCommandChange,
+} from 'multi-file-edit/types'
 import { findSingleFileMatchingPartialPath } from 'helpers/vscode'
 import { SessionContextManager } from 'document-helpers/document-manager'
 import { vscodeRangeToLineRange } from 'document-helpers/document-snapshot'
@@ -21,46 +25,72 @@ import { vscodeRangeToLineRange } from 'document-helpers/document-snapshot'
  * give the file snapshots. The second mapper would adjust the ranges to the
  * current file content.
  *
- * I think this is a path to introduced more abstractions prematurely without
+ * I think this is a path to introduce more abstractions prematurely without
  * understanding the problem well enough.
  */
 export const makeToResolvedChangesTransformer = (
   sessionDocumentManager: SessionContextManager,
 ) =>
-  /* There's no more asynchronous code below, remove a sink and promise code.
-     Only update ranges that actually need to change @task @run   */
   function (multiFileChangeSet: LlmGeneratedPatchXmlV1): ResolvedChange[] {
-    /* Refactor: xml generator is already better represented with a flat set of
-     * changes let's update the rest of the code including this function to
-     * reflect that
-     */
-    const changesGroupedByFile = multiFileChangeSet.changes.map(
+    const resolvedFileEditChanges = multiFileChangeSet.changes.flatMap(
       ({
         change,
         filePathRelativeToWorkspace,
         isStreamFinilized,
       }): ResolvedChange[] => {
-        /* Find the matching document snapshot,
-         * we need those to perform an edit with an outdated range
+        /* Creating new files being an option throws a curveball and to find
+         * single file. We might find a single file that matches the partial
+         * path but it might actually be a partial path of a new file we're
+         * trying to create.
+         * Solution: Only match file once the path is fully known.
+         *
+         * Since creating a new file
+         * is very similar to making changes to existing files, let's simply
+         * handle file creation on the resolution stage
          */
-        if (!filePathRelativeToWorkspace) {
-          return []
-        }
+
         const allEditableUris = sessionDocumentManager.getEditableFileUris()
-        const fileUri = findSingleFileMatchingPartialPath(
+        const existingFileUri = findSingleFileMatchingPartialPath(
           allEditableUris,
           filePathRelativeToWorkspace,
         )
-        if (!fileUri) {
+
+        /* This means we're trying to create a new file.
+         * This is hacky but I don't see a simple solution with the current
+         * abstractions without a major refactor.
+         *
+         * Multiple new files might be created for the same path, I don't think
+         * it will cause any visible issues, but obviously this is a design
+         * issue and the hack.
+         *
+         * - Create a new empty file within the workspace
+         * - Add it to the session document manager, so it can later be resolved
+         * - Ignore this change
+         */
+        if (!existingFileUri) {
+          const newFileUri = vscode.Uri.joinPath(
+            vscode.workspace.workspaceFolders![0].uri,
+            filePathRelativeToWorkspace,
+          )
+          async function RACY_createNewEmptyFile() {
+            await vscode.workspace.fs.writeFile(newFileUri, new Uint8Array())
+            // VSCode is known to be slow to update the file system
+            await new Promise((resolve) => setTimeout(resolve, 50))
+            await sessionDocumentManager.addDocuments(
+              'Files created during session',
+              [newFileUri],
+            )
+          }
+          void RACY_createNewEmptyFile()
           return []
         }
 
         const documentSnapshot =
-          sessionDocumentManager.getDocumentSnapshot(fileUri)
+          sessionDocumentManager.getDocumentSnapshot(existingFileUri)
         if (!documentSnapshot) {
           throw new Error(
             `Document ${
-              fileUri.fsPath
+              existingFileUri.fsPath
             } not found in session. Files in the session: ${sessionDocumentManager.dumpState()} Unable to modify files but were not added to the snapshot. This is most likely a bug or LLM might have produced a bogus file path to modify.`,
           )
         }
@@ -87,12 +117,13 @@ export const makeToResolvedChangesTransformer = (
          */
         if (rangeInCurrentDocument.type === 'error') {
           throw new Error(
-            `Range is out of bounds of the document ${fileUri.fsPath}\nError: ${rangeInCurrentDocument.error}`,
+            `Range is out of bounds of the document ${existingFileUri.fsPath}\nError: ${rangeInCurrentDocument.error}`,
           )
         }
 
-        const resolvedChange: ResolvedChange = {
-          fileUri: fileUri,
+        const resolvedChange: ResolvedExistingFileEditChange = {
+          type: 'ResolvedExistingFileEditChange',
+          fileUri: existingFileUri,
           descriptionForHuman: change.description,
           rangeToReplace: rangeInCurrentDocument.value,
           rangeToReplaceIsFinal: change.oldChunk.isStreamFinalized,
@@ -104,7 +135,15 @@ export const makeToResolvedChangesTransformer = (
       },
     )
 
-    return changesGroupedByFile.flatMap((x) => x)
+    return [
+      ...resolvedFileEditChanges,
+      ...multiFileChangeSet.terminalCommands.map(
+        (terminalCommand): ResolvedTerminalCommandChange => ({
+          type: 'ResolvedTerminalCommandChange',
+          command: terminalCommand,
+        }),
+      ),
+    ]
   }
 
 /**

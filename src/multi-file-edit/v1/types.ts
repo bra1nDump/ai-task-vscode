@@ -43,7 +43,7 @@ export interface Change {
 export interface FileChange {
   /** If not present - means its streaming.
    * We will use this field early to show the file targeted with a change */
-  filePathRelativeToWorkspace?: string
+  filePathRelativeToWorkspace: string
   change: Change
   isStreamFinilized: boolean
 }
@@ -55,6 +55,7 @@ export interface LlmGeneratedPatchXmlV1 {
    */
   task: string
   changes: FileChange[]
+  terminalCommands: string[]
   /**
    * Not used now, but it's much easier to add a new field to an object type
    * versus an array

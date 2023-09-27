@@ -15,7 +15,7 @@ export async function resolveAndApplyChangesToSingleFile(
   await sessionDocumentManager.addDocuments('test', [editor.document.uri])
 
   const resolver = makeToResolvedChangesTransformer(sessionDocumentManager)
-  const resolvedChanges = await resolver({
+  const resolvedChanges = resolver({
     changes: changes.map((change) => ({
       change,
       isStreamFinilized: true,
@@ -31,7 +31,9 @@ export async function resolveAndApplyChangesToSingleFile(
 
   return Promise.all(
     resolvedChanges.map(async (resolvedChange) => {
-      return await applyResolvedChangesWhileShowingTheEditor(resolvedChange)
+      if (resolvedChange.type === 'ResolvedExistingFileEditChange') {
+        await applyResolvedChangesWhileShowingTheEditor(resolvedChange)
+      }
     }),
   )
 }
@@ -48,18 +50,18 @@ export async function resolveAndApplyChangesToMultipleFiles(
       )!,
   )
 
-  /* Still prototyping stick into the old API which does not include line
-     numbers */
   const sessionDocumentManager = new SessionContextManager(false)
   await sessionDocumentManager.addDocuments('test', documentUris)
-  const resolvedChanges = await makeToResolvedChangesTransformer(
+  const resolvedChanges = makeToResolvedChangesTransformer(
     sessionDocumentManager,
   )(patch)
 
   /* Need to apply serially to hold the application assumption that only a
      single editor is open at the same time */
   for (const resolvedChange of resolvedChanges) {
-    await applyResolvedChangesWhileShowingTheEditor(resolvedChange)
+    if (resolvedChange.type === 'ResolvedExistingFileEditChange') {
+      await applyResolvedChangesWhileShowingTheEditor(resolvedChange)
+    }
   }
 }
 
