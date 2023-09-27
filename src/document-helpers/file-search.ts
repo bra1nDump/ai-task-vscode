@@ -86,12 +86,8 @@ export async function safeWorkspaceQueryAllFiles(): Promise<vscode.Uri[]> {
     `.${getBreadIdentifier()}`,
     '.vscode-test',
   ]
-  const additionalExcludedDirectories =
-    config.get<string[]>('additionalExcludedDirectories') ?? []
-  const excludedDirectories = [
-    ...defaultExcludedDirectories,
-    ...additionalExcludedDirectories,
-  ]
+  const ignorePatterns = config.get<string[]>('ignorePatterns') ?? []
+  const excludedDirectories = [...defaultExcludedDirectories, ...ignorePatterns]
 
   const allFilesInWorkspace = await vscode.workspace.findFiles(
     '**/*.{ts,md,js,jsx,tsx,html,css,scss,less,json,yml,yaml}',
