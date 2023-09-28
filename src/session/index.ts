@@ -27,7 +27,7 @@ export interface SessionContext {
    */
   markdownLowLevelFeedbackDocument: vscode.TextDocument
 
-  documentManager: SessionContextManager
+  contextManager: SessionContextManager
 
   /**
    * When the user closes the editor with high level feedback this is our
@@ -146,7 +146,7 @@ export async function startSession(
     },
     markdownHighLevelFeedbackDocument: sessionMarkdownHighLevelFeedbackDocument,
     markdownLowLevelFeedbackDocument: sessionMarkdownLowLevelFeedbackDocument,
-    documentManager,
+    contextManager: documentManager,
     sessionAbortedEventEmitter,
     sessionEndedEventEmitter,
     subscriptions: [textDocumentCloseSubscription],
@@ -180,7 +180,7 @@ export async function closeSession(
   sessionContext.subscriptions.forEach(
     (subscription) => void subscription.dispose(),
   )
-  void sessionContext.documentManager.dispose()
+  void sessionContext.contextManager.dispose()
 
   // Dispose event emitters
   sessionContext.sessionAbortedEventEmitter.dispose()

@@ -20,10 +20,6 @@ export interface LlmPartialResponse {
 }
 
 /**
- * Refactoring:
- * - Parsing has no business in this function, but heh, its fine
- * - Error handling
- *
  * Returns AsyncIterableX to support nifty features like mapping.
  *
  * IMPORTANT: The iterable returned is multiplexed, meaning every time you get
@@ -137,7 +133,7 @@ export async function streamLlm(
     filter((part): part is LlmPartialResponse => !!part),
   )
 
-  // Multiplex the stream
+  // Multiplex the stream, so that we can iterate over it multiple times
   const multicastStream = multicast(simplifiedStream)
 
   void logger(`\n# Messages submitted:\n`)

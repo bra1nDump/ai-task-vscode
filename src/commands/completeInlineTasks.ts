@@ -51,7 +51,7 @@ export async function completeInlineTasksCommand(this: {
     return
   }
 
-  await sessionContext.documentManager.addDocuments(
+  await sessionContext.contextManager.addDocuments(
     'Files with bread mentions',
     fileUrisWithBreadMentions,
   )
@@ -59,7 +59,7 @@ export async function completeInlineTasksCommand(this: {
   /* .task files */
   const dotBreadFileUris = await findAndCollectDotBreadFiles(breadIdentifier)
   const breadFileBlobs = await getFilesContent(dotBreadFileUris)
-  sessionContext.documentManager.addBlobContexts(breadFileBlobs)
+  sessionContext.contextManager.addBlobContexts(breadFileBlobs)
 
   /* Before we have proper task expression parsing,
    * we will just search all task files for a mention of special
@@ -75,7 +75,7 @@ export async function completeInlineTasksCommand(this: {
   )
   if (includeTabs) {
     const openTabsFileUris = openedTabs()
-    await sessionContext.documentManager.addDocuments(
+    await sessionContext.contextManager.addDocuments(
       'Open tabs',
       openTabsFileUris,
     )
@@ -92,7 +92,7 @@ export async function completeInlineTasksCommand(this: {
     const filesWithErrors = diagnosticsAlongWithTheirFileContexts.map(
       (x) => x.uri,
     )
-    await sessionContext.documentManager.addDocuments(
+    await sessionContext.contextManager.addDocuments(
       'Files with errors',
       filesWithErrors,
     )
@@ -137,11 +137,11 @@ export async function completeInlineTasksCommand(this: {
         - Make sure you're not masking the compile error, but rather making necessary changes to the logic of the program
         `)
 
-      sessionContext.documentManager.addBlobContexts([compilationErrorContext])
+      sessionContext.contextManager.addBlobContexts([compilationErrorContext])
     }
   }
 
-  console.log('fileManager', sessionContext.documentManager.dumpState())
+  console.log('fileManager', sessionContext.contextManager.dumpState())
 
   await startMultiFileEditing(sessionContext)
 

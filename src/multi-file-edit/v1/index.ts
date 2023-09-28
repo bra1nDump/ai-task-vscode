@@ -14,8 +14,8 @@ import { map as mapAsync } from 'ix/asynciterable/operators'
 import { createMultiFileEditingMessages } from './prompt'
 
 export async function startMultiFileEditing(sessionContext: SessionContext) {
-  const fileContexts = sessionContext.documentManager.getEditableFileContexts()
-  const blobContexts = sessionContext.documentManager.getBlobContexts()
+  const fileContexts = sessionContext.contextManager.getEditableFileContexts()
+  const blobContexts = sessionContext.contextManager.getBlobContexts()
 
   const messages = createMultiFileEditingMessages(
     fileContexts,
@@ -103,7 +103,7 @@ export async function startMultiFileEditing(sessionContext: SessionContext) {
   async function startApplication() {
     const patchSteam = from(
       parsedPatchStream,
-      makeToResolvedChangesTransformer(sessionContext.documentManager),
+      makeToResolvedChangesTransformer(sessionContext.contextManager),
     )
     void last(patchSteam).then((value) => {
       console.log(JSON.stringify(value, null, 2))

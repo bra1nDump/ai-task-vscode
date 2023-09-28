@@ -4,6 +4,7 @@
 - **Multi-file**: Can edit/create multiple files at once
 - **Fast**: Applies patches instead of regenerating entire file contents
 - **Fix compile errors**: Fix trivial errors in bulk resulting from a refactor
+- **Terminal commands**: For tasks relying on a new dependency it can automatically instal it
 
 ![](docs/assets/demo.gif)
 [A complete video is on YouTube](https://youtu.be/wD8ZdIJ9p0Y)
@@ -13,7 +14,7 @@
 - Add a comment with your task `// @task split the function below into a helper and the main function, move helper to a new file`
 - Type `@run` followed by a space ` ` to start executing the task
   - Or `Cmd+y` on Mac and `Ctrl+y` on Windows
-- You can cancel the task at any moment by either closing the Preview window that opens to the right or by clicking the `Cancel` button in the bottom right corner of VSCode
+- Cancel the task at any moment by either closing the Preview window or by clicking the `Cancel` button in the bottom right corner of VSCode
 - If you want to undo changes - simply use `Cmd+z` on Mac and `Ctrl+z` on Windows, this will undo all changes made by the task per file
 
 # How to try it
@@ -22,12 +23,23 @@
 
 [Join the discord](https://discord.gg/D8V6Rc63wQ) to tell me why copilot is better, ask questions, or just lurk :D
 
+# Roadmap
+
+- Test on windows - looking for help!
+- Creating a language server for auto complete and highlight in @task comments and files
+- Context providers like @url "docs.apple.com" or @semantic-search "function that adds line number to a file"
+- Allow users to create custom javascript scripts to make whole code based transformations
+- Using VSCode Notebook as the chat interface
+
+[More complete list of upcoming features](docs/backlog.md)
+
 # Development
 
 ## Why consider contributing?
 
 - [Bets setting this project aside from competition](docs/bets.md)
-- In the case this becomes a company **your shares will be determined using LLM value scoring of your commit history, on the same terms as anyone elses who contributed**. The algorithm is not set in stone **this is more of a pinky promise (and we all know that holds in court lol)** to implement it at some point. [Equity splitting](docs/equity.md).
+- [Extension control flow overview](docs/architecture.md)
+- In the case this becomes a company **your shares will be determined using LLM value scoring of your commit history, on the same terms as anyone elses who contributed**. The algorithm is not set in stone **this is a pinky promise** (known to be more reliable than any other contract) to implement it at some point. [Equity splitting](docs/equity.md).
 
 > :warning: **License restricting commercial distribution**: This project currently uses Business Source License 1.1. I currently don't know where I want to take this project, so I'm using this license for the time being to protect it from people/companies freely taking code from it and making money off of it. If you want to use this project for commercial purposes, please contact me by email in my github profile or though discord. I can give you a commercial license for free, or licence a piece of code you are interested in specifically. I'm open to other suggestions as well.
 
@@ -41,12 +53,4 @@ npm install
 - To run the extension: Then select `Sandbox` and press `F5` or hit play.
 - To run tests: Then select `Tests` and press `F5` or hit play. If you only want to run a single test suite, within the test suite files use mocha `suite.only` or `test.only`
 
-# Roadmap
 
-- Creating a language server for auto complete in @task comments and files
-- Support creating brand new files and running shell commands
-- Context providers like @url "docs.apple.com" or @semantic-search "function that adds line number to a file"
-- Create tools, for example /tsc that llm can choose to run to gather more context or accomplish side effects
-- Using VSCode Notebook as the chat interface
-
-[More complete list of upcoming features](docs/backlog.md)
