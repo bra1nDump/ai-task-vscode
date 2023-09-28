@@ -1,19 +1,11 @@
 /*
-  Created a new interface
-  interface Streamed {
-    isStreamFinalized: boolean
-  }
-  I will later extend Change RangeToReplace to be Streamed
-  I will also create a custom string container that will be Streamed
+  TODO: Create a new type that will be used for both
+  type StreamingValue<Value> = 
+  { type: 'notStarted' } 
+  | { type: 'streaming', value: Value }
+  | { type: 'finished', value: Value }
 
- * I'm delaying this abstraction right now in favor off actually writing code
- * into the files.
-
-  Workaround
- * - I will require old chunk to be fully completed before trying to write to a
- * file, this is because we want to know the range and the file we're writing
- * to before we start writing. - I will also make nu chunk optional that will
- * signal that the old chunk is finally complete
+ * During the refactor we should also merge change type and file change
 */
 
 export type TargetRange =

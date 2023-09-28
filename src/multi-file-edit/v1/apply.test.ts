@@ -6,7 +6,7 @@ import {
   makeTemporaryFileWriterAndOpener,
   resolveAndApplyChangesToMultipleFiles,
   resolveAndApplyChangesToSingleFile,
-} from './test-helpers'
+} from './testHelpers'
 import { parsePartialMultiFileEdit } from './parse'
 import * as fs from 'fs'
 import * as path from 'path'

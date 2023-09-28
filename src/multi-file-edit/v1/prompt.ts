@@ -1,5 +1,5 @@
-import { FileContext } from 'document-helpers/file-context'
-import { transformFileContextWithLineNumbers } from 'document-helpers/file-context'
+import { FileContext } from 'context/manager'
+import { transformFileContextWithLineNumbers } from 'context/manager'
 import { OpenAiMessage } from 'helpers/openai'
 import { SessionConfiguration } from 'session'
 

@@ -1,6 +1,15 @@
 import * as vscode from 'vscode'
-import { DocumentSnapshot } from './document-snapshot'
-import { FileContext } from './file-context'
+import { DocumentSnapshot } from './documentSnapshot'
+
+export interface FileContext {
+  filePathRelativeToWorkspace: string
+  content: string
+}
+
+export interface StaticBlobContext {
+  blobName: string
+  content: string
+}
 
 /**
  * This is a document manager that will help us backdate edits throughout a
@@ -88,5 +97,19 @@ export class SessionContextManager {
   // Debugging
   dumpState() {
     return Array.from(this.uriToDocumentsSnapshots.keys()).join('\n')
+  }
+}
+
+export function transformFileContextWithLineNumbers(
+  fileContext: FileContext,
+): FileContext {
+  const snapshotContent = fileContext.content
+    .split('\n')
+    .map((line, index) => `${index}:${line}`)
+    .join('\n')
+
+  return {
+    ...fileContext,
+    content: snapshotContent,
   }
 }

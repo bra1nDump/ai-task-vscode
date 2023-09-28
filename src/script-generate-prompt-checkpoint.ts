@@ -35,7 +35,7 @@ tsconfigPaths.register({
 import {
   transformFileContextWithLineNumbers,
   FileContext,
-} from 'document-helpers/file-context'
+} from 'context/manager'
 import { createMultiFileEditingMessages } from 'multi-file-edit/v1/prompt'
 
 // Will be passed within package script

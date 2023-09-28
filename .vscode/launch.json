@@ -41,6 +41,24 @@
 			"preLaunchTask": "${defaultBuildTask}"
 		},
 		{
+			"name": "Empty Test Project",
+			"type": "extensionHost",
+			"request": "launch",
+			"args": [
+				"${workspaceFolder}/../test-project",
+				"--extensionDevelopmentPath=${workspaceFolder}",
+				// Remove all extensions that distract from recording the video, but keep github copilot for tab completion - its a feature when creating the task!
+				"--disable-extension",
+				"eamodio.gitlens",
+				"--disable-extension",
+				"pokey.cursorless"
+			],
+			"outFiles": [
+				"${workspaceFolder}/dist/**/*.js"
+			],
+			"preLaunchTask": "${defaultBuildTask}"
+		},
+		{
 			"name": "Git to Blog",
 			"type": "extensionHost",
 			"request": "launch",

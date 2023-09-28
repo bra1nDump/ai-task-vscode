@@ -13,10 +13,12 @@ export function resultMap<Value, NewValue, Error>(
   }
 }
 
-export function success<Value, Error>(value: Value): Result<Value, Error> {
+export function resultSuccess<Value, Error>(
+  value: Value,
+): Result<Value, Error> {
   return { type: 'success', value }
 }
 
-export function error<Value, Error>(error: Error): Result<Value, Error> {
+export function resultError<Value, Error>(error: Error): Result<Value, Error> {
   return { type: 'error', error }
 }

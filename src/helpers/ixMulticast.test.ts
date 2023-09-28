@@ -1,5 +1,5 @@
 import * as assert from 'assert'
-import { multicast } from './ix-multicast'
+import { multicast } from './ixMulticast'
 import { from } from 'ix/asynciterable'
 import { map as mapAsync } from 'ix/asynciterable/operators'
 

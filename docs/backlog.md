@@ -29,6 +29,8 @@
 
 ## UX - Product
 
+- New unsaved file should work as a @ task input
+  - It also currently hangs in this case - investigate
 - Keep reference to a terminal, don't keep creating new ones
 - Copy the style of open-interpreter
 - Onboarding

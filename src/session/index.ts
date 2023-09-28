@@ -1,4 +1,4 @@
-import { SessionContextManager } from 'document-helpers/document-manager'
+import { SessionContextManager } from 'context/manager'
 import * as vscode from 'vscode'
 
 export interface SessionConfiguration {
@@ -120,7 +120,7 @@ export async function startSession(
   void vscode.window.withProgress(
     {
       location: vscode.ProgressLocation.Notification,
-      title: 'ai-task are chasing your bread',
+      title: 'ai-task extension is working ...',
       cancellable: true,
     },
     async (_progress, cancellationToken) => {

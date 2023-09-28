@@ -2,14 +2,14 @@ import * as vscode from 'vscode'
 import {
   findAndCollectBreadMentionedFiles,
   findAndCollectDotBreadFiles,
-  getFilesContent,
-} from 'document-helpers/file-search'
-import { openedTabs } from 'helpers/openedTabs'
+} from 'context/atTask'
+import { getFilesContent } from 'helpers/fileSystem'
+import { openedTabs } from 'context/atTabs'
 import { SessionContext, getBreadIdentifier } from 'session'
-import { queueAnAppendToDocument } from 'helpers/vscode'
+import { queueAnAppendToDocument } from 'helpers/fileSystem'
 import { closeSession, startSession } from 'session'
 import { startMultiFileEditing } from 'multi-file-edit/v1'
-import { projectDiagnosticEntriesWithAffectedFileContext } from 'helpers/diagnostics'
+import { projectDiagnosticEntriesWithAffectedFileContext } from 'context/atErrors'
 import dedent from 'dedent'
 
 /**

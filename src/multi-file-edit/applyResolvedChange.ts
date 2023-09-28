@@ -2,7 +2,7 @@ import * as vscode from 'vscode'
 import { AsyncIterableX, last as lastAsync } from 'ix/asynciterable'
 import { map as mapAsync } from 'ix/asynciterable/operators'
 import { SessionContext } from 'session'
-import { queueAnAppendToDocument } from 'helpers/vscode'
+import { queueAnAppendToDocument } from 'helpers/fileSystem'
 import {
   ResolvedChange,
   ResolvedExistingFileEditChange,

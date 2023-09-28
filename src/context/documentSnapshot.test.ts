@@ -1,7 +1,7 @@
 import * as vscode from 'vscode'
 import * as assert from 'assert'
 
-import { DocumentSnapshot, vscodeRangeToLineRange } from './document-snapshot'
+import { DocumentSnapshot, vscodeRangeToLineRange } from './documentSnapshot'
 
 suite('DocumentSnapshot', () => {
   setup(async () => {

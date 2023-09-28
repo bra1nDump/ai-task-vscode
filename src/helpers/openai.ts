@@ -3,10 +3,10 @@ import * as vscode from 'vscode'
 
 import { AsyncIterableX, from, last } from 'ix/asynciterable'
 import { filter, map as mapAsync } from 'ix/asynciterable/operators'
-import { multicast } from './ix-multicast'
+import { multicast } from './ixMulticast'
 import { promiseToResult } from './catchAsync'
 import { ChatCompletionChunk } from 'openai/resources/chat'
-import { Result, error, success } from './result'
+import { Result, resultError, resultSuccess } from './result'
 import { SessionContext } from 'session'
 import { undefinedIfStringEmpty } from './optional'
 
@@ -65,14 +65,14 @@ export async function streamLlm(
     }
   }
   if (!key) {
-    return error(new Error('No OpenAI API key provided'))
+    return resultError(new Error('No OpenAI API key provided'))
   }
 
   /* Ensure we are not already running a stream,
      we want to avoid large bills if there's a bug and we start too many
      streams at once */
   if (isStreamRunning) {
-    return error(new Error('Stream is already running'))
+    return resultError(new Error('Stream is already running'))
   }
   isStreamRunning = true
 
@@ -93,10 +93,10 @@ export async function streamLlm(
     }),
   )
 
-  if (streamResult.kind === 'failure') {
+  if (streamResult.type === 'error') {
     console.log(JSON.stringify(streamResult.error, null, 2))
     isStreamRunning = false
-    return error(new Error(streamResult.error.message))
+    return resultError(new Error(streamResult.error.message))
   }
   const stream = streamResult.value
 
@@ -161,5 +161,5 @@ export async function streamLlm(
       isStreamRunning = false
     })
 
-  return success([multicastStream, stream.controller])
+  return resultSuccess([multicastStream, stream.controller])
 }

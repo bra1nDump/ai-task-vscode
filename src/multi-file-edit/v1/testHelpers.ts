@@ -2,9 +2,9 @@ import * as vscode from 'vscode'
 import { applyResolvedChangesWhileShowingTheEditor } from '../applyResolvedChange'
 import { Change, LlmGeneratedPatchXmlV1 } from './types'
 import { makeToResolvedChangesTransformer } from './resolveTargetRange'
-import { SessionContextManager } from 'document-helpers/document-manager'
-import { findSingleFileMatchingPartialPath } from 'helpers/vscode'
-import { safeWorkspaceQueryAllFiles } from 'document-helpers/file-search'
+import { SessionContextManager } from 'context/manager'
+import { findSingleFileMatchingPartialPath } from 'helpers/fileSystem'
+import { safeWorkspaceQueryAllFiles } from 'helpers/fileSystem'
 import { startMultiFileEditing } from '.'
 
 /**

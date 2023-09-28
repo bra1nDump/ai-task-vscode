@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 
-import { FileContext } from 'document-helpers/file-context'
+import { FileContext } from 'context/manager'
 import { streamLlm } from 'helpers/openai'
 import { from, last } from 'ix/asynciterable'
 
@@ -8,7 +8,7 @@ import { startInteractiveMultiFileApplication } from 'multi-file-edit/applyResol
 import { parsePartialMultiFileEdit } from './parse'
 import { makeToResolvedChangesTransformer } from './resolveTargetRange'
 import { SessionContext } from 'session'
-import { queueAnAppendToDocument } from 'helpers/vscode'
+import { queueAnAppendToDocument } from 'helpers/fileSystem'
 
 import { map as mapAsync } from 'ix/asynciterable/operators'
 import { createMultiFileEditingMessages } from './prompt'
