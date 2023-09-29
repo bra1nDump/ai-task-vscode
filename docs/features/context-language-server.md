@@ -31,7 +31,7 @@ Can I run tsc using a javascript, so from the extension code itself? .. probably
 - This rows a curveball at my original plan to avoid any servers and have a single runtime.
 
 # Next up:
-- Create CodeLensProvider, CallerProvider end CompletionItemProvider. No need to create a server
+- Create CodeLensProvider, ColorProvider end CompletionItemProvider. No need to create a server
 
 # Archive
 

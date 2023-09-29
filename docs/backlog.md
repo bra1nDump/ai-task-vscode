@@ -15,8 +15,11 @@
 
 # Next up
 
+- New file creation is confusing, we should use a different Xml tag for it. I can keep it on the level of parsing and not change the model 
 - Suggest respecting original indentation [20min]
 - Refine the truncation mechanism to truncate more aggressively
+  - Be more permissive when range to replace does not entirely match file contents. Basically only match on the line numbers, and I also thought we had the mechanism of matching any of the prefix or suffix lines it does not need to be all of themthe bug seems to be related to that
+- @ completions popup everywhere, even when @is not typed. This is annoying and should be fixed
 
 ## Front page
 
@@ -35,6 +38,9 @@ ERR cannot open file:///Users/kirilldubovitskiy/projects/bread/icon-v2.png. Deta
 
 ## UX - Product
 
+- Highlighting contexts expressions with better files.
+  - It is tricky to pick good token types as they are very likely to collide with the existing colors in the file, possibly confusing the user.
+  - I can also provide my own a theme that will only effect my own tokens, but that is more work. Let's do this later
 - Only addressed tasks within the open tabs, not the entire project
 - New unsaved file should work as a @ task input
   - It also currently hangs in this case - investigate
