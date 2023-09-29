@@ -11,7 +11,7 @@
     "url": "https://github.com/bra1nDump/bread"
   },
   "engines": {
-    "vscode": "^1.81.0"
+    "vscode": "^1.79.0"
   },
   "categories": [
     "Other"
@@ -76,7 +76,7 @@
     "@types/mocha": "^10.0.1",
     "@types/node": "20.2.5",
     "@types/source-map-support": "^0.5.7",
-    "@types/vscode": "^1.81.0",
+    "@types/vscode": "^1.79.0",
     "@typescript-eslint/eslint-plugin": "^6.4.0",
     "@typescript-eslint/parser": "^6.4.0",
     "@vscode/test-electron": "^2.3.2",

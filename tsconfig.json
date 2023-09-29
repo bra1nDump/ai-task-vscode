@@ -7,7 +7,7 @@
 			// This is needed for ix - library with async iterable operators
 			"DOM"
 		],
-		"outDir": "out/src",
+		"outDir": "out",
 		"sourceMap": true,
 		"rootDir": "src",
 		"strict": true,

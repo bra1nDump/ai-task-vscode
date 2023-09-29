@@ -29,15 +29,13 @@
 - Does github readme has SEO?
 
 # Bugs
-```log
-ERR cannot open file:///Users/kirilldubovitskiy/projects/bread/icon-v2.png. Detail: File seems to be binary and cannot be opened as text: CodeExpectedError: cannot open file:///Users/kirilldubovitskiy/projects/bread/icon-v2.png. Detail: File seems to be binary and cannot be opened as text
-```
 
 # Unsorted
 
 
 ## UX - Product
 
+- One printing out task, in the examples use `code`  also use a better key ideas format to keep things short and more readable. Developers do love lists
 - Highlighting contexts expressions with better files.
   - It is tricky to pick good token types as they are very likely to collide with the existing colors in the file, possibly confusing the user.
   - I can also provide my own a theme that will only effect my own tokens, but that is more work. Let's do this later
