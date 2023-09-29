@@ -29,6 +29,13 @@
 - Does github readme has SEO?
 
 # Bugs
+- New file is repeatedly failing
+- <new-file>
+<path>readme.md</path>
+<content>
+# User greeter app
+</content>
+</new-file>
 
 # Unsorted
 

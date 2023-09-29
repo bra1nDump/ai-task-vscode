@@ -1,9 +1,9 @@
 {
   "name": "ai-task",
-  "displayName": "AI Task - Multifile edits",
+  "displayName": " AI Coding Assistant: multi-file edits",
   "publisher": "bra1nDump",
   "description": "Leave comments across your codebase with @task mentions and have AI address them, even if it requires multi-file changes",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "license": "Business Source License 1.1",
   "icon": "icon-v2.png",
   "repository": {
@@ -14,10 +14,20 @@
     "vscode": "^1.79.0"
   },
   "categories": [
+    "Programming Languages",
+    "Machine Learning",
     "Other"
   ],
   "activationEvents": [
     "*"
+  ],
+  "keywords": [
+    "ai",
+    "coding assistant",
+    "multi-file edits",
+    "inline instructions",
+    "llm",
+    "gpt"
   ],
   "main": "./dist/extension.js",
   "contributes": {

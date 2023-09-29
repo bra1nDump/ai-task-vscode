@@ -84,7 +84,8 @@ suite('VSCode Extension Command Tests', function () {
       await vscode.workspace.openTextDocument(lsTestOutputUri)
     assert.ok(lsTestOutputDocument.getText().includes(`helloWorld.ts`))
 
-    // Clean up after the test
+    /* Clean up after the test (for some reason does not actually clean
+       anything up) */
     await vscode.workspace.fs.delete(readmeUri)
     await vscode.workspace.fs.delete(lsTestOutputUri)
   })
