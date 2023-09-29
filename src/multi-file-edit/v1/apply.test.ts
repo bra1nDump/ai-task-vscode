@@ -435,7 +435,7 @@ export function getCurrentUserName() {
     </terminal-command>
     `
     const parsedChange = parsePartialMultiFileEdit(terminalCommandChange)
-    runTerminalCommand(parsedChange.terminalCommands[0])
+    await runTerminalCommand(parsedChange.terminalCommands[0])
 
     // Wait for the terminal command to finish
     await new Promise((resolve) => setTimeout(resolve, 1000))

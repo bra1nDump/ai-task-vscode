@@ -1,5 +1,7 @@
 import { completeInlineTasksCommand } from 'commands/completeInlineTasks'
 import { TaskExpressionCompletionItemProvider } from 'context/language-features/completionItemProvider'
+import { TaskCodeLensProvider } from 'context/language-features/codeLensProvider'
+import { TaskSemanticTokensProvider } from 'context/language-features/semanticTokensProvider'
 import { SessionContext } from 'session'
 import * as vscode from 'vscode'
 
@@ -56,7 +58,7 @@ export async function activate(context: vscode.ExtensionContext) {
         // only trigger if @run is in the line
         isRunInLine(event.document, event.contentChanges[0].range.start.line)
       ) {
-        console.log('triggering command trough @run mention')
+        console.log('triggering command trough @ run mention')
         /* Previously I was undoing the enter change,
          but it introduces additional jitter to the user experience */
         void commandWithBoundSession()
@@ -65,6 +67,10 @@ export async function activate(context: vscode.ExtensionContext) {
   )
 
   const allLanguages = await vscode.languages.getLanguages()
+  const languageForFiles = allLanguages.map((language) => ({
+    language,
+    scheme: 'file',
+  }))
 
   /* This needs to support other identifiers for tasks,
      it seems like I should lift the configuration out of the session,
@@ -72,17 +78,27 @@ export async function activate(context: vscode.ExtensionContext) {
      providers 
      The closest matching example I have found so far https://github.com/microsoft/vscode/blob/ba36ae4dcca57ba64a9b61e5f4eca88b6e0bc4db/extensions/typescript-language-features/src/languageFeatures/directiveCommentCompletions.ts
      */
+  const sessionConfiguration = {
+    taskIdentifier: 'task',
+    enableNewFilesAndShellCommands: true,
+    includeLineNumbers: true,
+  }
+
   context.subscriptions.unshift(
     vscode.languages.registerCompletionItemProvider(
-      allLanguages.map((language) => {
-        return { language, scheme: 'file' }
-      }),
-      new TaskExpressionCompletionItemProvider({
-        taskIdentifier: 'task',
-        enableNewFilesAndShellCommands: true,
-        includeLineNumbers: true,
-      }),
+      languageForFiles,
+      new TaskExpressionCompletionItemProvider(sessionConfiguration),
       '@',
+    ),
+    vscode.languages.registerCodeLensProvider(
+      languageForFiles,
+      new TaskCodeLensProvider(sessionConfiguration),
+    ),
+    vscode.languages.registerDocumentSemanticTokensProvider(
+      languageForFiles,
+      new TaskSemanticTokensProvider(sessionConfiguration),
+
+      TaskSemanticTokensProvider.tokensLegend,
     ),
   )
 }
