@@ -1,4 +1,5 @@
 import { completeInlineTasksCommand } from 'commands/completeInlineTasks'
+import { TaskExpressionCompletionItemProvider } from 'context/language-features/completionItemProvider'
 import { SessionContext } from 'session'
 import * as vscode from 'vscode'
 
@@ -61,5 +62,23 @@ export function activate(context: vscode.ExtensionContext) {
         void commandWithBoundSession()
       }
     }),
+  )
+
+  /* This needs to support other identifiers for tasks,
+     it seems like I should lift the configuration out of the session,
+     and make it a global configuration. Register task expression language
+     providers 
+     The closest matching example I have found so far https://github.com/microsoft/vscode/blob/ba36ae4dcca57ba64a9b61e5f4eca88b6e0bc4db/extensions/typescript-language-features/src/languageFeatures/directiveCommentCompletions.ts
+     */
+  context.subscriptions.unshift(
+    vscode.languages.registerCompletionItemProvider(
+      { language: 'typescript' },
+      new TaskExpressionCompletionItemProvider({
+        taskIdentifier: 'task',
+        enableNewFilesAndShellCommands: true,
+        includeLineNumbers: true,
+      }),
+      '@',
+    ),
   )
 }
