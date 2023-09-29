@@ -16,6 +16,15 @@
 		"baseUrl": "src",
 	},
 	"include": [
-		"src/**/*",
+		"src/",
+		// eslint is giving me a hard time because it wants to reference a single project configuration, but we have a composite project
+		// "configurations/"
 	],
+	// We have a dependency typescript package that creates a language server bundle that needs to be rebuild when we are creating the extension
+	// https://www.typescriptlang.org/docs/handbook/project-references.html#what-is-a-project-reference
+	"references": [
+		{
+			"path": "lsp-task-expression"
+		}
+	]
 }

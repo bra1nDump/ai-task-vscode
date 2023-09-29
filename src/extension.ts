@@ -1,6 +1,16 @@
 import { completeInlineTasksCommand } from 'commands/completeInlineTasks'
 import { SessionContext } from 'session'
 import * as vscode from 'vscode'
+import * as path from 'path'
+
+import {
+  LanguageClient,
+  LanguageClientOptions,
+  ServerOptions,
+  TransportKind,
+} from 'vscode-languageclient/node'
+
+let client: LanguageClient | undefined
 
 export function activate(context: vscode.ExtensionContext) {
   console.log('activating bread extension')
@@ -62,4 +72,48 @@ export function activate(context: vscode.ExtensionContext) {
       }
     }),
   )
+
+  /* Kickoff language server
+     The server is implemented in node */
+  const serverModule = context.asAbsolutePath(path.join('dist', 'server.js'))
+
+  /* If the extension is launched in debug mode then the debug server options
+     are used Otherwise the run options are used */
+  const serverOptions: ServerOptions = {
+    run: { module: serverModule, transport: TransportKind.ipc },
+    debug: {
+      module: serverModule,
+      transport: TransportKind.ipc,
+    },
+  }
+
+  // Options to control the language client
+  const clientOptions: LanguageClientOptions = {
+    // Register the server for all types of text documents
+    documentSelector: [{ scheme: 'file', language: '*' }],
+    synchronize: {
+      /* 
+       * IS THIS UNUSED? Notify the server about file changes to '.clientrc
+       * files contained in
+         the workspace */
+      fileEvents: vscode.workspace.createFileSystemWatcher('**/.clientrc'),
+    },
+  }
+
+  // Create the language client and start the client.
+  client = new LanguageClient(
+    'languageServerAiTask',
+    'Language Server AI Task',
+    serverOptions,
+    clientOptions,
+  )
+
+  // Start the client. This will also launch the server
+  void client.start().catch((err) => {
+    console.error('error starting language server', err)
+  })
+}
+
+export async function deactivate() {
+  await client?.stop()
 }

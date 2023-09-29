@@ -10,7 +10,8 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 6,
     sourceType: "module",
-    project: "./tsconfig.json",
+    // I need to create another dummy tsconfig within this folder for these files to be linted
+    project: ["./tsconfig.json", "lsp-task-expression/tsconfig.json"],
   },
 
   plugins: ["@typescript-eslint", "unused-imports", "prettier"],
@@ -68,8 +69,8 @@ module.exports = {
     "out",
     "dist",
     "**/*.d.ts",
-    "**/*.js",
-    "**/*.mjs",
+    "**/out",
     "testing-sandbox",
+    "configurations"
   ],
 };
