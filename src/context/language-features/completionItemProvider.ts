@@ -34,7 +34,10 @@ export class TaskExpressionCompletionItemProvider
         label,
         vscode.CompletionItemKind.Snippet,
       )
-      item.detail = 'bread task expression'
+      /* I don't think showing details makes much sense,
+       * at least let's wait until we have a dynamic set of context providers
+       * item.detail = 'bread task expression'
+       */
       item.range = new vscode.Range(
         position.line,
         Math.max(0, position.character - (match[1] ? match[1].length : 0)),

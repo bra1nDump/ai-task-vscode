@@ -35,6 +35,7 @@ ERR cannot open file:///Users/kirilldubovitskiy/projects/bread/icon-v2.png. Deta
 
 ## UX - Product
 
+- Only addressed tasks within the open tabs, not the entire project
 - New unsaved file should work as a @ task input
   - It also currently hangs in this case - investigate
 - Keep reference to a terminal, don't keep creating new ones

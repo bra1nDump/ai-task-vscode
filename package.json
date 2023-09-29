@@ -60,7 +60,7 @@
     "bundle:prod": "npm run webpack:base -- --mode production --devtool false",
     "/// --build is needed for composite projects to work ///": "https://www.typescriptlang.org/docs/handbook/project-references.html#build-mode-for-typescript",
     "watch-tsc": "tsc --build --watch",
-    "build": "rm -rd out/ && npm run tsc --build && npm run bundle:prod",
+    "build": "npx rimraf out/ && tsc --build && npm run bundle:prod",
     "------------section-test------------": "",
     "test": "npm run build && node out/test/runTest.js",
     "------------section-extension-packaging-and-publishing------------": "Refactor: move package + publishing to the install-local script and have it accept --publish --package-and-install-local",

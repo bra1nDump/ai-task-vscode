@@ -2,6 +2,7 @@ import * as vscode from 'vscode'
 
 import { getDocumentText } from '../helpers/fileSystem'
 import { safeWorkspaceQueryAllFiles } from '../helpers/fileSystem'
+import { resultWithDefault } from 'helpers/result'
 
 /**
  * Find all files in the workspace with @breadIdentifier mention
@@ -14,7 +15,7 @@ export async function findAndCollectBreadMentionedFiles(
   const fileContexts = await Promise.all(
     allFilesInWorkspace.map(
       async (fileUri): Promise<vscode.Uri | undefined> => {
-        const fileText = await getDocumentText(fileUri)
+        const fileText = resultWithDefault('', await getDocumentText(fileUri))
         const containsBreadMention = fileText.includes(`@${breadIdentifier}`)
 
         if (containsBreadMention) {

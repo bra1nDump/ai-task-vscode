@@ -13,6 +13,17 @@ export function resultMap<Value, NewValue, Error>(
   }
 }
 
+export function resultWithDefault<Value>(
+  defaultValue: Value,
+  result: Result<Value, unknown>,
+): Value {
+  if (result.type === 'success') {
+    return result.value
+  } else {
+    return defaultValue
+  }
+}
+
 export function resultSuccess<Value, Error>(
   value: Value,
 ): Result<Value, Error> {

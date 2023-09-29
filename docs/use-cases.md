@@ -86,3 +86,15 @@ For example I remember I'm mapping my file context too file context with lines b
 
 ## Alternatives 
 You can simply regenerate the entire file in any of the LLM applications
+
+# Replace all open documents calls with a helper function that does not throw
+
+## Blocked by
+Whole code base changes
+
+# When you are writing something catch that you're not using the existing utility functions
+
+## Blocked by
+Semantic search
+Whole code base understanding cash
+Proactive linting

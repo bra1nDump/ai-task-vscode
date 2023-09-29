@@ -51,7 +51,8 @@ export class SessionContextManager {
      * similar to how we do it now.
      */
 
-    await Promise.all(tasks)
+    // Opening test document might fail, so let's use allSettled
+    await Promise.allSettled(tasks)
   }
 
   dispose() {

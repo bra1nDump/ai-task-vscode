@@ -1,26 +1,30 @@
 import { getBreadIdentifier } from 'session'
 import * as vscode from 'vscode'
+import { Result, resultMap, resultWithDefault } from './result'
+import { throwingPromiseToResult } from './catchAsync'
+
+export async function openTextDocument(
+  uri: vscode.Uri,
+): Promise<Result<vscode.TextDocument, unknown>> {
+  return await throwingPromiseToResult(vscode.workspace.openTextDocument(uri))
+}
 
 /**
  * Previously we were reading from the file system which caused the contents to
  * be stale.
  */
-
-export async function getDocumentText(uri: vscode.Uri): Promise<string> {
-  const document = await vscode.workspace.openTextDocument(uri)
-  return document.getText()
+export async function getDocumentText(
+  uri: vscode.Uri,
+): Promise<Result<string, unknown>> {
+  return resultMap(
+    (document) => document.getText(),
+    await openTextDocument(uri),
+  )
 }
 
 export async function getFileOnDiskText(uri: vscode.Uri): Promise<string> {
   const fileContentBuffer = await vscode.workspace.fs.readFile(uri)
   return fileContentBuffer.toString()
-}
-
-export async function getFilePossiblyDirtyContent(
-  uri: vscode.Uri,
-): Promise<string> {
-  const document = await vscode.workspace.openTextDocument(uri)
-  return document.getText()
 }
 
 export function findFilesMatchingPartialPath(
@@ -80,7 +84,9 @@ export async function queueAnAppendToDocument(
   pendingEdits.set(document.uri.toString(), editPromise)
 
   await editPromise
-} /**
+}
+
+/**
  * Improvement ideas:
  * Find a package that does glob and respects .gitignore
  *
@@ -102,7 +108,6 @@ export async function queueAnAppendToDocument(
  *
  * Fix: does not include documents when its not saved
  */
-
 export async function safeWorkspaceQueryAllFiles(): Promise<vscode.Uri[]> {
   const config = vscode.workspace.getConfiguration('ai-task')
 
@@ -117,9 +122,11 @@ export async function safeWorkspaceQueryAllFiles(): Promise<vscode.Uri[]> {
   const ignorePatterns = config.get<string[]>('ignorePatterns') ?? []
   const excludedDirectories = [...defaultExcludedDirectories, ...ignorePatterns]
 
+  /* WARNING: We want to limit the files to text files only,
+   * we are making a pretty hard assumption that all the files we're trying to
+   * open are text files. This has crashed the extension previously */
   const allFilesInWorkspace = await vscode.workspace.findFiles(
-    // '**/*.{ts,md,js,jsx,tsx,html,css,scss,less,json,yml,yaml,txt}',
-    '',
+    '**/*.{ts,md,js,jsx,tsx,html,css,scss,less,json,yml,yaml,txt}',
     `**/{${excludedDirectories.join(',')}}`,
     1000,
   )
@@ -134,10 +141,13 @@ export async function safeWorkspaceQueryAllFiles(): Promise<vscode.Uri[]> {
 }
 
 export async function getFilesContent(uris: vscode.Uri[]): Promise<string[]> {
-  return Promise.all(
+  const fileContents = await Promise.all(
     uris.map(async (uri) => {
-      const document = await vscode.workspace.openTextDocument(uri)
-      return document.getText()
+      return resultWithDefault<undefined | string>(
+        undefined,
+        await getDocumentText(uri),
+      )
     }),
   )
+  return fileContents.filter((x): x is string => x !== undefined)
 }

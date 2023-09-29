@@ -3,7 +3,7 @@ import { TaskExpressionCompletionItemProvider } from 'context/language-features/
 import { SessionContext } from 'session'
 import * as vscode from 'vscode'
 
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
   console.log('activating bread extension')
 
   // Poor men's dependency injection
@@ -64,6 +64,8 @@ export function activate(context: vscode.ExtensionContext) {
     }),
   )
 
+  const allLanguages = await vscode.languages.getLanguages()
+
   /* This needs to support other identifiers for tasks,
      it seems like I should lift the configuration out of the session,
      and make it a global configuration. Register task expression language
@@ -72,7 +74,9 @@ export function activate(context: vscode.ExtensionContext) {
      */
   context.subscriptions.unshift(
     vscode.languages.registerCompletionItemProvider(
-      { language: 'typescript' },
+      allLanguages.map((language) => {
+        return { language, scheme: 'file' }
+      }),
       new TaskExpressionCompletionItemProvider({
         taskIdentifier: 'task',
         enableNewFilesAndShellCommands: true,
