@@ -25,11 +25,12 @@
 			},
 			"group": "build"
 		},
+		///// Compound tasks /////
 		{
 			"label": "watch-tsc-and-rebundle",
 			"dependsOn": [
 				"npm: webpack:watch",
-				"npm: watch-tsc"
+				"npm: watch-tsc",
 			],
 			"problemMatcher": [],
 			"group": {
@@ -37,13 +38,13 @@
 				"kind": "build",
 			}
 		},
+		///// Helpers /////
 		{
 			"label": "Build and Install Locally",
 			"type": "npm",
 			"script": "install-local",
 			"problemMatcher": []
 		},
-		// Task to publish
 		{
 			"label": "Publish",
 			"type": "npm",

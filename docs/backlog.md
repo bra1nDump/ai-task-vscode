@@ -25,7 +25,13 @@
 - Switch to mp4 - no looping needed
 - Does github readme has SEO?
 
+# Bugs
+```log
+ERR cannot open file:///Users/kirilldubovitskiy/projects/bread/icon-v2.png. Detail: File seems to be binary and cannot be opened as text: CodeExpectedError: cannot open file:///Users/kirilldubovitskiy/projects/bread/icon-v2.png. Detail: File seems to be binary and cannot be opened as text
+```
+
 # Unsorted
+
 
 ## UX - Product
 
