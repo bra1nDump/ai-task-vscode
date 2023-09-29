@@ -3,9 +3,9 @@
   "displayName": " AI Coding Assistant: multi-file edits",
   "publisher": "bra1nDump",
   "description": "Leave comments across your codebase with @task mentions and have AI address them, even if it requires multi-file changes",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "license": "Business Source License 1.1",
-  "icon": "icon-v2.png",
+  "icon": "icon.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/bra1nDump/bread"
