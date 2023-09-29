@@ -21,6 +21,7 @@
   - Be more permissive when range to replace does not entirely match file contents. Basically only match on the line numbers, and I also thought we had the mechanism of matching any of the prefix or suffix lines it does not need to be all of themthe bug seems to be related to that
 - @ completions popup everywhere, even when @is not typed. This is annoying and should be fixed
 
+
 ## Front page
 
 ### Record gifs for new file + cmd 3 more takes on the main video [2hr + 2hr editing] NO DAVINCI RESOLVE ?
@@ -38,6 +39,7 @@
 </new-file>
 
 # Unsorted
+
 
 
 ## UX - Product

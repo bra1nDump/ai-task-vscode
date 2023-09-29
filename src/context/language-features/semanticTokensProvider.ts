@@ -37,6 +37,9 @@ export class TaskSemanticTokensProvider
       { expression: '@' + 'tabs', type: 'decorator' },
       { expression: '@' + 'errors', type: 'decorator' },
     ]
+    const specialExpressionsWithSpaces = specialExpressions
+      // For highlighting lets ensure this is a stand alone keyword
+      .map((x) => ({ ...x, expression: ` ${x.expression}` }))
 
     const linesWithExpressions = Array.from(
       { length: document.lineCount },
@@ -44,7 +47,9 @@ export class TaskSemanticTokensProvider
     )
       .map((lineText, line) => ({ lineText, line }))
       .filter(({ lineText }) =>
-        specialExpressions.some((exp) => lineText.includes(exp.expression)),
+        specialExpressionsWithSpaces.some((exp) =>
+          lineText.includes(exp.expression),
+        ),
       )
 
     const builder = new vscode.SemanticTokensBuilder(
@@ -52,7 +57,7 @@ export class TaskSemanticTokensProvider
     )
 
     linesWithExpressions.forEach(({ lineText, line }) => {
-      specialExpressions.forEach(({ expression, type }) => {
+      specialExpressionsWithSpaces.forEach(({ expression, type }) => {
         let index = lineText.indexOf(expression)
         while (index !== -1) {
           const range = new vscode.Range(

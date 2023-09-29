@@ -3,7 +3,7 @@
   "displayName": " AI Coding Assistant: multi-file edits",
   "publisher": "bra1nDump",
   "description": "Leave comments across your codebase with @task mentions and have AI address them, even if it requires multi-file changes",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "license": "Business Source License 1.1",
   "icon": "icon-v2.png",
   "repository": {
