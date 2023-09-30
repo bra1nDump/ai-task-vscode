@@ -39,3 +39,6 @@ Assumes you have read [README.md](/README.md).
         - Allow parallel edits (some sort of change queue, or applying changes in the background using workspace edits)
         - Allowing the user to interrupt the LLM and continue later after adjusting it's course
 
+
+// @task @tabs tell me what you think I should do next for my project. Consider the priorities, give me 10 tasks that each might take around 1 hour to complete. Don't repeat items exactly as they appear in the readme 
+// Reply on this line
