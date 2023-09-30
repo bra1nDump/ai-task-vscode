@@ -59,6 +59,22 @@
 			"preLaunchTask": "${defaultBuildTask}"
 		},
 		{
+			// Soft linked to the current project, overcoming vscode not being able to open two windows of the same directory
+			"name": "Self",
+			"type": "extensionHost",
+			"request": "launch",
+			"args": [
+				"${workspaceFolder}/../bread-soft-linked",
+				"--extensionDevelopmentPath=${workspaceFolder}",
+				"--disable-extension",
+				"dbaeumer.vscode-eslint",
+			],
+			"outFiles": [
+				"${workspaceFolder}/dist/**/*.js"
+			],
+			"preLaunchTask": "${defaultBuildTask}"
+		},
+		{
 			"name": "Git to Blog",
 			"type": "extensionHost",
 			"request": "launch",

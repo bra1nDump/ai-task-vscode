@@ -118,9 +118,34 @@ export const makeToResolvedChangesTransformer = (
          * Instead we should somehow report this change as not resolved
          */
         if (rangeInCurrentDocument.type === 'error') {
-          throw new Error(
+          /* BUG: This seems to fail even when things are finish?
+             still a bug but lets investigate later 
+           * Causes an infinite loop, probably because we are shifting the
+           * array by one
+           * 
+           * Shit, should have written down the repro when I had it :D
+             */
+          console.trace(
             `Range is out of bounds of the document ${existingFileUri.fsPath}\nError: ${rangeInCurrentDocument.error}`,
           )
+          /* HACK to avoid shifting array,
+           * assumes this happens once this change was already finalized,
+           * again, bad modeling symptom.
+           *  - we should really not be resolving changes that got finalized!
+           */
+          return [
+            {
+              type: 'ResolvedExistingFileEditChange',
+              fileUri: existingFileUri,
+              descriptionForHuman: change.description,
+              // noop
+              rangeToReplace: new vscode.Range(0, 0, 0, 0),
+              rangeToReplaceIsFinal: change.oldChunk.isStreamFinalized,
+              // noop
+              replacement: '',
+              replacementIsFinal: isStreamFinilized,
+            },
+          ]
         }
 
         const resolvedChange: ResolvedExistingFileEditChange = {

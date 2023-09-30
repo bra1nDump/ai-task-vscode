@@ -345,6 +345,14 @@ export async function applyResolvedChangesWhileShowingTheEditor(
     )
   }
 
+  /*
+   * Save the document after the final change, done so when running commands we
+   * can rely on the file being fresh
+   * Questionable decision for user experience, but good for demo purposes */
+  if (resolvedChange.replacementIsFinal) {
+    await document.save()
+  }
+
   debug('Document after replacement', document.getText())
 
   return isApplicationSuccessful
