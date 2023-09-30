@@ -155,7 +155,7 @@ import {
 } from 'vscode'
 
 import { Result, resultMap } from '../helpers/result'
-import { FileContext, transformFileContextWithLineNumbers } from './manager'
+import { FileContext, transformFileContextWithLineNumbers } from './types'
 
 export interface LineRange {
   start: number

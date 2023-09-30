@@ -1,5 +1,4 @@
-import { FileContext } from 'context/manager'
-import { transformFileContextWithLineNumbers } from 'context/manager'
+import { FileContext, transformFileContextWithLineNumbers } from 'context/types'
 import { OpenAiMessage } from 'helpers/openai'
 import { SessionConfiguration } from 'session'
 
@@ -27,15 +26,19 @@ import { SessionConfiguration } from 'session'
  * generate files along side this file for reference and debugging.
  */
 
-/* CURRENTLY NO PLANNING ENABLED for simplification and speed reasons.
- * Planning is very important as chain of thought prompting is currently
- * state of the art. There's also structure chain of thought which promises
- * to be better https://arxiv.org/pdf/2305.06599.pdf
- *
- * I'm considering to move pseudocode algorithms for the replacement into the
- * examples for the diff generation prompt. I'm hoping by reducing locality
- * it will improve the quality of the replacement.
- */
+/* 
+ * I have roughly enabled planning again, I have noticed the tasks are very
+ * verbose but don't help guide the model. Right now the prompt is kind of
+ * messy
+   CURRENTLY NO PLANNING ENABLED for simplification and speed reasons.
+   Planning is very important as chain of thought prompting is currently
+   state of the art. There's also structure chain of thought which promises
+   to be better https://arxiv.org/pdf/2305.06599.pdf
+   
+   I'm considering to move pseudocode algorithms for the replacement into the
+   examples for the diff generation prompt. I'm hoping by reducing locality
+   it will improve the quality of the replacement.
+    */
 
 export function createMultiFileEditingMessages(
   fileContexts: FileContext[],
@@ -74,30 +77,27 @@ export function createMultiFileEditingMessages(
   return messages
 }
 
+/*
+Removed, I think its redundant with the examples 
+ * First output how you understand the task along with compact key ideas. Use
+ * technical style of writing and be concise. Immediately after you will output
+ * changes.
+*/
 const multiFileEditPrompt = (configuration: SessionConfiguration) =>
   `You are a coding assistant.
 You will be given editable files with line numbers and optional information blobs as input.
-Your task is defined by @${
+User provides the task using @${
     configuration.taskIdentifier
   } mentions within your input.
-Tasks might mention @${'run'}, @${'tabs'} and others - these are how the user starts the task and adds additional information, these are not directly related to the task.
+Other mentions @${'run'}, @${'tabs'}, @${'errors'} are not directly part of the task.
+
 Your output should address the task by making file changes, creating new files and running shell commands (assume macOS).
 Only address the task you are given and do not make any other changes.
-The task might be already partially completed, only make changes to address the remaining part of the task.
-You will first output how you understand the task along with compact key ideas.
-Immediately after you will output changes.
-
-####
-This is a comment and will not be included in the prompt, including all the leading new lines.
-
-The following seems redundant, lets keep it because there might have been a reason we added this.
-You will first output how you understand the task along with compact key ideas.
-Immediately after you will output changes.
-####
+The task might be partially completed, only make changes to address the remaining part of the task.
 
 Format notes:
 Use </truncated> to shorten <range-to-replace> if it is longer than 5 lines.
-Never use </truncated> or other means of truncation within <replacement> - type out entire content.
+Never use </truncated> or other means of truncation within <replacement> - type out exactly what should replace the <range-to-replace>.
 
 Examples of your input and output pairs follow.
 
@@ -114,170 +114,80 @@ ${[
   .join('\n\n')}
 `
     // Add comments within the prompt more easily
-    .replace(/\n*####[\s\S]*?####/g, '')
-
-/*
-I think generating these examples from source code would be more reliable.
-This schema would be enforced, configuration would be easier
-*/
-
-const typescriptHelloWorldParametrizationMultiFileExample = (
-  configuration: SessionConfiguration,
-) => {
-  const breadIdentifier = configuration.taskIdentifier
-  let editableFileContext1: FileContext = {
-    filePathRelativeToWorkspace: 'src/hello-world.ts',
-    content: `function helloWorld() {
-  // @${breadIdentifier} pass name to be greeted
-  console.log('Hello World');
-}`,
-  }
-
-  let editableFileContext2: FileContext = {
-    filePathRelativeToWorkspace: 'src/main.ts',
-    content: `// @${breadIdentifier} use hello world from a helper module and use environment variable to get the user name`,
-  }
-
-  if (configuration.includeLineNumbers) {
-    editableFileContext1 =
-      transformFileContextWithLineNumbers(editableFileContext1)
-    editableFileContext2 =
-      transformFileContextWithLineNumbers(editableFileContext2)
-  }
-
-  let optionalAlgorithm1 = ''
-  let optionalAlgorithm2 = ''
-  if (false) {
-    optionalAlgorithm1 = `<description>
-Context: function
-Input: name: thing to be greeted of type string
-Output: void
-Algorithm:
-Print out "Hello " followed by the name
-</description>`
-    optionalAlgorithm2 = `<description>
-Context: top level code
-Algorithm:
-Import hello function from helper module
-Get user name from environment variable USER_NAME
-Call hello function with user name
-</description>`
-  }
-
-  const fileContextPromptPart1 = mapFileContextToXml(editableFileContext1)
-  const fileContextPromptPart2 = mapFileContextToXml(editableFileContext2)
-
-  const rangeToReplace1 = extractMatchingLineRange(
-    editableFileContext1.content,
-    'function helloWorld() {',
-    '}',
-  )
-
-  const rangeToReplace2 = extractMatchingLineRange(
-    editableFileContext2.content,
-    `// @${breadIdentifier} use hello world from a helper module and use environment variable to get the user name`,
-    `// @${breadIdentifier} use hello world from a helper module and use environment variable to get the user name`,
-  )
-
-  return `Input: 
-${fileContextPromptPart1}
-
-${fileContextPromptPart2}
-
-Output:
-<task>
-Add a parameter to \`helloWorld\` function to pass the name to be greeted.
-Use the updated function in \`main.ts\` to greet the user found in the \`USER_NAME\` environment variable defaulting to \`World\`.
-</task>
-
-<change>
-<path>src/hello-world.ts</path>
-<range-to-replace>
-${rangeToReplace1}
-</range-to-replace>${optionalAlgorithm1}
-<replacement>
-export function hello(name: string) {
-  console.log(\`Hello \${name}\`);
-}
-</replacement>
-</change>
-<change>
-<path>src/main.ts</path>
-<range-to-replace>
-${rangeToReplace2}
-</range-to-replace>${optionalAlgorithm2}
-<replacement>
-import { hello } from './helper';
-const name = process.env.USER_NAME || 'World';
-hello(name);
-</replacement>
-</change>
-`
-}
+    .replace(/\s*####[\s\S]*?####/g, '')
 
 const typescriptHelloWorldParametrizationMultiFileExampleV2WithInsert = (
   configuration: SessionConfiguration,
 ) => {
   const breadIdentifier = configuration.taskIdentifier
-  let greeterFileContext: FileContext = {
-    filePathRelativeToWorkspace: 'src/greet.ts',
-    content: ``,
-  }
+  /* let greeterFileContext: FileContext = {
+       filePathRelativeToWorkspace: 'src/greet.ts',
+       content: ``,
+     } */
 
   let mainFileContext: FileContext = {
     filePathRelativeToWorkspace: 'src/main.ts',
-    content: `// @${breadIdentifier} Refactor by extracting and parametrizing a greeting function into a helper file
+    content: `// @${breadIdentifier} Refactor by extracting and parametrizing a greeting function into a helper file. Read user name from the process arguments
 console.log('Hello World');
 `,
   }
 
   if (configuration.includeLineNumbers) {
-    greeterFileContext = transformFileContextWithLineNumbers(greeterFileContext)
+    // greeterFileContext = transformFileContextWithLineNumbers(greeterFileContext)
     mainFileContext = transformFileContextWithLineNumbers(mainFileContext)
   }
 
-  const greeterTargetRange = extractMatchingLineRange(
-    greeterFileContext.content,
-    '',
-    '',
-  )
+  /* const greeterTargetRange = extractMatchingLineRange(
+       greeterFileContext.content,
+       '',
+       '',
+     ) */
 
   const rangeToReplace2 = extractMatchingLineRange(
     mainFileContext.content,
-    `// @${breadIdentifier} Refactor by extracting and parametrizing a greeting function into a helper file`,
+    `// @${breadIdentifier} Refactor by extracting and parametrizing a greeting function into a helper file. Read user name from the process arguments`,
     `console.log('Hello World');`,
   )
+
+  /* I'm sort of reverting to structured prompting,
+   * aka writing out a pretty detailed plan for the changes, still keeping the
+   * old 'algorithm' stuff around
+   */
 
   return `Input: 
 ${mapFileContextToXml(mainFileContext)}
 
-${mapFileContextToXml(greeterFileContext)}
-
 Output:
 <task>
-Move greeting code from \`main.ts\` to \`greeter.ts\`. Parametrize the greeting function to accept a name to be greeted. Use the new function in \`main.ts\` to greet the user found in the \`USER_NAME\` environment variable defaulting to \`World\`.
+- Refactor \`main.ts\` by extracting and parametrizing a greeting function into a helper file. Read user name from the process arguments
+- In new file \`greet.ts\` create \`greet(name: string)\`
+- In \`main.ts\`
+  - Get username from argv[2]
+  - Use \`greet\` function to greet the user
 </task>
 
 <change>
 <path>src/greet.ts</path>
 <range-to-replace>
-${greeterTargetRange}
+0:
 </range-to-replace>
 <replacement>
-export function hello(name: string) {
-    console.log(\`Hello \${name}\`);
+export function greet(name: string) {
+  console.log(\`Hello \${name}\`);
 }
 </replacement>
 </change>
+
 <change>
 <path>src/main.ts</path>
 <range-to-replace>
 ${rangeToReplace2}
 </range-to-replace>
 <replacement>
-import { hello } from './helper';
-const name = process.env.USER_NAME || 'World';
-hello(name);
+import { greet } from './greet';
+
+const name = process.argv[2] ?? 'No name provided';
+greet(name);
 </replacement>
 </change>
 `
@@ -297,23 +207,10 @@ const editMiddleOfAJsxExpressionEnsureIndentIsPreserved = (
   configuration: SessionConfiguration,
 ) => {
   let editableFileContext: FileContext = {
-    filePathRelativeToWorkspace: 'counter.ts',
-    content: `// @${configuration.taskIdentifier} use a single div instead of a list to show the count
-const Counter: React.FC = () => {
-  const [count, setCount] = useState<number>(0);
-
-  return (
-    <div>
-      <button onClick={() => count > 0 && setCount(count - 1)}>-</button>
-      <button onClick={() => setCount(count + 1)}>+</button>
-      <ul>
-        {Array.from({ length: count },
-         (_, i) =>
-           <li key={i}>Item {i + 1}</li>)
-        }
-      </ul>
-    </div>
-  );
+    filePathRelativeToWorkspace: 'Inventory.tsx',
+    content: `// @${configuration.taskIdentifier} only show list of items
+const Inventory = (props: { allItemNamesForPurchase: string[] }) => {
+  return <div>{allItemNamesForPurchase.length}</div>;
 };`,
   }
 
@@ -337,8 +234,8 @@ const Counter: React.FC = () => {
 
   const rangeToReplace = extractMatchingLineRange(
     editableFileContext.content,
-    '<ul>',
-    '</ul>',
+    'return <div>{count}</div>;',
+    'return <div>{count}</div>;',
   )
 
   return `Input:
@@ -346,33 +243,29 @@ ${fileContextPromptPart}
 
 Output:
 <task>
-Use a single div instead of a list to show the count.
+- \`Inventory\` shows number of items, should show the list of item names instead
+- Replace the div with a ul with li elements for each item name
 </task>
 
 <change>
-<path>counter.ts</path>
+<path>Inventory.ts</path>
 <range-to-replace>
 ${rangeToReplace}
 </range-to-replace>${optionalAlgorithm}
 <replacement>
-      <div>{count}</div>
+  return (
+    <ul>
+      {Array.from({ length: count },
+        (_, i) =>
+          <li key={i}>Item {i + 1}</li>)
+      }
+    </ul>
+  );
 </replacement>
 </change>
 `
 }
 
-/**
- * UNUSED, I'm stripping out the algorithm for chain of thought to speed up the
- * changes and set baseline performance without the algorithms with the new
- * updated prompt. I'm also removing truncation.
- *
- * - Maybe don't focus on truncation because we don't really need it with line
- * ranges?
- * - This will additionally remove the distraction of the model needing to know
- * how to truncate the code, good for the demos
- *
- * Remember this algorithm is not parametrized, and is always included
- */
 const truncationExample = (configuration: SessionConfiguration) => {
   let editableFileContext: FileContext = {
     filePathRelativeToWorkspace: 'duplicate.ts',
@@ -409,8 +302,9 @@ ${fileContextPromptPart}
 
 Output:
 <task>
-Optimize the function. 
-Key ideas: Let's use a set to keep track of unique items.
+- Optimize \`deduplicate\`
+- \`deduplicate\` uses \`Array.includes\`
+- Use \`Set\` instead, duplicates are not added
 </task>
 
 <change>
@@ -421,14 +315,11 @@ ${rangeToReplace}
 <replacement>
 function deduplicate(arr: number[]): number[] {
   const uniqueSet = new Set<number>();
-  const result: number[] = [];
   for (const item of arr) {
-    if (!uniqueSet.has(item)) {
-      result.push(item);
-      uniqueSet.add(item);
-    }
+    // Duplicate items will not be added to the set
+    uniqueSet.add(item);
   }
-  return result;
+  return Array.from(uniqueSet);
 }
 </replacement>
 </change>`
@@ -451,8 +342,8 @@ function allowingToCreateNewFilesAndRunShellCommands(
 
   const breadIdentifier = configuration.taskIdentifier
   let editableFileContext: FileContext = {
-    filePathRelativeToWorkspace: 'src/hello-world.ts',
-    content: `// @${breadIdentifier} create a main file that calls hello world. Then compile and run it using node.
+    filePathRelativeToWorkspace: 'src/helloWorld.ts',
+    content: `// @${breadIdentifier} create a main file that calls hello world. Compile and run it.
 function helloWorld() {
   console.log('Hello World');
 }`,
@@ -464,34 +355,30 @@ function helloWorld() {
   }
 
   const fileContextPromptPart = mapFileContextToXml(editableFileContext)
-  const resolvedRangeToReplace = extractMatchingLineRange(
-    '0:\n', // New file is empty
-    '0:',
-    '0:',
-  )
 
   return `Input:
 ${fileContextPromptPart}
 
 Output:
 <task>
-Create a main.ts file that uses helloWorld function.
-Compile it and run it using node.
+- In new file \`main.ts\` import and call \`helloWorld\`
+- Compile with \`tsc\` and run with \`node\`
 </task>
 
 <change>
 <path>main.ts</path>
 <range-to-replace>
-${resolvedRangeToReplace}
+0:
 </range-to-replace>
 <replacement>
-import { helloWorld } from './hello-world';
+import { helloWorld } from './helloWorld';
+
 helloWorld();
 </replacement>
 </change>
 
 <terminal-command>
-tsc main.ts && node main.js
+tsc main.ts helloWorld.ts && node main.js
 </terminal-command>
 `
 }
@@ -545,7 +432,7 @@ function extractMatchingLineRange(
    *
    * Currently unused
    */
-  if (lineRange.length > 6) {
+  if (lineRange.length > 3) {
     const truncatedLineRange = [
       ...lineRange.slice(0, 2),
       '<truncated/>',
