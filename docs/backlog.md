@@ -15,28 +15,14 @@
 
 # Next up
 
-- New file creation is confusing, we should use a different Xml tag for it. I can keep it on the level of parsing and not change the model 
-- Suggest respecting original indentation [20min]
-- Refine the truncation mechanism to truncate more aggressively
-  - Be more permissive when range to replace does not entirely match file contents. Basically only match on the line numbers, and I also thought we had the mechanism of matching any of the prefix or suffix lines it does not need to be all of themthe bug seems to be related to that
-
-
-
-## Front page
-
-### Record gifs for new file + cmd 3 more takes on the main video [2hr + 2hr editing] NO DAVINCI RESOLVE ?
+## Record gifs for new file + cmd 3 more takes on the main video [2hr + 2hr editing] NO DAVINCI RESOLVE ?
 
 - Switch to mp4 - no looping needed
-- Does github readme has SEO?
+- Pretty up readme
+- Fix the name: ai-task coding assistant
+- Have a task alias - ai-task? for demo / brand purposes
 
 # Bugs
-- New file is repeatedly failing
-- <new-file>
-<path>readme.md</path>
-<content>
-# User greeter app
-</content>
-</new-file>
 
 - Changing markdown files doesn't currently work, it opens the preview for the file, but then switches the preview to show the file we are trying to edit. Preview always shows the current md file on the left ...
   - It is also unable to actually apply change to the file for some reason - investigate
@@ -45,6 +31,7 @@
 
 ## UX - Product
 
+- Cleanup @task mentions after running
 - One printing out task, in the examples use `code`  also use a better key ideas format to keep things short and more readable. Developers do love lists
 - Highlighting contexts expressions with better files.
   - It is tricky to pick good token types as they are very likely to collide with the existing colors in the file, possibly confusing the user.
@@ -83,7 +70,14 @@ Will function calling help me getter faster? I would not need to deal with Xml p
 
 - Improve new line character usage across the code base. This will suck because we print many logs relying on \n. For now I will just fix the code that has to do with line splitting for range calculation because that definitely needs to be robust.
 - Create a company and apply for open ai credits
+- Suggest respecting original indentation [20min]
+- New file creation is confusing, we should use a different Xml tag for it. I can keep it on the level of parsing and not change the model 
+
+- Refine the truncation mechanism to truncate more aggressively
+  - Be more permissive when range to replace does not entirely match file contents. Basically only match on the line numbers, and I also thought we had the mechanism of matching any of the prefix or suffix lines it does not need to be all of themthe bug seems to be related to that
+
 
 # Done
 
 - @ completions popup everywhere, even when @is not typed. This is annoying and should be fixed
+

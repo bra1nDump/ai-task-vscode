@@ -19,7 +19,6 @@ export class TaskCodeLensProvider implements vscode.CodeLensProvider {
       .filter(({ lineText }) => lineText.includes(`@${taskIdentifier}`))
 
     linesWithTasks.forEach(({ lineText, line }) => {
-      const matchStart = lineText.indexOf(`@${taskIdentifier}`)
       const range = new vscode.Range(line, 0, line, lineText.length)
       const command: vscode.Command = {
         title: `Run @${taskIdentifier}`,

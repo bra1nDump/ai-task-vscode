@@ -116,7 +116,7 @@ export async function safeWorkspaceQueryAllFiles(): Promise<vscode.Uri[]> {
     '.git',
     'out',
     'dist',
-    `.${getBreadIdentifier()}`,
+    `.${getBreadIdentifier()}/sessions`,
     '.vscode-test',
   ]
   const ignorePatterns = config.get<string[]>('ignorePatterns') ?? []

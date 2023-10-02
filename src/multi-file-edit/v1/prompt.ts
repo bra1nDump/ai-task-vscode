@@ -211,7 +211,7 @@ const editMiddleOfAJsxExpressionEnsureIndentIsPreserved = (
     content: `// @${configuration.taskIdentifier} only show list of items
 const Inventory = (props: { allItemNamesForPurchase: string[] }) => {
   return <div>{allItemNamesForPurchase.length}</div>;
-};`,
+}`,
   }
 
   if (configuration.includeLineNumbers) {
@@ -234,8 +234,8 @@ const Inventory = (props: { allItemNamesForPurchase: string[] }) => {
 
   const rangeToReplace = extractMatchingLineRange(
     editableFileContext.content,
-    'return <div>{count}</div>;',
-    'return <div>{count}</div>;',
+    'return <div>{allItemNamesForPurchase.length}</div>;',
+    'return <div>{allItemNamesForPurchase.length}</div>;',
   )
 
   return `Input:
@@ -270,15 +270,15 @@ const truncationExample = (configuration: SessionConfiguration) => {
   let editableFileContext: FileContext = {
     filePathRelativeToWorkspace: 'duplicate.ts',
     content: `// @${configuration.taskIdentifier} optimize
-function deduplicate(arr: number[]): number[] {
-  const result: number[] = []
-  for (const item of arr) {
+function deduplicate(array: number[]): number[] {
+  const result: number[] = [];
+  for (const item of array) {
     if (!result.includes(item)) {
-      result.push(item)
+      result.push(item);
     }
   }
-  return result
-};`,
+  return result;
+}`,
   }
 
   if (configuration.includeLineNumbers) {
@@ -289,8 +289,8 @@ function deduplicate(arr: number[]): number[] {
 
   const rangeToReplace = extractMatchingLineRange(
     editableFileContext.content,
-    'function deduplicate(arr: number[]): number[] {',
-    '};',
+    'function deduplicate(array: number[]): number[] {',
+    '}',
   )
 
   /* <--! Use </truncated> to shorten the range to replace if they are longer
@@ -313,9 +313,9 @@ Output:
 ${rangeToReplace}
 </range-to-replace>
 <replacement>
-function deduplicate(arr: number[]): number[] {
+function deduplicate(array: number[]): number[] {
   const uniqueSet = new Set<number>();
-  for (const item of arr) {
+  for (const item of array) {
     // Duplicate items will not be added to the set
     uniqueSet.add(item);
   }
@@ -398,7 +398,15 @@ function mapFileContextToXml(fileContext: FileContext): string {
   )
 }
 
-/** I'm using a content based to find the target range because the line
+/**
+ * This function overall sucks because its flacky, should probably error out if
+ * multiple matches are found, instead I will return last one for end term and
+ * first one for start term.
+ *
+ * IDEA: A better version would be to add // start // end comments in the code
+ * and use those to find the range.
+ *
+ * I'm using a content based to find the target range because the line
  * numbers are implicit and I don't want to keep truck of them in case they
  * change in the future or their format changes.
  *
@@ -423,7 +431,11 @@ function extractMatchingLineRange(
 ): string {
   const lines = content.split('\n')
   const startLineIndex = lines.findIndex((line) => line.includes(startTerm))
-  const endLineIndex = lines.findIndex((line) => line.includes(endTerm))
+  // Find last index of the end term
+  const endLineIndex =
+    lines.length -
+    1 -
+    [...lines].reverse().findIndex((line) => line.includes(endTerm))
   const lineRange = lines.slice(startLineIndex, endLineIndex + 1)
 
   /* Including two lines in the front and in the end because the last line
