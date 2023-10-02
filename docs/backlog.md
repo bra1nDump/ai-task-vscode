@@ -31,6 +31,7 @@
 
 ## UX - Product
 
+- There should be stop and stop and undo buttons 
 - Cleanup @task mentions after running
 - One printing out task, in the examples use `code`  also use a better key ideas format to keep things short and more readable. Developers do love lists
 - Highlighting contexts expressions with better files.

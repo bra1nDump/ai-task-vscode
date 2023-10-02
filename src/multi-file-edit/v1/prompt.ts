@@ -93,6 +93,7 @@ Other mentions @${'run'}, @${'tabs'}, @${'errors'} are not directly part of the 
 
 Your output should address the task by making file changes, creating new files and running shell commands (assume macOS).
 Only address the task you are given and do not make any other changes.
+The task might be not well specified and you should use your best judgment on what the user might have meant.
 The task might be partially completed, only make changes to address the remaining part of the task.
 
 Format notes:

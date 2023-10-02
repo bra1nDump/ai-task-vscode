@@ -1,3 +1,22 @@
+# October 1
+Unfortunately, the Debug Console in VS Code does not stop at breakpoints when calling functions directly from it. This is a known limitation of the debugger and it's currently not possible to step into a function from the debug console.
+
+===============================================================================
+ Language            Files        Lines         Code     Comments       Blanks
+===============================================================================
+ JavaScript              2          136           87           26           23
+ JSON                    2          136          136            0            0
+ Shell                   1            2            1            1            0
+ TypeScript             41         5116         3332         1269          515
+-------------------------------------------------------------------------------
+ Markdown               32         2282            0         1710          572
+ |- JSON                 1            9            9            0            0
+ |- TypeScript           2          107           73           28            6
+ (Total)                           2398           82         1738          578
+===============================================================================
+ Total                  78         7672         3556         3006         1110
+===============================================================================
+
 # September 18 - Flattened the prompt, notes on what kind of changes developer make
 
 - Change type from string to an array of strings

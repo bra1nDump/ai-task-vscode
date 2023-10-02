@@ -211,6 +211,12 @@ export class DocumentSnapshot {
           return
         }
 
+        if (change.contentChanges.length > 1) {
+          console.debug(
+            'DocumentSnapshot: Received a change with multiple content changes, we might need to reverse this one to work well?',
+            JSON.stringify(change.contentChanges),
+          )
+        }
         this.contentChanges.push(...change.contentChanges)
       },
     )
@@ -306,6 +312,19 @@ export class DocumentSnapshot {
         /* Case 4: contentChange is an insert in the end of the tracked range
            Extend the range by an extra line if necessary */
         currentRange.end += lineDisplacement
+      } else if (lineDisplacement === 0) {
+        /* Case 5: We really are only scared of the edits that change line
+           count, as we address by lines only (not characters).
+         * We might even want to move this case to the top of the if.
+
+         * So if the edit does not change line count, we can safely ignore it.
+         * I suspect there might be some cases when we were throwing an error
+         * after some automated change is made by vscode extensions, like
+         * adding a * on the new line in the comment. We should be able to
+         * ignore those changes. Anyways its been crashing sometimes and I am
+         * not sure why. This is my best guess.
+         */
+        continue
       }
       // Default: contentChange is partially overlapping the range
       else {

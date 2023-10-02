@@ -54,7 +54,7 @@ export class SessionContextManager {
   }
 
   addBlobContexts(blobContexts: string[]) {
-    this.blobContexts = blobContexts
+    this.blobContexts = [...this.blobContexts, ...blobContexts]
   }
 
   getDocumentSnapshot(uri: vscode.Uri): DocumentSnapshot | undefined {

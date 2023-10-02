@@ -88,7 +88,7 @@ export async function streamLlm(
   >(
     openai.chat.completions.create({
       model: process.env.OPENAI_DEFAULT_MODEL ?? 'gpt-4',
-      temperature: 0.4,
+      temperature: 0.7,
       messages,
       stream: true,
     }),
