@@ -79,7 +79,8 @@ export function extractXmlElementsForTag(
         searchStartIndexForNextOpeningTag,
       )
     } else if (shouldYieldPartialXml) {
-      /* If end index is not found, assume we are streaming and the end tag is
+      /*
+       * If end index is not found, assume we are streaming and the end tag is
        * not there yet So just return the content from the start tag to the end
        * of the string
        */
@@ -87,7 +88,8 @@ export function extractXmlElementsForTag(
         lastDiscoveredOpenTag + openTagString.length,
       )
 
-      /* We might have started printing out the closing tag.
+      /*
+       * We might have started printing out the closing tag.
        * Remove any prefix of the tag that appear as a suffix of the content.
        * We need to generate all possible prefixes of the end tag (including an
        * empty string) and check if they are a suffix of the content
@@ -101,8 +103,10 @@ export function extractXmlElementsForTag(
             partialContent.length - partiallyPrintedEndTag.length,
           )
 
-          /* Even tho the new line here might be legit - still lets delay
-              adding it to the content until we know for sure */
+          /*
+           * Even tho the new line here might be legit - still lets delay
+           *  adding it to the content until we know for sure
+           */
           const normalizedContent = shouldTrimUpToOneLeadingAndTrailingNewLine
             ? trimUpToOneLeadingAndTrailingNewLine(content)
             : content
@@ -115,8 +119,10 @@ export function extractXmlElementsForTag(
         }
       }
 
-      /* If we are in this branch, that means the closing tag was not found,
-         so there is no */
+      /*
+       * If we are in this branch, that means the closing tag was not found,
+       * so there is no
+       */
       break
     }
   }

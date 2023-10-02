@@ -34,7 +34,7 @@ module.exports = {
     curly: ["error", "all"],
 
     // This is the native rule that enforces multiline comments to be wrapped in a block
-    "multiline-comment-style": ["error", "bare-block"],
+    "multiline-comment-style": ["error", "starred-block"],
     // This is a plugin splitting up long comments into multiple lines
     "comment-length/limit-single-line-comments": [
       "warn",

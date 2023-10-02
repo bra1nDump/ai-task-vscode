@@ -8,30 +8,30 @@ import { TargetRange, LlmGeneratedPatchXmlV1, FileChange } from './types'
 
 /**
  * Example payload thus would parse:
-```xml
-<task>
-{{Understanding of the task}}
-</task>
-
-<change>
-<path>src/hello-world.ts</path>
-<range-to-replace>
-function helloWorld() {
-    // ${breadIdentifier} pass name to be greeted
-    console.log('Hello World');
-}
-</range-to-replace>
-<description>
-Line by line pseudocode for the replacement
-</description> 
-<replacement>
-function hello(name: string) {
-    console.log(\`Hello \${name}\`);
-}
-</replacement>
-</change>
-```
-*/
+ *```xml
+ *<task>
+ *{{Understanding of the task}}
+ *</task>
+ *
+ *<change>
+ *<path>src/hello-world.ts</path>
+ *<range-to-replace>
+ *function helloWorld() {
+ *  // ${breadIdentifier} pass name to be greeted
+ *  console.log('Hello World');
+ *}
+ *</range-to-replace>
+ *<description>
+ *Line by line pseudocode for the replacement
+ *</description>
+ *<replacement>
+ *function hello(name: string) {
+ *  console.log(\`Hello \${name}\`);
+ *}
+ *</replacement>
+ *</change>
+ *```
+ */
 export function parsePartialMultiFileEdit(xml: string): LlmGeneratedPatchXmlV1 {
   const task = extractSingleXmlElement(xml, 'task')?.content ?? ''
 
@@ -53,8 +53,10 @@ export function parsePartialMultiFileEdit(xml: string): LlmGeneratedPatchXmlV1 {
         'description',
       )
 
-      /* Handle case where old chunk is truncated
-       Warning: Partial truncated printing out will still show */
+      /*
+       * Handle case where old chunk is truncated
+       * Warning: Partial truncated printing out will still show
+       */
       const oldChunkParts = oldChunk?.content.split('</truncated>') ?? []
       let oldChunkContent: TargetRange
 
@@ -89,10 +91,12 @@ export function parsePartialMultiFileEdit(xml: string): LlmGeneratedPatchXmlV1 {
         'replacement',
       )
 
-      /* Strange code due to switching the encoding from multiple changes within
-     * a single file tag to a more flat xml encoding but keeping the old data
-     * structure Ideally we want to group the changes by file,
-       but the hell with it for now */
+      /*
+       * Strange code due to switching the encoding from multiple changes within
+       * a single file tag to a more flat xml encoding but keeping the old data
+       * structure Ideally we want to group the changes by file,
+       * but the hell with it for now
+       */
       const change = {
         description: description?.content,
         oldChunk: oldChunkContent,

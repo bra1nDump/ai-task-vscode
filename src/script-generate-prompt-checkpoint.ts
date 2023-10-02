@@ -10,7 +10,8 @@
  * HOW TO RUN: There is a vscode task and a script codegen:* package.json
  */
 
-/* COPIED FROM MOCA TEST RUNNER which was experiencing the same issue
+/*
+ * COPIED FROM MOCA TEST RUNNER which was experiencing the same issue
  *
  * I'm pretty sure otherwise my use of absolute paths within the project would
  * not work unless I would bundle up all the tests into one file.
@@ -41,8 +42,10 @@ codeGeneratePromptCheckpoint(currentVersion)
 
 export function codeGeneratePromptCheckpoint(version: string) {
   for (const includeLineNumbers of [true]) {
-    /* Many things rely on line numbers so let's only generate one version for
-       now */
+    /*
+     * Many things rely on line numbers so let's only generate one version for
+     * now
+     */
     let exampleFileContext: FileContext = {
       filePathRelativeToWorkspace: 'example.ts',
       content: `console.log('Hello world')`,

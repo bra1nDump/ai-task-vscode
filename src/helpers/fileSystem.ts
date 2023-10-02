@@ -69,7 +69,8 @@ export async function queueAnAppendToDocument(
     documentContents.set(path, newContent)
     const data = new TextEncoder().encode(newContent)
 
-    /* Pretty sure this causes a flicker
+    /*
+     * Pretty sure this causes a flicker
      * Previously we were using workplace edits but that has caused unnecessary
      * tabs to open. Potential workaround is to right to the file system for
      * the detailed log file and workplace edits for high level markdown file
@@ -122,9 +123,11 @@ export async function safeWorkspaceQueryAllFiles(): Promise<vscode.Uri[]> {
   const ignorePatterns = config.get<string[]>('ignorePatterns') ?? []
   const excludedDirectories = [...defaultExcludedDirectories, ...ignorePatterns]
 
-  /* WARNING: We want to limit the files to text files only,
+  /*
+   * WARNING: We want to limit the files to text files only,
    * we are making a pretty hard assumption that all the files we're trying to
-   * open are text files. This has crashed the extension previously */
+   * open are text files. This has crashed the extension previously
+   */
   const allFilesInWorkspace = await vscode.workspace.findFiles(
     '**/*.{ts,md,js,jsx,tsx,html,css,scss,less,json,yml,yaml,txt}',
     `**/{${excludedDirectories.join(',')}}`,

@@ -47,7 +47,8 @@ export async function startMultiFileEditing(sessionContext: SessionContext) {
     logFilePath(fileContext)
   }
 
-  /* Provider pointer to low level log for debugging,
+  /*
+   * Provider pointer to low level log for debugging,
    * it wants a relative to workspace path for some reason The document path is
    * .task/sessions/<id>-<weekday>.raw.md,
    * so we need to go up two levels since the markdown file we are outputing to
@@ -72,21 +73,26 @@ export async function startMultiFileEditing(sessionContext: SessionContext) {
   // Abort if requested
   sessionContext.sessionAbortedEventEmitter.event(() => abortController.abort())
 
-  /* Design Shortcoming due to multi casting
-     Parsing will be performed multiple times for the same payload,
-     see openai.ts */
+  /*
+   * Design Shortcoming due to multi casting
+   * Parsing will be performed multiple times for the same payload,
+   * see openai.ts
+   */
   const parsedPatchStream = from(rawLlmResponseStream).pipe(
     mapAsync(({ cumulativeResponse, delta }) => {
-      /* Try parsing the xml, even if it's complete it should still be able to
-         apply the diffs */
+      /*
+       * Try parsing the xml, even if it's complete it should still be able to
+       * apply the diffs
+       */
       return parsePartialMultiFileEdit(cumulativeResponse)
     }),
   )
 
-  /* Split the stream into stream with plan and changes to apply
-     Process in parallell
+  /*
+   * Split the stream into stream with plan and changes to apply
+   * Process in parallell
    * Currently has an issue where I am unable to log the delta and am forced to
-   * wait until an item is fully generated 
+   * wait until an item is fully generated
    * Refactor: Parsing should pass deltas because it is used all over the place
    */
   async function showPlanAsItBecomesAvailable() {

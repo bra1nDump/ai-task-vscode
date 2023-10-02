@@ -23,8 +23,10 @@ suite('Apply Patch Tests', function () {
       'tmp',
     )
 
-    /* delete temporary directory using regular node file system command
-       as workspace does not have directory deletion */
+    /*
+     * delete temporary directory using regular node file system command
+     * as workspace does not have directory deletion
+     */
     if (fs.existsSync(temporaryFolder)) {
       fs.rmSync(temporaryFolder, {
         recursive: true,
@@ -36,7 +38,8 @@ suite('Apply Patch Tests', function () {
   beforeEach(async () => {
     cleanTmpDirectory()
 
-    /* We need to close the editor, otherwise when we reopen it from the same
+    /*
+     * We need to close the editor, otherwise when we reopen it from the same
      * ur I it will ignore the contents of the file on disk and use the
      * contents from the editor which are dirty after the last test
      */
@@ -136,7 +139,8 @@ suite('Apply Patch Tests', function () {
       },
     ]
 
-    /* Application results does not even show because the rangers failed to
+    /*
+     * Application results does not even show because the rangers failed to
      * resolve Ideally would return some sort of failure but it's currently not
      * doing this
      */
@@ -191,8 +195,10 @@ suite('Apply Patch Tests', function () {
   test('Empty lines are not used to match target range', async () => {
     const editor = await setupEditorWithContent('line1\nline2\n\nline3\n')
 
-    /* empty first line, will match many characters in the document and should
-       be ignored the matching should happen based on the second line */
+    /*
+     * empty first line, will match many characters in the document and should
+     * be ignored the matching should happen based on the second line
+     */
     const changes: Change[] = [
       {
         description: 'Change line2 to Hello World',
@@ -397,36 +403,41 @@ export function getCurrentUserName() {
     )
   })
 
-  /* 
+  /*
    * Wait until we have cached llm responses setup to run e2e tests fast and
    * avoid monkey patching or refactoring the code to be more testable
-   * 
+   *
    * Test by hand :D
-   * 
+   *
    * test('should correctly parse and apply a create file command', async () =>
    * {
-       const createFileChange = `
-       <change>
-         <path>tmp/helloWorld.ts</path>
+   *   const createFileChange = `
+   *   <change>
+   *     <path>tmp/helloWorld.ts</path>
    * <description>Creating a new file with Hello World content</description>
    * <range-to-replace>
-         </range-to-replace>
-         <replacement>
-         // Hello World
-         console.log('Hello World');
-         </replacement>
-       </change>
-       `
-       const parsedChange = parsePartialMultiFileEdit(createFileChange)
-       const resolvedChanges = resolveAndApplyChangesToMultipleFiles */
+   *     </range-to-replace>
+   *     <replacement>
+   *     // Hello World
+   *     console.log('Hello World');
+   *     </replacement>
+   *   </change>
+   *   `
+   *   const parsedChange = parsePartialMultiFileEdit(createFileChange)
+   *   const resolvedChanges = resolveAndApplyChangesToMultipleFiles
+   */
 
-  /*   await startInteractiveMultiFileApplication()
-       // TODO: Implement the function to apply the change to create a new file */
+  /*
+   *   await startInteractiveMultiFileApplication()
+   *   // TODO: Implement the function to apply the change to create a new file
+   */
 
   //   // TODO: Check if the file is created with the correct content
 
-  /*   // TODO: Cleanup the created file
-     }) */
+  /*
+   *   // TODO: Cleanup the created file
+   *   })
+   */
 
   test('should correctly parse and apply a terminal command', async () => {
     const terminalCommandChange = `

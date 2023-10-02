@@ -38,7 +38,8 @@ export const makeToResolvedChangesTransformer = (
         filePathRelativeToWorkspace,
         isStreamFinilized,
       }): ResolvedChange[] => {
-        /* Creating new files being an option throws a curveball and to find
+        /*
+         * Creating new files being an option throws a curveball and to find
          * single file. We might find a single file that matches the partial
          * path but it might actually be a partial path of a new file we're
          * trying to create.
@@ -52,19 +53,20 @@ export const makeToResolvedChangesTransformer = (
           filePathRelativeToWorkspace,
         )
 
-        /* Since creating a new file
+        /*
+         * Since creating a new file
          * is very similar to making changes to existing files, let's simply
          * handle file creation on the resolution stage.
-         * 
+         *
          * This means we're trying to create a new file.
          * This is hacky but I don't see a simple solution with the current
          * abstractions without a major refactor.
-           
+         *
          * Multiple new files might be created for the same path, I don't think
          * it will cause any visible issues, but obviously this is a design
          * issue and the hack.
-           
-           - Create a new empty file within the workspace
+         *
+         * - Create a new empty file within the workspace
          * - Add it to the session document manager, so it can later be
          * resolved - Ignore this change
          */
@@ -114,24 +116,28 @@ export const makeToResolvedChangesTransformer = (
         const rangeInCurrentDocument =
           documentSnapshot.toCurrentDocumentRange(lineRangedToReplace)
 
-        /* TODO: We really should not be throwing an error here.
+        /*
+         * TODO: We really should not be throwing an error here.
          * Instead we should somehow report this change as not resolved
          */
         if (rangeInCurrentDocument.type === 'error') {
-          /* BUG: This seems to fail even when things are finish?
-             still a bug but lets investigate later 
+          /*
+           * BUG: This seems to fail even when things are finish?
+           * still a bug but lets investigate later
            * Causes an infinite loop, probably because we are shifting the
-           * array by one
-           * 
+           *    array by one
+           *
            * Shit, should have written down the repro when I had it :D
-             */
+           */
           console.trace(
             `Range is out of bounds of the document ${existingFileUri.fsPath}\nError: ${rangeInCurrentDocument.error}`,
           )
-          /* HACK to avoid shifting array,
+          /*
+           * HACK [resolve-after-save]
+           * to avoid shifting array,
            * assumes this happens once this change was already finalized,
            * again, bad modeling symptom.
-           *  - we should really not be resolving changes that got finalized!
+           * - we should really not be resolving changes that got finalized!
            */
           return [
             {
@@ -207,8 +213,10 @@ export function findTargetRangeInFileWithContent(
     return firstMatchIndex
   }
 
-  /* Separately handle a case with four empty files - assume we're inserting
-     into the first line */
+  /*
+   * Separately handle a case with four empty files - assume we're inserting
+   * into the first line
+   */
   if (documentContent.trim() === '') {
     return new vscode.Range(0, 0, 0, 0)
   }

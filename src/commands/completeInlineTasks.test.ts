@@ -6,21 +6,21 @@ suite('VSCode Extension Command Tests', function () {
   this.timeout(60_000)
   test('ai-task.completeInlineTasks command', async () => {
     /*
-    Assuming there's a file called "helloWorld.ts" in the root workspace:
-
-    `// @bread Parametrize this function with a name
-    export function helloWorld() {
-      console.log(`Hello World!`)
-    }
-    `
-
+     *Assuming there's a file called "helloWorld.ts" in the root workspace:
+     *
+     *`// @bread Parametrize this function with a name
+     *export function helloWorld() {
+     *  console.log(`Hello World!`)
+     *}
+     *`
+     *
      * There's also other files in the workspace that need to be modified but
      * we're not going to assert it. This is good enough of a test that the
      * most basic functionality works. The rest should be unit tested.
-     * 
+     *
      * Part of the task is to create readme.md file and run an ls command with
      * output to ts-test-output.txt. Lets clean them up before the test.
-    */
+     */
 
     // Clean up files from previous runs
     const readmeUri = vscode.Uri.joinPath(
@@ -84,8 +84,10 @@ suite('VSCode Extension Command Tests', function () {
       await vscode.workspace.openTextDocument(lsTestOutputUri)
     assert.ok(lsTestOutputDocument.getText().includes(`helloWorld.ts`))
 
-    /* Clean up after the test (for some reason does not actually clean
-       anything up) */
+    /*
+     * Clean up after the test (for some reason does not actually clean
+     * anything up)
+     */
     await vscode.workspace.fs.delete(readmeUri)
     await vscode.workspace.fs.delete(lsTestOutputUri)
   })

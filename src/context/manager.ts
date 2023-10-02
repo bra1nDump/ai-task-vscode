@@ -35,7 +35,8 @@ export class SessionContextManager {
       this.uriToDocumentsSnapshots.set(uri.path, documentSnapshot)
     })
 
-    /* TODO: add logging so the user sees which documents were added.
+    /*
+     * TODO: add logging so the user sees which documents were added.
      * This would create a circular dependency if we pass the context though...
      * Maybe we should simply return the files that were added and log outside.
      * We can also modify file context to include it's source and log outside

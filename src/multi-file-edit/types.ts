@@ -16,8 +16,10 @@ export interface ResolvedExistingFileEditChange {
   replacement: string
   replacementIsFinal: boolean
   descriptionForHuman?: string
-  /* Saving this reflector for when I have batch processing setup
-     descriptionForHumanIsFinal: boolean */
+  /*
+   * Saving this reflector for when I have batch processing setup
+   * descriptionForHumanIsFinal: boolean
+   */
 }
 
 export interface ResolvedTerminalCommandChange {

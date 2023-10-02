@@ -37,7 +37,8 @@ export class TaskExpressionCompletionItemProvider
         label,
         vscode.CompletionItemKind.Snippet,
       )
-      /* I don't think showing details makes much sense,
+      /*
+       * I don't think showing details makes much sense,
        * at least let's wait until we have a dynamic set of context providers
        * item.detail = 'bread task expression'
        */

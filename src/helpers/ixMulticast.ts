@@ -45,8 +45,10 @@ export function multicast<T>(source: AsyncIterable<T>): AsyncIterableX<T> {
       if (!result.done) {
         const value = result.value
         cache.push(value)
-        /* Need to update the index of the last seen item
-           lastCacheIndexYielded++ */
+        /*
+         * Need to update the index of the last seen item
+         * lastCacheIndexYielded++
+         */
 
         debugLog(
           `id: ${consumerId} yielding own value: ${JSON.stringify(
@@ -55,7 +57,8 @@ export function multicast<T>(source: AsyncIterable<T>): AsyncIterableX<T> {
         )
       }
 
-      /* While we were awaiting, some other consumer might have pushed some
+      /*
+       * While we were awaiting, some other consumer might have pushed some
        * values into cache This loop will also yeild our own element if it was
        * added in the if above
        */
@@ -66,8 +69,10 @@ export function multicast<T>(source: AsyncIterable<T>): AsyncIterableX<T> {
             cacheValueToYield,
           )}, cacheIndexYielded: ${lastCacheIndexYielded}`,
         )
-        /* what if after the yield another consumer might have put something in
-           the cache? */
+        /*
+         * what if after the yield another consumer might have put something in
+         * the cache?
+         */
         yield cacheValueToYield
       }
 
@@ -76,18 +81,22 @@ export function multicast<T>(source: AsyncIterable<T>): AsyncIterableX<T> {
         break
       }
 
-      /* // Finally add our hard earned value and add to cache
-         const value = result.value
-         cache.push(value)
-         // Need to update the index of the last seen item
-         lastCacheIndexYielded++ */
+      /*
+       * // Finally add our hard earned value and add to cache
+       * const value = result.value
+       * cache.push(value)
+       * // Need to update the index of the last seen item
+       * lastCacheIndexYielded++
+       */
 
-      /* debugLog(
-           `id: ${consumerId} yielding own value: ${JSON.stringify(
-             value,
-           )}, cacheIndex: ${lastCacheIndexYielded}`,
-         )
-         yield value */
+      /*
+       * debugLog(
+       *   `id: ${consumerId} yielding own value: ${JSON.stringify(
+       *     value,
+       *   )}, cacheIndex: ${lastCacheIndexYielded}`,
+       * )
+       * yield value
+       */
     }
   }
 
@@ -101,22 +110,22 @@ export function multicast<T>(source: AsyncIterable<T>): AsyncIterableX<T> {
 }
 
 /*
-Debugging ....
-Multiplex function
-id:  5
-called generate consumer 0
-id:  0
-called generate consumer 1
-
-id: 5 pulled an async element: 1, cache state: [], cacheIndexYielded: -1
-id: 5 yielding own value: 1, cacheIndex: 0
-id: 0 pulled an async element: 2, cache state: [1], cacheIndexYielded: -1
-id: 0 yielding from cache, value: 1, cacheIndexYielded: 0
+ *Debugging ....
+ *Multiplex function
+ *id:  5
+ *called generate consumer 0
+ *id:  0
+ *called generate consumer 1
+ *
+ *id: 5 pulled an async element: 1, cache state: [], cacheIndexYielded: -1
+ *id: 5 yielding own value: 1, cacheIndex: 0
+ *id: 0 pulled an async element: 2, cache state: [1], cacheIndexYielded: -1
+ *id: 0 yielding from cache, value: 1, cacheIndexYielded: 0
  * id: 5 pulled an async element: undefined, cache state: [1],
  * cacheIndexYielded: 0 id: 0 yielding own value: 2, cacheIndex: 1
  * id: 0 pulled an async element: undefined, cache state: [1,2],
  * cacheIndexYielded: 1
-
-(1) [1]
-(2) [1, 2]
-*/
+ *
+ *(1) [1]
+ *(2) [1, 2]
+ */

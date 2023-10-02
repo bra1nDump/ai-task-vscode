@@ -8,8 +8,9 @@ import * as Mocha from 'mocha'
 import * as glob from 'glob'
 import * as tsconfigPaths from 'tsconfig-paths'
 
-/* I'm pretty sure otherwise my use of absolute paths within the project would
-   not work unless I would bundle up all the tests into one file.
+/*
+ * I'm pretty sure otherwise my use of absolute paths within the project would
+ * not work unless I would bundle up all the tests into one file.
  * For reference I believe I have done this within blocky.ai project. Anyway
  * experiencing the same issue within the script just copying this
  */
@@ -22,18 +23,22 @@ tsconfigPaths.register({
   },
 })
 
-/* Nice to have: I would love to override the time out globally if a special
-   environment variable is set set for all tests for easier debugging with
-   breakpoints. As a workaround I can remove the local time outs and set the
-   global one to a high common value, and completely remove it when I want to
-   debug. */
+/*
+ * Nice to have: I would love to override the time out globally if a special
+ * environment variable is set set for all tests for easier debugging with
+ * breakpoints. As a workaround I can remove the local time outs and set the
+ * global one to a high common value, and completely remove it when I want to
+ * debug.
+ */
 export function run(): Promise<void> {
   // Create the mocha test
   const mocha = new Mocha({
     ui: 'tdd',
     color: true,
-    /* Default to higher timeout due to many sleeps in the codebase when
-       applying changes */
+    /*
+     * Default to higher timeout due to many sleeps in the codebase when
+     * applying changes
+     */
     timeout: 5000,
   })
 

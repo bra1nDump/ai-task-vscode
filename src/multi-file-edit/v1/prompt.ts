@@ -26,19 +26,19 @@ import { SessionConfiguration } from 'session'
  * generate files along side this file for reference and debugging.
  */
 
-/* 
+/*
  * I have roughly enabled planning again, I have noticed the tasks are very
  * verbose but don't help guide the model. Right now the prompt is kind of
  * messy
-   CURRENTLY NO PLANNING ENABLED for simplification and speed reasons.
-   Planning is very important as chain of thought prompting is currently
-   state of the art. There's also structure chain of thought which promises
-   to be better https://arxiv.org/pdf/2305.06599.pdf
-   
-   I'm considering to move pseudocode algorithms for the replacement into the
-   examples for the diff generation prompt. I'm hoping by reducing locality
-   it will improve the quality of the replacement.
-    */
+ * CURRENTLY NO PLANNING ENABLED for simplification and speed reasons.
+ * Planning is very important as chain of thought prompting is currently
+ * state of the art. There's also structure chain of thought which promises
+ * to be better https://arxiv.org/pdf/2305.06599.pdf
+ *
+ * I'm considering to move pseudocode algorithms for the replacement into the
+ * examples for the diff generation prompt. I'm hoping by reducing locality
+ * it will improve the quality of the replacement.
+ */
 
 export function createMultiFileEditingMessages(
   fileContexts: FileContext[],
@@ -66,8 +66,10 @@ export function createMultiFileEditingMessages(
         .join('\n') + '\n\n'
   }
 
-  /* Do we need to say your input? Doesn't matter for performance using a
-     system or user message? It feels like I should be using the user here */
+  /*
+   * Do we need to say your input? Doesn't matter for performance using a
+   * system or user message? It feels like I should be using the user here
+   */
   const inputWithFiles: OpenAiMessage = {
     content: optionalStaticContent + filesContextXmlPrompt,
     role: 'user',
@@ -78,11 +80,11 @@ export function createMultiFileEditingMessages(
 }
 
 /*
-Removed, I think its redundant with the examples 
+ *Removed, I think its redundant with the examples
  * First output how you understand the task along with compact key ideas. Use
  * technical style of writing and be concise. Immediately after you will output
  * changes.
-*/
+ */
 const multiFileEditPrompt = (configuration: SessionConfiguration) =>
   `You are a coding assistant.
 You will be given editable files with line numbers and optional information blobs as input.
@@ -97,8 +99,8 @@ The task might be not well specified and you should use your best judgment on wh
 The task might be partially completed, only make changes to address the remaining part of the task.
 
 Format notes:
-Use </truncated> to shorten <range-to-replace> if it is longer than 5 lines.
-Never use </truncated> or other means of truncation within <replacement> - type out exactly what should replace the <range-to-replace>.
+If <range-to-replace> is longer than five lines you must use </truncated> to shorten it (see examples)
+Never use </truncated> or other means of truncation within <replacement> - it should always contain exactly the replacement for <range-to-replace>.
 
 Examples of your input and output pairs follow.
 
@@ -121,10 +123,12 @@ const typescriptHelloWorldParametrizationMultiFileExampleV2WithInsert = (
   configuration: SessionConfiguration,
 ) => {
   const breadIdentifier = configuration.taskIdentifier
-  /* let greeterFileContext: FileContext = {
-       filePathRelativeToWorkspace: 'src/greet.ts',
-       content: ``,
-     } */
+  /*
+   * let greeterFileContext: FileContext = {
+   *   filePathRelativeToWorkspace: 'src/greet.ts',
+   *   content: ``,
+   * }
+   */
 
   let mainFileContext: FileContext = {
     filePathRelativeToWorkspace: 'src/main.ts',
@@ -138,11 +142,13 @@ console.log('Hello World');
     mainFileContext = transformFileContextWithLineNumbers(mainFileContext)
   }
 
-  /* const greeterTargetRange = extractMatchingLineRange(
-       greeterFileContext.content,
-       '',
-       '',
-     ) */
+  /*
+   * const greeterTargetRange = extractMatchingLineRange(
+   *   greeterFileContext.content,
+   *   '',
+   *   '',
+   * )
+   */
 
   const rangeToReplace2 = extractMatchingLineRange(
     mainFileContext.content,
@@ -150,7 +156,8 @@ console.log('Hello World');
     `console.log('Hello World');`,
   )
 
-  /* I'm sort of reverting to structured prompting,
+  /*
+   * I'm sort of reverting to structured prompting,
    * aka writing out a pretty detailed plan for the changes, still keeping the
    * old 'algorithm' stuff around
    */
@@ -223,8 +230,10 @@ const Inventory = (props: { allItemNamesForPurchase: string[] }) => {
 
   let optionalAlgorithm = ''
   if (false) {
-    /* Change this condition based on your logic for including optional
-       description. */
+    /*
+     * Change this condition based on your logic for including optional
+     * description.
+     */
     optionalAlgorithm = `<description>
   Context: jsx subexpression
   Symbols in scope: count, setCount
@@ -294,9 +303,11 @@ function deduplicate(array: number[]): number[] {
     '}',
   )
 
-  /* <--! Use </truncated> to shorten the range to replace if they are longer
-     than 6 lines. Never truncate replacement.
-     --> */
+  /*
+   * <--! Use </truncated> to shorten the range to replace if they are longer
+   * than 6 lines. Never truncate replacement.
+   * -->
+   */
 
   return `Input:
 ${fileContextPromptPart}
@@ -336,8 +347,10 @@ function allowingToCreateNewFilesAndRunShellCommands(
     console.log(
       'Skipping new file and command example because of configuration',
     )
-    /* Ideally we should return undefined here to signal to not include this
-       example */
+    /*
+     * Ideally we should return undefined here to signal to not include this
+     * example
+     */
     return ''
   }
 
@@ -439,7 +452,8 @@ function extractMatchingLineRange(
     [...lines].reverse().findIndex((line) => line.includes(endTerm))
   const lineRange = lines.slice(startLineIndex, endLineIndex + 1)
 
-  /* Including two lines in the front and in the end because the last line
+  /*
+   * Including two lines in the front and in the end because the last line
    * would often be a closing bracket which might make it harder for the modal
    * to reason about the range ending
    *

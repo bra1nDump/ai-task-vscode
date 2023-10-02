@@ -1,12 +1,12 @@
 /*
-  TODO: Create a new type that will be used for both
-  type StreamingValue<Value> = 
-  { type: 'notStarted' } 
-  | { type: 'streaming', value: Value }
-  | { type: 'finished', value: Value }
-
+ *TODO: Create a new type that will be used for both
+ *type StreamingValue<Value> =
+ *{ type: 'notStarted' }
+ *| { type: 'streaming', value: Value }
+ *| { type: 'finished', value: Value }
+ *
  * During the refactor we should also merge change type and file change
-*/
+ */
 
 export type TargetRange =
   | {
@@ -33,8 +33,10 @@ export interface Change {
 }
 
 export interface FileChange {
-  /** If not present - means its streaming.
-   * We will use this field early to show the file targeted with a change */
+  /**
+   * If not present - means its streaming.
+   * We will use this field early to show the file targeted with a change
+   */
   filePathRelativeToWorkspace: string
   change: Change
   isStreamFinilized: boolean

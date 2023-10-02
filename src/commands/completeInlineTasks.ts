@@ -61,7 +61,8 @@ export async function completeInlineTasksCommand(this: {
   const breadFileBlobs = await getFilesContent(dotBreadFileUris)
   sessionContext.contextManager.addBlobContexts(breadFileBlobs)
 
-  /* Before we have proper task expression parsing,
+  /*
+   * Before we have proper task expression parsing,
    * we will just search all task files for a mention of special
    * sub-expressions
    */
@@ -81,8 +82,10 @@ export async function completeInlineTasksCommand(this: {
     )
   }
 
-  /* Provide problems context
-    /* Include files with errors if the user requested */
+  /*
+   * Provide problems context
+   * /* Include files with errors if the user requested
+   */
   const includeErrors = breadMentionsFilesContent.some((fileContent) =>
     fileContent.includes('@' + 'errors'),
   )
@@ -97,8 +100,10 @@ export async function completeInlineTasksCommand(this: {
       filesWithErrors,
     )
 
-    /* Provide optional problem context + prompt
-       Refactor: This should move to a static context provider */
+    /*
+     * Provide optional problem context + prompt
+     * Refactor: This should move to a static context provider
+     */
     const problemContext = diagnosticsAlongWithTheirFileContexts
       .flatMap(({ uri, diagnostic }) => {
         if (diagnostic.severity !== vscode.DiagnosticSeverity.Error) {

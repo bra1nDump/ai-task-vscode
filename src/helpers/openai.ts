@@ -37,9 +37,11 @@ export interface LlmPartialResponse {
  */
 export async function streamLlm(
   messages: OpenAiMessage[],
-  /* I don't need the logger if I will be passing the entire session,
-     Probably the session itself should contain the logger as a property /
-     method */
+  /*
+   * I don't need the logger if I will be passing the entire session,
+   * Probably the session itself should contain the logger as a property /
+   * method
+   */
   logger: (text: string) => Promise<void>,
   session: SessionContext,
 ): Promise<
@@ -66,9 +68,11 @@ export async function streamLlm(
     return resultError(new Error('No OpenAI API key provided'))
   }
 
-  /* Ensure we are not already running a stream,
-     we want to avoid large bills if there's a bug and we start too many
-     streams at once */
+  /*
+   * Ensure we are not already running a stream,
+   * we want to avoid large bills if there's a bug and we start too many
+   * streams at once
+   */
   if (isStreamRunning) {
     return resultError(new Error('Stream is already running'))
   }
@@ -78,10 +82,12 @@ export async function streamLlm(
     apiKey: key,
   })
 
-  /* Compare AsyncGenerators / AsyncIterators: https://javascript.info/async-iterators-generators
-     Basically openai decided to not return AsyncGenerator,
-     which is more powerful (compare type definitions) but instead return an
-     AsyncIteratable for stream */
+  /*
+   * Compare AsyncGenerators / AsyncIterators: https://javascript.info/async-iterators-generators
+   * Basically openai decided to not return AsyncGenerator,
+   * which is more powerful (compare type definitions) but instead return an
+   * AsyncIteratable for stream
+   */
   const streamResult = await throwingPromiseToResult<
     Stream<ChatCompletionChunk>,
     APIError
@@ -105,7 +111,8 @@ export async function streamLlm(
   const simplifiedStream = from(stream).pipe(
     mapAsync((part: ChatCompletionChunk) => {
       if (part.choices[0]?.finish_reason) {
-        /* We are done
+        /*
+         * We are done
          * Refactor: Update the return type to represent different kinds of
          * stream terminations.
          */
@@ -118,7 +125,8 @@ export async function streamLlm(
         return undefined
       }
 
-      /* Design Shortcoming: Async iterable multi casting
+      /*
+       * Design Shortcoming: Async iterable multi casting
        * Due to multiplexing and iterating over the stream multiple times all
        * the mappings are performed however many times there are for await
        * loops This is 1. not performant 2.

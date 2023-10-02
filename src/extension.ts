@@ -24,23 +24,28 @@ export async function activate(context: vscode.ExtensionContext) {
   )
 
   context.subscriptions.unshift(
-    /* Not sure how to register a command on enter,
+    /*
+     * Not sure how to register a command on enter,
      * markdown formatter extension I believe does have this key binding and it
      * inserts - if the previous line was a list item
      */
-    /* vscode.commands.registerCommand(
-         'ai-task.onEnterKey',
-         (textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) => {
-           // Insert a line of text at the current cursor position
-           const position = textEditor.selection.active
-           edit.insert(position, 'You pressed the enter key!')
-         },
-       ), */
+    /*
+     * vscode.commands.registerCommand(
+     *   'ai-task.onEnterKey',
+     *   (textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) => {
+     *     // Insert a line of text at the current cursor position
+     *     const position = textEditor.selection.active
+     *     edit.insert(position, 'You pressed the enter key!')
+     *   },
+     * ),
+     */
 
     // Kickoff on @run mention
     vscode.workspace.onDidChangeTextDocument((event) => {
-      /* Ideally will want to make sure we are within a comment,
-       could also be multiline and bread mention can be anywhere */
+      /*
+       * Ideally will want to make sure we are within a comment,
+       * could also be multiline and bread mention can be anywhere
+       */
       const isRunInLine = (document: vscode.TextDocument, line: number) => {
         const lineText = document.lineAt(line).text
         return lineText.includes('@run')
@@ -48,7 +53,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
       if (
         event.contentChanges.length > 0 &&
-        /* only trigger on new line or space
+        /*
+         * only trigger on new line or space
          * I use starts with because some extensions might modify the text
          * before the edit, for example in typescript doc string it will add
          * another * to the new line
@@ -59,8 +65,10 @@ export async function activate(context: vscode.ExtensionContext) {
         isRunInLine(event.document, event.contentChanges[0].range.start.line)
       ) {
         console.log('triggering command trough @ run mention')
-        /* Previously I was undoing the enter change,
-         but it introduces additional jitter to the user experience */
+        /*
+         * Previously I was undoing the enter change,
+         * but it introduces additional jitter to the user experience
+         */
         void commandWithBoundSession()
       }
     }),
@@ -72,12 +80,13 @@ export async function activate(context: vscode.ExtensionContext) {
     scheme: 'file',
   }))
 
-  /* This needs to support other identifiers for tasks,
-     it seems like I should lift the configuration out of the session,
-     and make it a global configuration. Register task expression language
-     providers 
-     The closest matching example I have found so far https://github.com/microsoft/vscode/blob/ba36ae4dcca57ba64a9b61e5f4eca88b6e0bc4db/extensions/typescript-language-features/src/languageFeatures/directiveCommentCompletions.ts
-     */
+  /*
+   * This needs to support other identifiers for tasks,
+   * it seems like I should lift the configuration out of the session,
+   * and make it a global configuration. Register task expression language
+   * providers
+   * The closest matching example I have found so far https://github.com/microsoft/vscode/blob/ba36ae4dcca57ba64a9b61e5f4eca88b6e0bc4db/extensions/typescript-language-features/src/languageFeatures/directiveCommentCompletions.ts
+   */
   const sessionConfiguration = {
     taskIdentifier: 'task',
     enableNewFilesAndShellCommands: true,

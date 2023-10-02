@@ -11,7 +11,8 @@ export interface SessionContext {
   id: string
 
   /**
-   * Necessary for access to secrets to store API key the user enters */
+   * Necessary for access to secrets to store API key the user enters
+   */
   extensionContext: vscode.ExtensionContext
   configuration: SessionConfiguration
 
@@ -57,7 +58,8 @@ export interface SessionContext {
 export async function startSession(
   context: vscode.ExtensionContext,
 ): Promise<SessionContext> {
-  /* There's a hard assumption across the code base that there's at least one
+  /*
+   * There's a hard assumption across the code base that there's at least one
    * folder within the workspace. More like there's a single folder within the
    * workspace. Abort early and say the extension does not support opening
    * standalone files without a mounted workplace folder.
@@ -89,24 +91,32 @@ export async function startSession(
     )
   }
 
-  /* Create document manager that will help us backdate edits throughout this
-     sessiong */
+  /*
+   * Create document manager that will help us backdate edits throughout this
+   * sessiong
+   */
   const documentManager = new SessionContextManager(true)
 
   // Create an event emitter to notify anyone interested in session aborts
   const sessionAbortedEventEmitter = new vscode.EventEmitter<void>()
-  /* Another emitter for when session ends no matter if it was aborted or it
-     has run its course */
+  /*
+   * Another emitter for when session ends no matter if it was aborted or it
+   * has run its course
+   */
   const sessionEndedEventEmitter = new vscode.EventEmitter<void>()
 
   const textDocumentCloseSubscription = vscode.window.tabGroups.onDidChangeTabs(
     ({ closed: closedTabs }) => {
-      /* input contains viewType key: 'mainThreadWebview-markdown.preview'
-         Label has the format 'Preview <name of the file>' */
+      /*
+       * input contains viewType key: 'mainThreadWebview-markdown.preview'
+       * Label has the format 'Preview <name of the file>'
+       */
       if (
         closedTabs.find((tab) => {
-          /* Trying to be mindful of potential internationalization of the word
-             'Preview' */
+          /*
+           * Trying to be mindful of potential internationalization of the word
+           * 'Preview'
+           */
           const abortSignalDocumentName =
             sessionMarkdownHighLevelFeedbackDocument.uri.path.split('/').at(-1)!
           return tab.label.includes(abortSignalDocumentName)
@@ -160,21 +170,24 @@ export async function closeSession(
   await sessionContext.markdownHighLevelFeedbackDocument.save()
   await sessionContext.markdownLowLevelFeedbackDocument.save()
 
-  /* Schedule closing the editors matching the documents
-     Communicate to the user that the editors will be closed 
-     
-     We can also try closing the tab https://code.visualstudio.com/api/references/vscode-api#TabGroups
-     I'm wondering if hide is not available only within code insiders
-
+  /*
+   * Schedule closing the editors matching the documents
+   * Communicate to the user that the editors will be closed
+   *
+   * We can also try closing the tab https://code.visualstudio.com/api/references/vscode-api#TabGroups
+   * I'm wondering if hide is not available only within code insiders
+   *
    * Either way not sure if we should be closing the feedback preview, copilot
    * or continue don't really close their sidebar once they're don
-     */
-  /* setTimeout(() => {
+   */
+  /*
+   * setTimeout(() => {
    * hide is deprecated and the method suggested instead is to close active
    * editor - not what I want :(
-       vscode.window.visibleTextEditors[0].hide()
-
-     }, 2000) */
+   *   vscode.window.visibleTextEditors[0].hide()
+   *
+   * }, 2000)
+   */
 
   // Dispose all subscriptions
   sessionContext.subscriptions.forEach(
@@ -263,16 +276,20 @@ async function createAndOpenEmptyDocument(
   return sessionMarkdownHighLevelFeedbackDocument
 }
 
-/* Refactor: We probably want a helper function to get the entire configuration
-   for the session instead of just the bread */
+/*
+ * Refactor: We probably want a helper function to get the entire configuration
+ * for the session instead of just the bread
+ */
 export function getBreadIdentifier(): string {
   const breadIdentifierFromWorkspace = vscode.workspace
     .getConfiguration('ai-task')
     .get('taskMentionIdentifier')
 
-  /* We are using the environment override for simplified manual and automated
-     testingbecause As we might be opening single files instead off full
-     workspace with settings.json. */
+  /*
+   * We are using the environment override for simplified manual and automated
+   * testingbecause As we might be opening single files instead off full
+   * workspace with settings.json.
+   */
   const atBreadIdentifierOverride: any =
     process.env.AT_BREAD_IDENTIFIER_OVERRIDE ?? breadIdentifierFromWorkspace
 

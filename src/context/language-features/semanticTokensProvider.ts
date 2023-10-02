@@ -15,10 +15,12 @@ import { SessionConfiguration } from 'session'
 export class TaskSemanticTokensProvider
   implements vscode.DocumentSemanticTokensProvider
 {
-  /* It is tricky to pick good token types as they are very likely to collide
-     with the existing colors in the file, possibly confusing the user.
-     I can also provide my own a theme that will only effect my own tokens,
-     but that is more work. Let's do this later */
+  /*
+   * It is tricky to pick good token types as they are very likely to collide
+   * with the existing colors in the file, possibly confusing the user.
+   * I can also provide my own a theme that will only effect my own tokens,
+   * but that is more work. Let's do this later
+   */
   private static readonly tokenTypes = ['decorator', 'macro'] as const
   static tokensLegend = new vscode.SemanticTokensLegend([...this.tokenTypes])
   constructor(private sessionConfiguration: SessionConfiguration) {}
