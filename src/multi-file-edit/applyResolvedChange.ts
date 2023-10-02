@@ -371,7 +371,6 @@ export async function applyResolvedChangesWhileShowingTheEditor(
    * Questionable decision for user experience, but good for demo purposes
    *
    * Related HACK [resolve-after-save]
-   *
    */
   if (resolvedChange.replacementIsFinal) {
     await document.save()

@@ -40,6 +40,12 @@ import { SessionConfiguration } from 'session'
  * it will improve the quality of the replacement.
  */
 
+/*
+ * Missing examples:
+ * More truncation
+ * Example with multiple edits within the same file (for imports for example)
+ */
+
 export function createMultiFileEditingMessages(
   fileContexts: FileContext[],
   blobContexts: string[],
@@ -98,9 +104,10 @@ Only address the task you are given and do not make any other changes.
 The task might be not well specified and you should use your best judgment on what the user might have meant.
 The task might be partially completed, only make changes to address the remaining part of the task.
 
-Format notes:
-If <range-to-replace> is longer than five lines you must use </truncated> to shorten it (see examples)
+Notes:
+If <range-to-replace> is longer than five lines you must use </truncated> to shorten it (see examples).
 Never use </truncated> or other means of truncation within <replacement> - it should always contain exactly the replacement for <range-to-replace>.
+You can make multiple edits within the same file, for example to add imports in the beginning of the file and make more changes elsewhere.
 
 Examples of your input and output pairs follow.
 

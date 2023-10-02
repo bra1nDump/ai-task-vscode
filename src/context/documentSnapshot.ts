@@ -324,12 +324,16 @@ export class DocumentSnapshot {
          * Case 5:
          *
          * HACK [resolve-after-save]
+         * Works in tandem with the hack in resolveTargetRange.ts, which
+         * returns noop changes when the range is not found.
+         *
          * Currently this happens when we are saving the file after the llm
          * changes. The formatter usually is invoked and it can make
-         * unanticipated changes. These will mess up the resolutions for the
-         * changes that are final and were already applied, but the resolve
-         * stage does not care - it keeps trying to resolve old changes that
-         * were already applied.
+         * unanticipated changes. Usually these changes are single line, but
+         * could result in displacement as well. These will mess up the
+         * resolutions for the changes that are final and were already applied,
+         * but the resolve stage does not care - it keeps trying to resolve old
+         * changes that were already applied.
          *
          * We really are only scared of the edits that change line
          * count, as we address by lines only (not characters).
