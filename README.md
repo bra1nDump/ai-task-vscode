@@ -4,16 +4,14 @@
 - **Multi-file**: Can edit/create multiple files at once
 - **Fast**: Applies patches instead of regenerating entire file contents
 - **Fix compile errors**: Fix trivial errors in bulk resulting from a refactor
-- **Terminal commands**: For tasks relying on a new dependency it can automatically instal it
 
 [Demo](https://github.com/bra1nDump/ai-task-vscode/assets/12608159/6079c043-4fe2-437f-8070-c45a5ffb64b3)
 
 # How it works
 
 - Add a comment with your task `// @task split the function below into a helper and the main function, move helper to a new file`
-- Type `@run` followed by a space ` ` to start executing the task
-  - Or `Cmd+y` on Mac and `Ctrl+y` on Windows
-- Cancel the task at any moment by either closing the Preview window or by clicking the `Cancel` button in the bottom right corner of VSCode
+- Click `Run @task` to start
+- Cancel at any moment by clicking the `Cancel` button in the bottom right corner of VSCode
 - If you want to undo changes - simply use `Cmd+z` on Mac and `Ctrl+z` on Windows, this will undo all changes made by the task per file
 
 # How to try it
