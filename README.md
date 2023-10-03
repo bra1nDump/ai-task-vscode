@@ -6,7 +6,7 @@
 - **Fix compile errors**: Fix trivial errors in bulk resulting from a refactor
 - **Terminal commands**: For tasks relying on a new dependency it can automatically instal it
 
-[Demo](https://github.com/bra1nDump/ai-task-vscode/assets/12608159/f7d193fc-10d2-448f-a711-8f3965229bbd)
+[Demo](https://github.com/bra1nDump/ai-task-vscode/assets/12608159/6079c043-4fe2-437f-8070-c45a5ffb64b3)
 
 # How it works
 
