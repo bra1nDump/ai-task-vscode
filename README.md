@@ -6,8 +6,7 @@
 - **Fix compile errors**: Fix trivial errors in bulk resulting from a refactor
 - **Terminal commands**: For tasks relying on a new dependency it can automatically instal it
 
-![](docs/assets/demo.gif)
-[A complete video is on YouTube](https://youtu.be/wD8ZdIJ9p0Y)
+[Demo](https://github.com/bra1nDump/ai-task-vscode/assets/12608159/f7d193fc-10d2-448f-a711-8f3965229bbd)
 
 # How it works
 
@@ -21,7 +20,7 @@
 
 [Install from VSCode Marketplace](https://marketplace.visualstudio.com/items?itemName=bra1ndump.ai-task)
 
-[Join the discord](https://discord.gg/D8V6Rc63wQ) to tell me why copilot is better, ask questions, or just lurk :D
+[Join the discord](https://discord.gg/D8V6Rc63wQ) to ask questions, give feedback or just lurk :D
 
 # Roadmap
 
