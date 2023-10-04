@@ -15,7 +15,7 @@ Can I run tsc using a javascript, so from the extension code itself? .. probably
 - Find an existing language server that does something similar
 
 
-[Related](/docs/features/context-simple.md)
+[Related](/documents/features/context-simple.md)
 
 # Goal:
 - High level I want to record better looking demos to be more likely to viral

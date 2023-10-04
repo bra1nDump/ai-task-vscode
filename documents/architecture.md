@@ -11,7 +11,7 @@ Assumes you have read [README.md](/README.md).
         - This is what produces the bulk of the dynamic portion of the prompt. 
         - It plays a crucial role when backdating edits received from the LLM (file might have already been changed since the LLM received it). 
 - We collect all the context mentioned by the users such as @ tabs @ errors within the command, all context gets added to context manager
-  - This part can be improved a lot, right now I simply search for strength matches within the files, we want to define some actual syntax four context expressions. We should design it in away that users can add their custom expressions later. [More on this](/docs/features/context-simple.md) and [here](/docs/features/context-language-server.md)
+  - This part can be improved a lot, right now I simply search for strength matches within the files, we want to define some actual syntax four context expressions. We should design it in away that users can add their custom expressions later. [More on this](/documents/features/context-simple.md) and [here](/documents/features/context-language-server.md)
 
 - Kick off [multi file edit](/src/multi-file-edit/v1/index.ts). 
     - This is really not a great name, since this is now also handles new file creation and terminal comment running.

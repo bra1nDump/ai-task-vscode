@@ -3,8 +3,8 @@
 This is promising
 
 https://github.com/mhutchie/vscode-git-graph
-Do interesting things with ![Overlays on top of entire editor](../features/multi-file-diff/image.png)
-![Pushing text to the side and showing big inline elements](../features/multi-file-diff/image-1.png)
+Do interesting things with ![Overlays on top of entire editor](./../features/multi-file-diff/image.png)
+![Pushing text to the side and showing big inline elements](./../features/multi-file-diff/image-1.png)
 
 ### Diff application view
 

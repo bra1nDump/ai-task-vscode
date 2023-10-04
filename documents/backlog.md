@@ -11,8 +11,11 @@
 
 # Next up
 
-- Pretty up readme
-- Fix gif in marketplace 
+- Find influencers for software and ask to collaborate
+- Create a list of influencers to reach out to
+- Creates standard copy for reaching out to influencers
+
+- Reach out to people from the meetup to try the extension
 
 # Bugs
 
