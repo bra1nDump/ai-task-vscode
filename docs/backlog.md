@@ -5,22 +5,14 @@
 
 # Next milestones
 
-- [done] Published extension
-- [done] Have a novel feature - probably working multi file edits
-- [done] Recorded demo video showing basic usage + gif for readme
-- [done] Release project on GitHub
 - Found a single demo user
 - Reached out to 5 potential collaborators
 - Replaced continue on the current project
 
 # Next up
 
-## Record gifs for new file + cmd 3 more takes on the main video [2hr + 2hr editing] NO DAVINCI RESOLVE ?
-
-- Switch to mp4 - no looping needed
 - Pretty up readme
-- Fix the name: ai-task coding assistant
-- Have a task alias - ai-task? for demo / brand purposes
+- Fix gif in marketplace 
 
 # Bugs
 
@@ -52,6 +44,9 @@
 - Provide token count on the input and provide approximate price
 - Add discord server link to hight level output
 
+## Demo 
+- Have a task alias - ai-task? for demo / brand purposes
+
 ## Developer experience working on ai-task
 
 - Create issues for some of my todos here
@@ -82,3 +77,6 @@ Will function calling help me getter faster? I would not need to deal with Xml p
 
 - @ completions popup everywhere, even when @is not typed. This is annoying and should be fixed
 
+## Record gifs for new file + cmd 3 more takes on the main video [2hr + 2hr editing] NO DAVINCI RESOLVE ?
+
+- Switch to mp4 - no looping needed

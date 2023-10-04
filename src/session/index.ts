@@ -77,7 +77,10 @@ export async function startSession(
 
   const cachedActiveEditor = vscode.window.activeTextEditor
 
-  // Since we're opening to the side the focus is not taken
+  /*
+   * Since we're opening to the side the focus is not taken.
+   * Remove for recording simple demo
+   */
   await vscode.commands.executeCommand(
     'markdown.showPreviewToSide',
     sessionMarkdownHighLevelFeedbackDocument.uri,

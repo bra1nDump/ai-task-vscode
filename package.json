@@ -1,9 +1,9 @@
 {
   "name": "ai-task",
-  "displayName": " AI Coding Assistant: multi-file edits",
+  "displayName": " AI-Task: Multi-File edit coding assistant",
   "publisher": "bra1nDump",
-  "description": "Leave comments across your codebase with @task mentions and have AI address them, even if it requires multi-file changes",
-  "version": "0.0.17",
+  "description": "Use comments with @task to perform multi-file changes, fix your bugs with @errors and more!",
+  "version": "0.0.19",
   "license": "Business Source License 1.1",
   "icon": "icon.png",
   "repository": {

@@ -39,6 +39,11 @@ export async function completeInlineTasksCommand(this: {
     '> Running ai-task\n',
   )
 
+  void queueAnAppendToDocument(
+    sessionContext.markdownHighLevelFeedbackDocument,
+    '[Discord to submit feedback](https://discord.gg/D8V6Rc63wQ)\n',
+  )
+
   // Functionality specific to bread mentions
   const breadIdentifier = getBreadIdentifier()
   const fileUrisWithBreadMentions =

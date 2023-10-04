@@ -5,7 +5,7 @@
 - **Fast**: Applies patches instead of regenerating entire file contents
 - **Fix compile errors**: Fix trivial errors in bulk resulting from a refactor
 
-[Demo](https://github.com/bra1nDump/ai-task-vscode/assets/12608159/6079c043-4fe2-437f-8070-c45a5ffb64b3)
+![](docs/demo-videos/with-loading-bar.gif)
 
 # How it works
 
