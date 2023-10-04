@@ -2,7 +2,7 @@
 
 - **Automatic**: Detects ranges in the file that should be updated
 - **Multi-file**: Can edit/create multiple files at once
-- **Fast**: Applies patches instead of regenerating entire file contents
+- **Efficient**: Applies patches instead of regenerating entire file contents
 - **Fix compile errors**: Fix trivial errors in bulk resulting from a refactor
 
 ![](documents/demo-videos/with-loading-bar.gif)
@@ -11,8 +11,10 @@
 
 - Add a comment with your task `// @task split the function below into a helper and the main function, move helper to a new file`
 - Click `Run @task` to start
+- If you want multiple existing files to be edited open them as tabs in VSCode and include `@tabs` in your comment
 - Cancel at any moment by clicking the `Cancel` button in the bottom right corner of VSCode
-- If you want to undo changes - simply use `Cmd+z` on Mac and `Ctrl+z` on Windows, this will undo all changes made by the task per file
+- To undo changes per file simply use `Cmd+z` on Mac and `Ctrl+z` on Windows
+- **New** Try adding `@errors` along with `@task` to fix all errors within the file in bulk
 
 # How to try it
 
@@ -23,7 +25,6 @@
 # Roadmap
 
 - Test on windows - looking for help!
-- Creating a language server for auto complete and highlight in @task comments and files
 - Context providers like @url "docs.apple.com" or @semantic-search "function that adds line number to a file"
 - Allow users to create custom javascript scripts to make whole code based transformations
 - Using VSCode Notebook as the chat interface

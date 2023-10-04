@@ -11,11 +11,16 @@
 
 # Next up
 
+- 
+
 - Find influencers for software and ask to collaborate
 - Create a list of influencers to reach out to
 - Creates standard copy for reaching out to influencers
 
-- Reach out to people from the meetup to try the extension
+- Migrate from open the eye to hillicon for demos to be free
+- Reach out to people from the meetup to try the extension, schedule demos
+
+- Allow disabling automatic saving, we'll be added to sandbox settings to avoid committing sandbox to git as this is used for testing
 
 # Bugs
 
