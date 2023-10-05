@@ -11,6 +11,7 @@ import { SessionContext } from 'session'
 import { undefinedIfStringEmpty } from './optional'
 import { Stream } from 'openai/streaming'
 import { APIError } from 'openai/error'
+import { hell } from './constants'
 
 export type OpenAiMessage = OpenAI.Chat.Completions.ChatCompletionMessageParam
 
@@ -64,9 +65,6 @@ export async function streamLlm(
       await session.extensionContext.secrets.store('openaiApiKey', key)
     }
   }
-  if (!key) {
-    return resultError(new Error('No OpenAI API key provided'))
-  }
 
   /*
    * Ensure we are not already running a stream,
@@ -78,9 +76,24 @@ export async function streamLlm(
   }
   isStreamRunning = true
 
-  const openai = new OpenAI({
-    apiKey: key,
-  })
+  // If key is found, use the official API, otherwise use the proxy
+  const openai =
+    key === undefined
+      ? new OpenAI({
+          apiKey: `sk-helicone-proxy-${hell}`,
+          baseURL: 'https://oai.hconeai.com/v1',
+
+          defaultHeaders: {
+            'Helicone-User-Id': session.userId,
+            // Do not store user's data
+            'Helicone-Omit-Request': 'true',
+            'Helicone-Omit-Response': 'true',
+          },
+        })
+      : new OpenAI({
+          apiKey: key,
+          baseURL: 'https://api.openai.com/v1',
+        })
 
   /*
    * Compare AsyncGenerators / AsyncIterators: https://javascript.info/async-iterators-generators

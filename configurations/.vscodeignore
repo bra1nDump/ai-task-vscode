@@ -12,7 +12,7 @@ configurations/
 
 # Project specific folders
 .task/
-docs/
+documents/
 testing-sandbox/
 prompt-engineering/
 scripts/

@@ -9,9 +9,9 @@ Github Copilot is great, but it is limited to tab auto complete or replacing a s
 
 Let me know if you are interested to try this extension or want to help with its development. I plan to open source the code within this week. Thanks for watching!
 
-# Linkedin post
+# Linkedin post https://www.linkedin.com/posts/kirill-dubovitskiy_do-you-wish-github-copilot-could-edit-multiple-activity-7115464923622637569-vpMB?utm_source=share&utm_medium=member_desktop
 
-Do wish GitHub copilot could edit multiple files at a time? I do. So I built an extension that does just that.
-You specify the task you're trying to accomplish within a comment with @task mention and the extension will figure out all the changes that need to be performed in your code.
+Do you wish GitHub copilot could edit multiple files at a time? I do. So I built an extension that does just that.
+You specify the task you're trying to accomplish within a comment with @task mention and the extension will figure out all the changes that need to be performed in your code. It will include opened tabs if you use @tabs mention, it will also try fixing all errors in your open tabs if you add @errors.
 
 Please give it a try and DM me feedback https://marketplace.visualstudio.com/items?itemName=bra1ndump.ai-task

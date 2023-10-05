@@ -1,4 +1,4 @@
-# LLMs Multi-File Edits that don't suck
+# Multi-File editing that doesn't suck
 
 - **Automatic**: Detects ranges in the file that should be updated
 - **Multi-file**: Can edit/create multiple files at once

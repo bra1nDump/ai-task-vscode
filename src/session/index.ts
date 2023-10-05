@@ -9,6 +9,7 @@ export interface SessionConfiguration {
 
 export interface SessionContext {
   id: string
+  userId: string
 
   /**
    * Necessary for access to secrets to store API key the user enters
@@ -149,8 +150,16 @@ export async function startSession(
     },
   )
 
+  // Lookup or create the user id for anonymous usage tracking
+  let userId = context.globalState.get<string>('userId')
+  if (userId === undefined) {
+    userId = Math.random().toString(36).substring(7)
+    await context.globalState.update('userId', userId)
+  }
+
   return {
     id: new Date().toISOString(),
+    userId,
     extensionContext: context,
     configuration: {
       taskIdentifier: getBreadIdentifier(),
