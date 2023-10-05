@@ -89,6 +89,28 @@ export async function streamLlm(
           baseURL: 'https://oai.hconeai.com/v1',
 
           defaultHeaders: {
+            /*
+             * Analytics, this header is kind of redundant but is still needed
+             * to have requests logged in the dashboard, discouraging simple
+             * scraping, this key is not important though
+             */
+            'Helicone-Auth':
+              `Bearer ` +
+              `s` +
+              `k` +
+              '-helicone' +
+              '-nw' +
+              '5' +
+              'a' +
+              '63' +
+              'y' +
+              '-333' +
+              'utiq' +
+              '-qs' +
+              '62' +
+              'fma' +
+              '-grnofmi',
+
             'Helicone-User-Id': session.userId,
             // Do not store user's data
             'Helicone-Omit-Request': 'true',
