@@ -49,22 +49,27 @@ export async function streamLlm(
   Result<[AsyncIterableX<LlmPartialResponse>, AbortController], Error>
 > {
   // Ensure the key is provided
-  let key: string | undefined =
+  const key: string | undefined =
     process.env.OPENAI_API_KEY ??
     undefinedIfStringEmpty(
       vscode.workspace.getConfiguration('ai-task').get('openaiApiKey'),
     ) ??
-    (await session.extensionContext.secrets.get('openaiApiKey'))
-  if (typeof key !== 'string' || key.length === 0) {
-    // Give the user a chance to enter the key
-    key = await vscode.window.showInputBox({
-      prompt: 'Please enter your OpenAI API key',
-      ignoreFocusOut: true,
-    })
-    if (key) {
-      await session.extensionContext.secrets.store('openaiApiKey', key)
-    }
-  }
+    undefinedIfStringEmpty(
+      await session.extensionContext.secrets.get('openaiApiKey'),
+    )
+  /*
+   * Stop collecting the key from the user during beta
+   * if (typeof key !== 'string' || key.length === 0) {
+   *   // Give the user a chance to enter the key
+   *   key = await vscode.window.showInputBox({
+   *     prompt: 'Please enter your OpenAI API key',
+   *     ignoreFocusOut: true,
+   *   })
+   *   if (key) {
+   *     await session.extensionContext.secrets.store('openaiApiKey', key)
+   *   }
+   * }
+   */
 
   /*
    * Ensure we are not already running a stream,
