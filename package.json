@@ -52,6 +52,10 @@
           "type": "array",
           "default": [],
           "description": "Directories and files to exclude when adding files to context for example from active tabs or files with @task mentions"
+        },
+        "ai-task.userId": {
+          "type": "string",
+          "description": "User ID to use for by default anonymous analytics"
         }
       }
     },

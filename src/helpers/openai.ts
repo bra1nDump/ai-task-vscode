@@ -107,7 +107,7 @@ export async function streamLlm(
   >(
     openai.chat.completions.create({
       model: process.env.OPENAI_DEFAULT_MODEL ?? 'gpt-4',
-      temperature: 0.7,
+      temperature: 0.4,
       messages,
       stream: true,
     }),
@@ -116,6 +116,7 @@ export async function streamLlm(
   if (streamResult.type === 'error') {
     console.log(JSON.stringify(streamResult.error, null, 2))
     isStreamRunning = false
+    session.sessionEndedEventEmitter.fire()
     return resultError(new Error(streamResult.error.message))
   }
   const stream = streamResult.value

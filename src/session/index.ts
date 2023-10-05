@@ -150,11 +150,22 @@ export async function startSession(
     },
   )
 
-  // Lookup or create the user id for anonymous usage tracking
-  let userId = context.globalState.get<string>('userId')
-  if (userId === undefined) {
-    userId = Math.random().toString(36).substring(7)
-    await context.globalState.update('userId', userId)
+  /**
+   * We first try to get the user id from the settings. This is useful in case
+   * I want to override it for my user to distinguish from real users. If not
+   * found in the settings, we then try to get it from the global state. If
+   * still not found, we generate a new user id, store it in the global state,
+   * and use it. The user id is used for anonymous usage tracking.
+   */
+  let userId = vscode.workspace
+    .getConfiguration('ai-task')
+    .get<string>('userId')
+  if (typeof userId !== 'string' || userId.length === 0) {
+    userId = context.globalState.get<string>('userId')
+    if (typeof userId !== 'string' || userId.length === 0) {
+      userId = Math.random().toString(36).substring(7)
+      await context.globalState.update('userId', userId)
+    }
   }
 
   return {

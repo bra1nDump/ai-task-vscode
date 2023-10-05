@@ -4,10 +4,11 @@
     "ai-task.ignorePatterns": [
         "prompt-engineering",
         "testing-sandbox",
-        "docs",
+        "documents",
         "README.md",
         "package.json",
     ],
+    "ai-task.userId": "kirill-test-ai-task",
     /**
      * TypeScript
      */
