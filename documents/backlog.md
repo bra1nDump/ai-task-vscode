@@ -1,6 +1,6 @@
 # Features
 
-- Multifile edits by leaving around comments
+- Multifile edits using @task comments
 - Automatically fix compile errors after refactorings
 
 # Next milestones
@@ -11,16 +11,12 @@
 
 # Next up
 
-- 
-
 - Find influencers for software and ask to collaborate
 - Create a list of influencers to reach out to
 - Creates standard copy for reaching out to influencers
 
-- Migrate from open the eye to hillicon for demos to be free
-- Reach out to people from the meetup to try the extension, schedule demos
-
 - Allow disabling automatic saving, we'll be added to sandbox settings to avoid committing sandbox to git as this is used for testing
+  - Git pre-commit hook?
 
 # Bugs
 
@@ -79,9 +75,12 @@ Will function calling help me getter faster? I would not need to deal with Xml p
 
 - Refine the truncation mechanism to truncate more aggressively
   - Be more permissive when range to replace does not entirely match file contents. Basically only match on the line numbers, and I also thought we had the mechanism of matching any of the prefix or suffix lines it does not need to be all of themthe bug seems to be related to that
-
+- Only provide certain lines as potential starts and finishes for the range
 
 # Done
+
+- Migrate from open the eye to hillicon for demos to be free
+- Reach out to people from the meetup to try the extension, schedule demos
 
 - @ completions popup everywhere, even when @is not typed. This is annoying and should be fixed
 

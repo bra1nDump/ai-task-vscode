@@ -2,9 +2,9 @@
 
 ## Qualifications
 
-Meta: Increased Ad revenue by 3% on iOS Facebook App
-ChatGPT plugin, Diagrams Show Me: 3M+ diagrams generated, $10k in revenue
-8 years of coding
+ex Meta: Increased Ad revenue by 3% on iOS Facebook App
+ChatGPT plugin $10k MRR, 3M+ diagrams generated, Diagrams Show Me
+8 years of hacking and building products
 
 ## What I am working on
 

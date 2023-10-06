@@ -21,14 +21,16 @@ if [ "$EXT" != "mov" ]; then
 fi
 
 # Output path with .gif extension
-OUTPUT_PATH="$DIRNAME/$FILENAME.gif"
-OUTPUT_PATH_NO_PALETTE="$DIRNAME/$FILENAME-no-palatte.gif"
+OUTPUT_PATH="$DIRNAME/$FILENAME-light-weight.gif"
 
-FPS=24
-WIDTH=1280
+# FPS=24
+# WIDTH=1280
+
+FPS=10
+WIDTH=720
 
 # (Has weird dots, the effect is called dithering) First perform conversion without using a palette
-ffmpeg -i "$INPUT_PATH" -vf "fps=$FPS,scale=$WIDTH:-1:flags=lanczos" "$OUTPUT_PATH_NO_PALETTE"
+# ffmpeg -i "$INPUT_PATH" -vf "fps=$FPS,scale=$WIDTH:-1:flags=lanczos" "$OUTPUT_PATH_NO_PALETTE"
 
 # Generate a palette, there's a warning here but it's fine, the result is still better than without a palette
 ffmpeg -i "$INPUT_PATH" -vf "fps=$FPS,scale=$WIDTH:-1:flags=lanczos,palettegen" "$DIRNAME/palette.png"
