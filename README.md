@@ -5,7 +5,7 @@
 - **Efficient**: Applies patches instead of regenerating entire file contents
 - **Fix compile errors**: Fix trivial errors in bulk resulting from a refactor
 
-![](documents/demo-videos/with-loading-bar.gif)
+![](documents/demo-videos/longer-demo/with-loading-bar.gif)
 
 # How it works
 
