@@ -98,3 +98,23 @@ Whole code base changes
 Semantic search
 Whole code base understanding cash
 Proactive linting
+
+# Adding a parameter to a helper funciton
+```
+// @task add a label to print along the error and pass the label where the function is used
+function printPromiseResults(promises: PromiseSettledResult<any>[]) {
+  promises.forEach((promise, idx) => {
+    if (promise.status === 'rejected') {
+      console.error(`Promise ${idx} failed with ${promise.reason}`);
+    }
+  });
+}
+```
+
+# Project setups
+
+// @task Oftentimes I add no commit message in my code to make sure I don't commit something that is only used for debugging for example like hard coding a local host as a service. Please create a .git-hooks pre commit script that should fail if commit contains NOCOMMIT. point git to use it.
+const MERMAID_TO_MIRO_EDITOR_SERVICE_ENDPOINT =
+  'https://mermaid-to-miro.fly.dev/convert'
+// NOCOMMIT
+// 'http://localhost:3000/convert' // during development

@@ -22,8 +22,13 @@
 
 - Changing markdown files doesn't currently work, it opens the preview for the file, but then switches the preview to show the file we are trying to edit. Preview always shows the current md file on the left ...
   - It is also unable to actually apply change to the file for some reason - investigate
+- bug with task not stopping even after the task is finished, cancel still running?? This is probably outdated local version
 
 # Unsorted
+
+## Re architecting multi file edit format and granularity
+Oftentimes it misses up with the line numbers, for instance oftentimes it wants to append to the end of the file but it is off by one line.
+I think a better way is to use something like function calling with an option to create a top level symbol in file. We can take care of actually inserting it into the file 
 
 ## UX - Product
 
