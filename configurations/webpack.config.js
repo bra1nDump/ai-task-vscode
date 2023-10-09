@@ -58,7 +58,8 @@ const extensionConfig = {
   module: {
     rules: [
       {
-        test: /src\/.*\.ts$/,
+        // WARNING: Windows will fail if we use / in the test regex!!
+        test: /src.*\.ts$/,
         exclude: /node_modules/,
         use: [
           {
