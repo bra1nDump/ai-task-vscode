@@ -14,7 +14,7 @@
      */
     // Same options as in https://eslint.org/docs/latest/integrate/nodejs-api#parameters
     "eslint.options": {
-        "overrideConfigFile": "./configurations/.eslintrc.js"
+        "overrideConfigFile": "configurations/.eslintrc.js",
     },
     "[typescript]": {
         "editor.defaultFormatter": "dbaeumer.vscode-eslint"

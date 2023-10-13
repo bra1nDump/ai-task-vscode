@@ -129,7 +129,7 @@ export async function safeWorkspaceQueryAllFiles(): Promise<vscode.Uri[]> {
    * open are text files. This has crashed the extension previously
    */
   const allFilesInWorkspace = await vscode.workspace.findFiles(
-    '**/*.{ts,md,js,jsx,tsx,html,css,scss,less,json,yml,yaml,txt}',
+    '**/*.{ts,py,md,js,jsx,tsx,html,css,scss,less,json,yml,yaml,txt}',
     `**/{${excludedDirectories.join(',')}}`,
     1000,
   )

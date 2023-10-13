@@ -20,11 +20,30 @@
 
 # Bugs
 
+- still appears to be an issue when too many files are available for selection. Extension hangs on Join Discrod. Repro in show me plugin repo [bra1nDump.ai-task]Too many files matched: 239
+  - Be smarter about this + show an error to end user suggesting a solution
+- Existing session running is flaky (repro when too many files found for instance)
+- [Might be resolved] bug with task not stopping even after the task is finished, cancel still running?? This is probably outdated local version
+  - Nope, just saw it not terminate again even though it prints Done in feedback doc. Seems to be triggered with racy "Document has been closed" error
+  - Also didn't complete even witout the document error 
+- prompt issue with merging two separate change sets into a single one
 - Changing markdown files doesn't currently work, it opens the preview for the file, but then switches the preview to show the file we are trying to edit. Preview always shows the current md file on the left ...
   - It is also unable to actually apply change to the file for some reason - investigate
-- bug with task not stopping even after the task is finished, cancel still running?? This is probably outdated local version
+- [first issue] @+run causes the run to happen even if the space is not right after the run command
 
 # Unsorted
+
+- keeping tasks is not a bad idea - keeping a history like in chatgpt is good
+- Requiring a user to invoke the tool is difficult
+- Lower latency
+
+- Inquire on how to use vscode itself. We have a list of commands and probably can also lookup what they do on the web. We can also run vscode commands
+
+## Notes
+When doing a refactor the log of tasks is very useful for upcoming tasks. We might want to include this in the following prompts by default somehow. ... Chat interface strikes again? Notebooks?
+
+Cleanup is also very annoying which is the product of making comments in code.
+Only works for inline generation or with auto-cleanup
 
 ## Re architecting multi file edit format and granularity
 Oftentimes it misses up with the line numbers, for instance oftentimes it wants to append to the end of the file but it is off by one line.
@@ -32,9 +51,9 @@ I think a better way is to use something like function calling with an option to
 
 ## UX - Product
 
+- Follow up task to fix errors after making changes - should be a button in the markdown
 - There should be stop and stop and undo buttons 
 - Cleanup @task mentions after running
-- One printing out task, in the examples use `code`  also use a better key ideas format to keep things short and more readable. Developers do love lists
 - Highlighting contexts expressions with better files.
   - It is tricky to pick good token types as they are very likely to collide with the existing colors in the file, possibly confusing the user.
   - I can also provide my own a theme that will only effect my own tokens, but that is more work. Let's do this later
@@ -44,17 +63,20 @@ I think a better way is to use something like function calling with an option to
 - Keep reference to a terminal, don't keep creating new ones
 - Copy the style of open-interpreter
 - Onboarding
-- Add play button to @bread comments - instead of @run
 - Delay scroll into view until there's only a single match ? I thought it would already do that
 - Indentation should ideally be taken into account when generating diffs to match the indentation preferred by the user. This is low priority since type script does not care about it
 - Preview also scrolls up all the time as we are re-writing the document. I wonder if we were to append to the document instead of write to fs scroll would be preserved
 - Preview for the high level oftentimes flickers. Not sure what causes itb but try larger outputs
   - we rewriting the entire file. Workaround documented in append function
 - Provide token count on the input and provide approximate price
-- Add discord server link to hight level output
 
 ## Demo 
 - Have a task alias - ai-task? for demo / brand purposes
+- Have audio - probably why retention so low - peoplea are not entertained
+- Have better splash screen 
+- Less stuff happening in the demo - no command line running
+- Shorter video
+
 
 ## Developer experience working on ai-task
 

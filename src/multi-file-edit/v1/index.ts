@@ -14,6 +14,15 @@ import { map as mapAsync } from 'ix/asynciterable/operators'
 import { createMultiFileEditingMessages } from './prompt'
 
 export async function startMultiFileEditing(sessionContext: SessionContext) {
+  /*
+   * WARNING - dependin on plaform line separators might be different!!!
+   * \n, on windows we want to convert to that at some point??
+   *
+   * Figure out how to write some tests to trigger the current bugs more
+   * locally?
+   * Tests for context manager to make sure it normalizes line endings
+   * Tests for find ranges
+   */
   const fileContexts = sessionContext.contextManager.getEditableFileContexts()
   const blobContexts = sessionContext.contextManager.getBlobContexts()
 

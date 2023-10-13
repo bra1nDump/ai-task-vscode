@@ -184,6 +184,13 @@ export const makeToResolvedChangesTransformer = (
  * But I did simply just copy it over, though I'm also barely using it.
  *
  * Simplify to remove the dependency
+ *
+ * documentContent on windows will have clrf BUT oldChunk is created by the LLM
+ * and all new line characters are \n!!!!
+ *
+ * So we need to handle file contents with \r\n and \n but always treat llm
+ * response as \n
+ *
  */
 export function findTargetRangeInFileWithContent(
   oldChunk: TargetRange,
@@ -244,6 +251,7 @@ export function findTargetRangeInFileWithContent(
   let prefixLines: string[]
   let suffixLines: string[]
   if (oldChunk.type === 'fullContentRange') {
+    //
     const lines = oldChunk.fullContent.split(eofString)
     const middleIndex = Math.floor(lines.length / 2)
     prefixLines = lines.slice(0, middleIndex)

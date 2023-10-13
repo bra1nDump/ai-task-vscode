@@ -118,3 +118,22 @@ const MERMAID_TO_MIRO_EDITOR_SERVICE_ENDPOINT =
   'https://mermaid-to-miro.fly.dev/convert'
 // NOCOMMIT
 // 'http://localhost:3000/convert' // during development
+
+# Write a function to remove dom element with id if present and call it before each return for cleanup
+
+Currently failed due to bad insert range, tries to insert begining of the file
+
+# Creating good issues is tough
+Needs desired - human 
+Needs why - human
+Status quo - can be inferred
+Code pointers - can be inferred
+
+See issue example: https://github.com/bra1nDump/ai-task-vscode/issues/8#issue-1936887626
+
+# Open documents that are related to the issue / task and show relevant code pointers
+Basically create an onboarding for an issue. Same infra than for the previous idea
+
+# Watch the data
+The diagram comes in - I want to watch all transformations it goes through and get code pointers.
+Its similar to profiling / tracing but for data transformations
