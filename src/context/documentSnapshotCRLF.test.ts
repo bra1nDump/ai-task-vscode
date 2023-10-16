@@ -3,15 +3,15 @@ import * as assert from 'assert'
 
 import { DocumentSnapshot, vscodeRangeToLineRange } from './documentSnapshot'
 
-suite('DocumentSnapshot', () => {
+suite('DocumentSnapshot CRLF', () => {
   setup(async () => {
     // Close all editors prior to opening new ones
     await vscode.commands.executeCommand('workbench.action.closeAllEditors')
   })
 
   test('Works correctly on a simple example from the API design', async function () {
-    const initialContent = `Line 0\nLine 1\nLine 2\nLine 3\nLine 4\nLine 5`
-    const expectedContentAfterEdits = `Prepended New Line 0\nLine 0\nReplaced Line 1\nLine 2\nReplaced Line 3\nAdded Line 4\nLine 4\nLine 5`
+    const initialContent = `Line 0\r\nLine 1\r\nLine 2\r\nLine 3\r\nLine 4\r\nLine 5`
+    const expectedContentAfterEdits = `Prepended New Line 0\r\nLine 0\r\nReplaced Line 1\r\nLine 2\r\nReplaced Line 3\r\nAdded Line 4\r\nLine 4\r\nLine 5`
     const doc = await vscode.workspace.openTextDocument({
       content: initialContent,
     })

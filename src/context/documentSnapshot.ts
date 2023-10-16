@@ -155,7 +155,11 @@ import {
 } from 'vscode'
 
 import { Result, resultMap } from '../helpers/result'
-import { FileContext, transformFileContextWithLineNumbers } from './types'
+import {
+  FileContext,
+  replaceEndOfLineCRLFWithLF,
+  transformFileContextWithLineNumbers,
+} from './types'
 
 export interface LineRange {
   start: number
@@ -193,12 +197,22 @@ export class DocumentSnapshot {
    * Is it still accessible?
    * Maybe write a simple Unittest to test this similar to how I did with
    * VSCode edit apis
+   *
+   * There was a problem where the extension did not work on windows
+   * replaceEndOfLineCRLFWithLF helps to fix this by replacing CRLF with LF,
+   * instead of changing the codes \n to \r\n in everything, we adapt the text
+   * at the beginning
    */
   constructor(
     public document: TextDocument,
     public includeLineNumbers: boolean,
   ) {
     this.fileSnapshotForLlm = createFileContext(document)
+
+    this.fileSnapshotForLlm = replaceEndOfLineCRLFWithLF(
+      this.fileSnapshotForLlm,
+    )
+
     if (includeLineNumbers) {
       this.fileSnapshotForLlm = transformFileContextWithLineNumbers(
         this.fileSnapshotForLlm,

@@ -3,7 +3,7 @@ import * as vscode from 'vscode'
 
 suite('VSCode Extension Command Tests', function () {
   // Increased timeout since these are using LLM an are thus slow
-  this.timeout(60_000)
+  this.timeout(100_000)
   test('ai-task.completeInlineTasks command', async () => {
     /*
      *Assuming there's a file called "helloWorld.ts" in the root workspace:
@@ -65,12 +65,13 @@ suite('VSCode Extension Command Tests', function () {
     const helloWorldDocument =
       await vscode.workspace.openTextDocument(helloWorldUri)
     const helloWorldDocumentText = helloWorldDocument.getText()
+
+    const endOfLine =
+      helloWorldDocument.eol === vscode.EndOfLine.CRLF ? '\r\n' : '\n'
+
     assert.equal(
       helloWorldDocumentText,
-      `export function helloWorld(name: string) {
-  console.log(\`Hello \${name}!\`)
-}
-`,
+      `export function helloWorld(name: string) {${endOfLine}  console.log(\`Hello \${name}!\`)${endOfLine}}${endOfLine}`,
     )
 
     // Test creation of new files works
@@ -88,7 +89,9 @@ suite('VSCode Extension Command Tests', function () {
      * Clean up after the test (for some reason does not actually clean
      * anything up)
      */
-    await vscode.workspace.fs.delete(readmeUri)
-    await vscode.workspace.fs.delete(lsTestOutputUri)
+    /*
+     *await vscode.workspace.fs.delete(readmeUri)
+     *await vscode.workspace.fs.delete(lsTestOutputUri)
+     */
   })
 })

@@ -21,3 +21,12 @@ export function transformFileContextWithLineNumbers(
     content: snapshotContent,
   }
 }
+
+// this function changes the СRLF to LF, helps with adaptation to windows
+export function replaceEndOfLineCRLFWithLF(fileContext: FileContext) {
+  const snapshotContent = fileContext.content.replace(/\r\n/g, '\n')
+  return {
+    ...fileContext,
+    content: snapshotContent,
+  }
+}
