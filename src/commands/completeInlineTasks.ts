@@ -5,7 +5,6 @@ import {
 } from 'context/atTask'
 import { getFilesContent } from 'helpers/fileSystem'
 import { SessionContext, getBreadIdentifier } from 'session'
-import { queueAnAppendToDocument } from 'helpers/fileSystem'
 import { closeSession, startSession } from 'session'
 import { startMultiFileEditing } from 'multi-file-edit/v1'
 import { projectDiagnosticEntriesWithAffectedFileContext } from 'context/atErrors'
@@ -59,9 +58,11 @@ export async function completeInlineTasksCommand(
   } catch (error) {
     console.error(error)
     if (error instanceof Error) {
-      await vscode.window.showErrorMessage(`Error: ${error.message}`)
+      await sessionContext.highLevelLogger(`\n\n> Error: ${error.message}`)
     }
   } finally {
+    await sessionContext.highLevelLogger('\n\n> Done\n')
+
     await closeSession(sessionContext)
     this.sessionRegistry.delete(sessionContext.id)
   }
@@ -71,14 +72,8 @@ async function throwingCompleteInlineTasksCommand(
   sessionContext: SessionContext,
   optionalContextBlobRecivedFromAnotherExtension: string | undefined,
 ) {
-  // TODO: Move this to session/index.ts
-  void queueAnAppendToDocument(
-    sessionContext.markdownHighLevelFeedbackDocument,
-    '> Running ai-task\n',
-  )
-
-  void queueAnAppendToDocument(
-    sessionContext.markdownHighLevelFeedbackDocument,
+  void sessionContext.highLevelLogger('> Running ai-task\n')
+  void sessionContext.highLevelLogger(
     '\n[Join Discord to submit feedback](https://discord.gg/D8V6Rc63wQ)\n',
   )
 
@@ -217,9 +212,4 @@ async function throwingCompleteInlineTasksCommand(
   console.log('fileManager', sessionContext.contextManager.dumpState())
 
   await startMultiFileEditing(sessionContext)
-
-  await queueAnAppendToDocument(
-    sessionContext.markdownHighLevelFeedbackDocument,
-    '\n\n> Done\n',
-  )
 }

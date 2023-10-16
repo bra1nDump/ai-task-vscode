@@ -31,6 +31,28 @@
   ],
   "main": "./dist/extension.js",
   "contributes": {
+    "notebooks": [
+      {
+        "type": "task-notebook",
+        "displayName": "Task Notebook",
+        "selector": [
+          {
+            "filenamePattern": "*.task"
+          }
+        ]
+      }
+    ],
+    "languages": [
+      {
+        "id": "task-book",
+        "aliases": [
+          "Task Book"
+        ],
+        "filenamePatterns": [
+          "*.task"
+        ]
+      }
+    ],
     "commands": [
       {
         "command": "ai-task.completeInlineTasks",
@@ -56,6 +78,19 @@
         "ai-task.userId": {
           "type": "string",
           "description": "User ID to use for by default anonymous analytics"
+        },
+        "ai-task.markdownOrNotebook": {
+          "type": "string",
+          "default": "notebook",
+          "enum": [
+            "notebook",
+            "markdown"
+          ],
+          "enumDescriptions": [
+            "notebook output",
+            "markdown output"
+          ],
+          "description": "Output of the main logs to a markdown document or notebook"
         }
       }
     },
@@ -78,10 +113,10 @@
     "------------section-test------------": "",
     "test": "npm run build && node out/test/runTest.js",
     "------------section-extension-packaging-and-publishing------------": "Refactor: move package + publishing to the install-local script and have it accept --publish --package-and-install-local",
-    "package": "npm run build && ./node_modules/.bin/vsce package --ignoreFile configurations/.vscodeignore --no-dependencies --ignoreFile  configurations/.vscodeignore --allow-star-activation --githubBranch main",
+    "package": "npm run build && .\\node_modules\\.bin\\vsce package --ignoreFile configurations\\.vscodeignore --no-dependencies --ignoreFile  configurations\\.vscodeignore --allow-star-activation --githubBranch main",
     "publish": "npm run test && npm run bundle:prod && ./node_modules/.bin/vsce publish --no-dependencies --ignoreFile  configurations/.vscodeignore --allow-star-activation --githubBranch main",
     "publish:bypass-test": "npm run bundle:prod && ./node_modules/.bin/vsce publish --no-dependencies --ignoreFile  configurations/.vscodeignore --allow-star-activation --githubBranch main",
-    "install-local": "node scripts/install-local.mjs 'code-insiders'",
+    "install-local": "node scripts/install-local.mjs code",
     "------------section-other------------": "",
     "lint": "eslint . --config configurations/.eslintrc.js --ext ts --fix",
     "codegen:prompt-checkpoints": "MULTI_FILE_PROMPT_VERSION=v5-new-example-refactor-functions-with-similar-functionality node ./out/script-generate-prompt-checkpoint.js"

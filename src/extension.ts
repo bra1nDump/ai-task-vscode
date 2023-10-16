@@ -4,6 +4,8 @@ import { TaskCodeLensProvider } from 'context/language-features/codeLensProvider
 import { TaskSemanticTokensProvider } from 'context/language-features/semanticTokensProvider'
 import { SessionContext } from 'session'
 import * as vscode from 'vscode'
+import { TaskController } from 'notebook/taskController'
+import { TaskSerializer } from 'notebook/taskSerializer'
 
 export async function activate(context: vscode.ExtensionContext) {
   console.log('activating bread extension')
@@ -14,6 +16,22 @@ export async function activate(context: vscode.ExtensionContext) {
     extensionContext: context,
     sessionRegistry,
   })
+
+  context.subscriptions.push(new TaskController())
+
+  context.subscriptions.push(
+    vscode.workspace.registerNotebookSerializer(
+      'task-notebook',
+      new TaskSerializer(),
+      {
+        transientOutputs: false,
+        transientCellMetadata: {
+          inputCollapsed: true,
+          outputCollapsed: true,
+        },
+      },
+    ),
+  )
 
   // Commands also need to be defined in package.json
   context.subscriptions.unshift(
@@ -26,6 +44,10 @@ export async function activate(context: vscode.ExtensionContext) {
        */
     ),
   )
+
+  const isTaskFile = (document: vscode.TextDocument) => {
+    return document.uri.path.endsWith('.task')
+  }
 
   context.subscriptions.unshift(
     /*
@@ -43,7 +65,6 @@ export async function activate(context: vscode.ExtensionContext) {
      *   },
      * ),
      */
-
     // Kickoff on @run mention
     vscode.workspace.onDidChangeTextDocument((event) => {
       /*
@@ -53,6 +74,10 @@ export async function activate(context: vscode.ExtensionContext) {
       const isRunInLine = (document: vscode.TextDocument, line: number) => {
         const lineText = document.lineAt(line).text
         return lineText.includes('@run')
+      }
+
+      if (isTaskFile(event.document)) {
+        return
       }
 
       if (
@@ -81,7 +106,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const allLanguages = await vscode.languages.getLanguages()
   const languageForFiles = allLanguages.map((language) => ({
     language,
-    scheme: 'file',
+    schema: 'file',
   }))
 
   /*
@@ -104,7 +129,7 @@ export async function activate(context: vscode.ExtensionContext) {
       '@',
     ),
     vscode.languages.registerCodeLensProvider(
-      languageForFiles,
+      languageForFiles.filter((language) => language.language !== 'task-book'),
       new TaskCodeLensProvider(sessionConfiguration),
     ),
     vscode.languages.registerDocumentSemanticTokensProvider(

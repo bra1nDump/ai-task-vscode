@@ -2,7 +2,6 @@ import * as vscode from 'vscode'
 import { AsyncIterableX, last as lastAsync } from 'ix/asynciterable'
 import { map as mapAsync } from 'ix/asynciterable/operators'
 import { SessionContext } from 'session'
-import { queueAnAppendToDocument } from 'helpers/fileSystem'
 import {
   ResolvedChange,
   ResolvedExistingFileEditChange,
@@ -82,10 +81,7 @@ async function appendDescriptionsAsTheyBecomeAvailable(
       const lastDescription = changeIndexToLastDescription.get(index)
       // First time we see this change, append the description header
       if (lastDescription === undefined) {
-        void queueAnAppendToDocument(
-          context.markdownHighLevelFeedbackDocument,
-          '\n### Pseudocode\n```\n',
-        )
+        void context.highLevelLogger('\n### Pseudocode\n```\n')
       }
 
       if (lastDescription !== change.descriptionForHuman) {
@@ -93,10 +89,9 @@ async function appendDescriptionsAsTheyBecomeAvailable(
         const delta = change.descriptionForHuman.slice(
           lastDescription?.length ?? 0,
         )
-        void queueAnAppendToDocument(
-          context.markdownHighLevelFeedbackDocument,
-          delta,
-        )
+
+        void context.highLevelLogger(delta)
+
         changeIndexToLastDescription.set(index, change.descriptionForHuman)
       } else if (change.replacementIsFinal || change.replacement.length > 10) {
         /*
@@ -105,10 +100,8 @@ async function appendDescriptionsAsTheyBecomeAvailable(
          * Instead we need to rely on the proxy of the replacement being non
          * empty. Yet again paying the hack tax.
          */
-        void queueAnAppendToDocument(
-          context.markdownHighLevelFeedbackDocument,
-          '\n```',
-        )
+        void context.highLevelLogger('\n```')
+
         // The description is finalized
         changesWithFinalizedDescription.add(index)
       }
@@ -254,10 +247,7 @@ async function showFilesOnceWeKnowWeWantToModifyThem(
       if (!shownChangeIndexes.has(change.fileUri.fsPath)) {
         const document = await vscode.workspace.openTextDocument(change.fileUri)
         const relativeFilepath = vscode.workspace.asRelativePath(change.fileUri)
-        void queueAnAppendToDocument(
-          context.markdownHighLevelFeedbackDocument,
-          `\n### Modifying ${relativeFilepath}\n`,
-        )
+        void context.highLevelLogger(`\n### Modifying ${relativeFilepath}\n`)
         await vscode.window.showTextDocument(document)
         shownChangeIndexes.add(change.fileUri.fsPath)
       }
@@ -273,10 +263,7 @@ async function showWarningWhenNoFileWasModified(
     growingSetOfFileChanges,
   )
   if (!finalSetOfChangesToMultipleFiles) {
-    void queueAnAppendToDocument(
-      context.markdownHighLevelFeedbackDocument,
-      '\n## No files got changed thats strange\n',
-    )
+    void context.highLevelLogger('\n## No files got changed thats strange\n')
   }
 }
 
@@ -391,10 +378,7 @@ async function runTerminalCommands(
   for await (const changesForMultipleFiles of terminalCommands) {
     for (const [index, change] of changesForMultipleFiles.entries()) {
       if (!runCommands.has(index)) {
-        void queueAnAppendToDocument(
-          context.markdownHighLevelFeedbackDocument,
-          `\n### Running ${change.command}\n`,
-        )
+        void context.highLevelLogger(`\n### Running ${change.command}\n`)
         void runTerminalCommand(change.command)
         runCommands.add(index)
       }
