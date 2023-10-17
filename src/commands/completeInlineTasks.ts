@@ -13,19 +13,27 @@ import { projectDiagnosticEntriesWithAffectedFileContext } from 'context/atError
 import dedent from 'dedent'
 
 /**
- * Generates and applies diffs to files in the workspace containing @bread
+ * Generates and applies diffs to files in the workspace containing task
  * mention.
  *
- * Collect all files in workspace with @bread mention
+ * Collect all files in workspace with task mention
  * Pack the files along with the diff generation prompts
  * Call openai api (through langchain)
  * Parse the diffs
  * Apply them to the current file in place
+ *
+ * @param optionalContextBlobRecivedFromAnotherExtension - This extension can be
+ * programmatically invoked by other extensions and they can pass context
+ * containing information for the LLM to accompish the task better, or even
+ * communicate the task itself
  */
-export async function completeInlineTasksCommand(this: {
-  extensionContext: vscode.ExtensionContext
-  sessionRegistry: Map<string, SessionContext>
-}) {
+export async function completeInlineTasksCommand(
+  this: {
+    extensionContext: vscode.ExtensionContext
+    sessionRegistry: Map<string, SessionContext>
+  },
+  optionalContextBlobRecivedFromAnotherExtension: string | undefined,
+) {
   if (this.sessionRegistry.size !== 0) {
     console.log(`Existing session running, most likely a bug with @run + enter`)
     return
@@ -34,6 +42,7 @@ export async function completeInlineTasksCommand(this: {
   const sessionContext = await startSession(this.extensionContext)
   this.sessionRegistry.set(sessionContext.id, sessionContext)
 
+  // TODO: Move this to session/index.ts
   void queueAnAppendToDocument(
     sessionContext.markdownHighLevelFeedbackDocument,
     '> Running ai-task\n',
@@ -44,17 +53,35 @@ export async function completeInlineTasksCommand(this: {
     '\n[Join Discord to submit feedback](https://discord.gg/D8V6Rc63wQ)\n',
   )
 
+  // Add any context that was passed in from another extension
+  if (
+    typeof optionalContextBlobRecivedFromAnotherExtension === 'string' &&
+    optionalContextBlobRecivedFromAnotherExtension.length !== 0
+  ) {
+    sessionContext.contextManager.addBlobContexts([
+      optionalContextBlobRecivedFromAnotherExtension,
+    ])
+  }
+
   // Functionality specific to bread mentions
   const breadIdentifier = getBreadIdentifier()
   const fileUrisWithBreadMentions =
     await findAndCollectBreadMentionedFiles(breadIdentifier)
-  if (fileUrisWithBreadMentions.length === 0) {
-    void vscode.window.showErrorMessage(
-      `No bread found, ai-task are getting hungry. Remember to add @${breadIdentifier} mention to at least one file in the workspace.`,
-    )
-    await closeSession(sessionContext)
-    return
-  }
+  /*
+   * Its okay to not have any task mentions - for instance for other extension
+   * adding to the context
+   */
+
+  /*
+   * if (fileUrisWithBreadMentions.length === 0) {
+   *   void vscode.window.showErrorMessage(
+   *     `No bread found, ai-task are getting hungry. Remember to add
+   *     @${breadIdentifier} mention to at least one file in the workspace.`,
+   *   )
+   *   await closeSession(sessionContext)
+   *   return
+   * }
+   */
 
   await sessionContext.contextManager.addDocuments(
     'Files with bread mentions',

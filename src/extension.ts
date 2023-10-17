@@ -20,6 +20,10 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       'ai-task.completeInlineTasks',
       commandWithBoundSession,
+      /*
+       * TODO: this acctually accepts this as a third argument,
+       * so bind above can be removed and this can be passed here insted
+       */
     ),
   )
 
