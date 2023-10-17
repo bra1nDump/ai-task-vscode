@@ -26,6 +26,7 @@ module.exports = {
     // Add your custom rules here
     "@typescript-eslint/no-explicit-any": "off",
     "unused-imports/no-unused-imports": "warn",
+    "@typescript-eslint/require-await": "off",
 
     // Currently annoying as we have a lot of bootstraping code, lets fix later
     "@typescript-eslint/no-unused-vars": "off",

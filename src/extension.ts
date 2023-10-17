@@ -4,6 +4,8 @@ import { TaskCodeLensProvider } from 'context/language-features/codeLensProvider
 import { TaskSemanticTokensProvider } from 'context/language-features/semanticTokensProvider'
 import { SessionContext } from 'session'
 import * as vscode from 'vscode'
+import { TaskController } from 'notebook/taskController'
+import { TaskSerializer } from 'notebook/taskSerializer'
 
 export async function activate(context: vscode.ExtensionContext) {
   console.log('activating bread extension')
@@ -14,6 +16,26 @@ export async function activate(context: vscode.ExtensionContext) {
     extensionContext: context,
     sessionRegistry,
   })
+
+  const wrappedCommand = function (execution: vscode.NotebookCellExecution) {
+    return commandWithBoundSession.call(this, execution)
+  }
+
+  context.subscriptions.push(new TaskController(wrappedCommand))
+
+  context.subscriptions.push(
+    vscode.workspace.registerNotebookSerializer(
+      'task-notebook',
+      new TaskSerializer(),
+      {
+        transientOutputs: false,
+        transientCellMetadata: {
+          inputCollapsed: true,
+          outputCollapsed: true,
+        },
+      },
+    ),
+  )
 
   // Commands also need to be defined in package.json
   context.subscriptions.unshift(

@@ -11,6 +11,7 @@ import { closeSession, startSession } from 'session'
 import { startMultiFileEditing } from 'multi-file-edit/v1'
 import { projectDiagnosticEntriesWithAffectedFileContext } from 'context/atErrors'
 import dedent from 'dedent'
+import { taskAppendToController } from 'notebook/taskAppendToController'
 
 /**
  * Generates and applies diffs to files in the workspace containing @bread
@@ -22,10 +23,13 @@ import dedent from 'dedent'
  * Parse the diffs
  * Apply them to the current file in place
  */
-export async function completeInlineTasksCommand(this: {
-  extensionContext: vscode.ExtensionContext
-  sessionRegistry: Map<string, SessionContext>
-}) {
+export async function completeInlineTasksCommand(
+  this: {
+    extensionContext: vscode.ExtensionContext
+    sessionRegistry: Map<string, SessionContext>
+  },
+  execution?: vscode.NotebookCellExecution,
+) {
   if (this.sessionRegistry.size !== 0) {
     console.log(`Existing session running, most likely a bug with @run + enter`)
     return
@@ -39,10 +43,21 @@ export async function completeInlineTasksCommand(this: {
     '> Running ai-task\n',
   )
 
+  if (execution) {
+    taskAppendToController(execution, '> Running ai-task\n')
+  }
+
   void queueAnAppendToDocument(
     sessionContext.markdownHighLevelFeedbackDocument,
     '\n[Join Discord to submit feedback](https://discord.gg/D8V6Rc63wQ)\n',
   )
+
+  if (execution) {
+    taskAppendToController(
+      execution,
+      '\n[Join Discord to submit feedback](https://discord.gg/D8V6Rc63wQ)\n',
+    )
+  }
 
   // Functionality specific to bread mentions
   const breadIdentifier = getBreadIdentifier()
@@ -159,6 +174,10 @@ export async function completeInlineTasksCommand(this: {
     sessionContext.markdownHighLevelFeedbackDocument,
     '\n\n> Done\n',
   )
+
+  if (execution) {
+    execution.end(true, Date.now())
+  }
 
   await closeSession(sessionContext)
   this.sessionRegistry.delete(sessionContext.id)
