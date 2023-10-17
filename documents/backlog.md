@@ -10,18 +10,19 @@
 - Replaced continue on the current project
 
 # Next up
+- release a windows compatible version
+- reach out to the 3 people willing to use the extension already and help them get setup on their project
+- kick off multi file editing with all tabs up for modification after a command with input
 
-- Find influencers for software and ask to collaborate
-- Create a list of influencers to reach out to
-- Creates standard copy for reaching out to influencers
+Stability
+- change prompt for new files for stability
+- fix imports in middle of a file - add examples
+- also add example of splitting a function - struggles to append, always decides to do 0: instead of appending to end of file maybe also new prompt ? insert?
 
-- Allow disabling automatic saving, we'll be added to sandbox settings to avoid committing sandbox to git as this is used for testing
-  - Git pre-commit hook?
+IQ drop issues (a fallback if multi file is malfunctioning)
+- make a @task-inline mode that simply prints to the cursor without the multi file complex prompt
 
 # Bugs
-
-- still appears to be an issue when too many files are available for selection. Extension hangs on Join Discrod. Repro in show me plugin repo [bra1nDump.ai-task]Too many files matched: 239
-  - Be smarter about this + show an error to end user suggesting a solution
 - Existing session running is flaky (repro when too many files found for instance)
 - [Might be resolved] bug with task not stopping even after the task is finished, cancel still running?? This is probably outdated local version
   - Nope, just saw it not terminate again even though it prints Done in feedback doc. Seems to be triggered with racy "Document has been closed" error
@@ -30,6 +31,8 @@
 - Changing markdown files doesn't currently work, it opens the preview for the file, but then switches the preview to show the file we are trying to edit. Preview always shows the current md file on the left ...
   - It is also unable to actually apply change to the file for some reason - investigate
 - [first issue] @+run causes the run to happen even if the space is not right after the run command
+- still appears to be an issue when too many files are available for selection. Extension hangs on Join Discrod. Repro in show me plugin repo [bra1nDump.ai-task]Too many files matched: 239
+  - Be smarter about this + show an error to end user suggesting a solution
 
 # Unsorted
 

@@ -89,9 +89,8 @@ suite('VSCode Extension Command Tests', function () {
      * Clean up after the test (for some reason does not actually clean
      * anything up)
      */
-    /*
-     *await vscode.workspace.fs.delete(readmeUri)
-     *await vscode.workspace.fs.delete(lsTestOutputUri)
-     */
+
+    await vscode.workspace.fs.delete(readmeUri)
+    await vscode.workspace.fs.delete(lsTestOutputUri)
   })
 })
