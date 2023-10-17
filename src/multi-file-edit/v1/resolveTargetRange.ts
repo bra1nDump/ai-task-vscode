@@ -104,7 +104,6 @@ export const makeToResolvedChangesTransformer = (
         const rangeToReplace = findTargetRangeInFileWithContent(
           change.oldChunk,
           documentSnapshot.fileSnapshotForLlm.content,
-          documentSnapshot.document.eol,
         )
 
         if (!rangeToReplace) {
@@ -195,9 +194,8 @@ export const makeToResolvedChangesTransformer = (
 export function findTargetRangeInFileWithContent(
   oldChunk: TargetRange,
   documentContent: string,
-  documentEndOfLine: vscode.EndOfLine,
 ): vscode.Range | undefined {
-  const eofString = documentEndOfLine === vscode.EndOfLine.CRLF ? '\r\n' : '\n'
+  const eofString = '\n'
   const fileLines = documentContent.split(eofString)
 
   /**

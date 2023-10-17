@@ -74,8 +74,8 @@ export class SessionContextManager {
 
   /**
    * Is used as a cache for file paths that are matched against when resolving
-   * changes produced by LLM. Ideally we also want a session scope cache for all
-   * the files. This will do for now
+   * changes produced by LLM. Ideally we also want a session scope cache for
+   * all the files. This will do for now
    */
   getEditableFileUris(): vscode.Uri[] {
     return Array.from(this.uriToDocumentsSnapshots.keys()).map((uri) =>
