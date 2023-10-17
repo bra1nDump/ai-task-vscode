@@ -1,2 +1,0 @@
-
-- Now only looking for text like files with common extensions. This does have a downside of the extension not being available in files like docker file and similar no extension files, or simply extensions I have not included
