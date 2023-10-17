@@ -32,7 +32,9 @@ export async function completeInlineTasksCommand(
     extensionContext: vscode.ExtensionContext
     sessionRegistry: Map<string, SessionContext>
   },
-  optionalContextBlobRecivedFromAnotherExtension: string | undefined,
+  optionalContextBlobRecivedFromAnotherExtension:
+    | string
+    | undefined = undefined,
 ) {
   if (this.sessionRegistry.size !== 0) {
     console.log(`Existing session running, most likely a bug with @run + enter`)
