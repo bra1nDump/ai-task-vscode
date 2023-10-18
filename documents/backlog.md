@@ -10,17 +10,27 @@
 - Replaced continue on the current project
 
 # Next up
-- release a windows compatible version
-- reach out to the 3 people willing to use the extension already and help them get setup on their project
-- kick off multi file editing with all tabs up for modification after a command with input
 
 Stability
-- change prompt for new files for stability
-- fix imports in middle of a file - add examples
+- change prompt for new files for stability (just remove range-to-replace)
+- fix imports in middle of a file - add example
 - also add example of splitting a function - struggles to append, always decides to do 0: instead of appending to end of file maybe also new prompt ? insert?
+- When context is large its a good idea to give the cursor as input so the model is grounded on the right task more likely
+
+Users
+- reach out to the 3 people willing to use the extension already and help them get setup on their project
 
 IQ drop issues (a fallback if multi file is malfunctioning)
 - make a @task-inline mode that simply prints to the cursor without the multi file complex prompt
+
+# Better demos
+https://github.com/novuhq/novu/issues/4438
+https://github.com/bluesky-social/social-app/issues
+- Requires signup
+https://github.com/TabbyML/tabby/issues
+https://github.com/bitwarden/clients/issues
+https://github.com/mantinedev/mantine/issues
+https://github.com/tldraw/tldraw/issues
 
 # Bugs
 - Existing session running is flaky (repro when too many files found for instance)
@@ -108,6 +118,9 @@ Will function calling help me getter faster? I would not need to deal with Xml p
 - Only provide certain lines as potential starts and finishes for the range
 
 # Done
+
+- release a windows compatible version
+- kick off multi file editing with all tabs up for modification after a command with input
 
 - Migrate from open the eye to hillicon for demos to be free
 - Reach out to people from the meetup to try the extension, schedule demos
