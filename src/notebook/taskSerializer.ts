@@ -30,11 +30,24 @@ export class TaskSerializer implements vscode.NotebookSerializer {
 
     function convertRawOutputToBytes(raw: RawNotebookCell) {
       const result: vscode.NotebookCellOutputItem[] = []
+      let markdown = ''
 
       for (const output of raw.outputs) {
-        const data = new TextEncoder().encode(JSON.stringify(output.value))
-        result.push(new vscode.NotebookCellOutputItem(data, output.mime))
+        if (output.mime === 'text/markdown') {
+          markdown += JSON.stringify(output.value).slice(1, -1)
+        } else {
+          const data = new TextEncoder().encode(JSON.stringify(output.value))
+          result.push(new vscode.NotebookCellOutputItem(data, output.mime))
+        }
       }
+
+      const data = new TextEncoder().encode(markdown.replace(/\\n/g, '\n'))
+      const markdownOutput = new vscode.NotebookCellOutputItem(
+        data,
+        'text/markdown',
+      )
+
+      result.unshift(markdownOutput)
 
       return result
     }
