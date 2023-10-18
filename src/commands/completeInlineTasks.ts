@@ -4,13 +4,13 @@ import {
   findAndCollectDotBreadFiles,
 } from 'context/atTask'
 import { getFilesContent } from 'helpers/fileSystem'
-import { openedTabs } from 'context/atTabs'
 import { SessionContext, getBreadIdentifier } from 'session'
 import { queueAnAppendToDocument } from 'helpers/fileSystem'
 import { closeSession, startSession } from 'session'
 import { startMultiFileEditing } from 'multi-file-edit/v1'
 import { projectDiagnosticEntriesWithAffectedFileContext } from 'context/atErrors'
 import dedent from 'dedent'
+import { openedTabs } from 'context/atTabs'
 
 /**
  * Generates and applies diffs to files in the workspace containing task
@@ -40,6 +40,12 @@ export async function completeInlineTasksCommand(
     console.log(`Existing session running, most likely a bug with @run + enter`)
     return
   }
+  if (
+    typeof optionalContextBlobRecivedFromAnotherExtension !== 'string' ||
+    optionalContextBlobRecivedFromAnotherExtension.length === 0
+  ) {
+    optionalContextBlobRecivedFromAnotherExtension = undefined
+  }
 
   const sessionContext = await startSession(this.extensionContext)
   this.sessionRegistry.set(sessionContext.id, sessionContext)
@@ -56,34 +62,40 @@ export async function completeInlineTasksCommand(
   )
 
   // Add any context that was passed in from another extension
-  if (
-    typeof optionalContextBlobRecivedFromAnotherExtension === 'string' &&
-    optionalContextBlobRecivedFromAnotherExtension.length !== 0
-  ) {
+  if (optionalContextBlobRecivedFromAnotherExtension) {
     sessionContext.contextManager.addBlobContexts([
       optionalContextBlobRecivedFromAnotherExtension,
     ])
   }
 
-  // Functionality specific to bread mentions
+  ////// Compile the context, pull in task files and other context based on mentions //////
+  const openTabsFileUris = openedTabs()
+
+  /*
+   * Only search for tasks in open tabs, we might want to keep the task
+   * unaddressed for the time being, but don't want to errase it
+   */
   const breadIdentifier = getBreadIdentifier()
-  const fileUrisWithBreadMentions =
-    await findAndCollectBreadMentionedFiles(breadIdentifier)
+  const fileUrisWithBreadMentions = await findAndCollectBreadMentionedFiles(
+    breadIdentifier,
+    openTabsFileUris,
+  )
+
   /*
    * Its okay to not have any task mentions - for instance for other extension
    * adding to the context
    */
-
-  /*
-   * if (fileUrisWithBreadMentions.length === 0) {
-   *   void vscode.window.showErrorMessage(
-   *     `No bread found, ai-task are getting hungry. Remember to add
-   *     @${breadIdentifier} mention to at least one file in the workspace.`,
-   *   )
-   *   await closeSession(sessionContext)
-   *   return
-   * }
-   */
+  if (
+    fileUrisWithBreadMentions.length === 0 &&
+    !optionalContextBlobRecivedFromAnotherExtension
+  ) {
+    void vscode.window.showErrorMessage(
+      `No tasks found. Remember to add 
+@${breadIdentifier} mention to at least one file in the workspace.`,
+    )
+    await closeSession(sessionContext)
+    return
+  }
 
   await sessionContext.contextManager.addDocuments(
     'Files with bread mentions',
@@ -105,11 +117,10 @@ export async function completeInlineTasksCommand(
   )
 
   /* Include open tabs if the user requested */
-  const includeTabs = breadMentionsFilesContent.some((fileContent) =>
-    fileContent.includes('@' + 'tabs'),
+  const includeTabs = [...breadMentionsFilesContent, ...breadFileBlobs].some(
+    (fileContent) => fileContent.includes('@' + 'tabs'),
   )
   if (includeTabs) {
-    const openTabsFileUris = openedTabs()
     await sessionContext.contextManager.addDocuments(
       'Open tabs',
       openTabsFileUris,
@@ -118,10 +129,10 @@ export async function completeInlineTasksCommand(
 
   /*
    * Provide problems context
-   * /* Include files with errors if the user requested
+   * Include files with errors if the user requested
    */
-  const includeErrors = breadMentionsFilesContent.some((fileContent) =>
-    fileContent.includes('@' + 'errors'),
+  const includeErrors = [...breadMentionsFilesContent, ...breadFileBlobs].some(
+    (fileContent) => fileContent.includes('@' + 'errors'),
   )
   if (includeErrors) {
     const diagnosticsAlongWithTheirFileContexts =

@@ -9,6 +9,13 @@ suite('DocumentSnapshot', () => {
     await vscode.commands.executeCommand('workbench.action.closeAllEditors')
   })
 
+  /*
+   * There are almost duplicate test cases in documentSnapshotCRLF and
+   * this file, lets factor out common code (most except for the line separators
+   * and document eol) into a helper function,
+   * and have 2 test cases in this file that call the helper function with
+   * different document eol
+   */
   test('Works correctly on a simple example from the API design', async function () {
     const initialContent = `Line 0\nLine 1\nLine 2\nLine 3\nLine 4\nLine 5`
     const expectedContentAfterEdits = `Prepended New Line 0\nLine 0\nReplaced Line 1\nLine 2\nReplaced Line 3\nAdded Line 4\nLine 4\nLine 5`

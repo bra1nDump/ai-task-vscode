@@ -9,22 +9,23 @@ import { resultWithDefault } from 'helpers/result'
  */
 export async function findAndCollectBreadMentionedFiles(
   breadIdentifier: string,
+  searchSpace: vscode.Uri[] | undefined = undefined,
 ): Promise<vscode.Uri[]> {
-  const allFilesInWorkspace = await safeWorkspaceQueryAllFiles()
+  if (searchSpace === undefined) {
+    searchSpace = await safeWorkspaceQueryAllFiles()
+  }
 
   const fileContexts = await Promise.all(
-    allFilesInWorkspace.map(
-      async (fileUri): Promise<vscode.Uri | undefined> => {
-        const fileText = resultWithDefault('', await getDocumentText(fileUri))
-        const containsBreadMention = fileText.includes(`@${breadIdentifier}`)
+    searchSpace.map(async (fileUri): Promise<vscode.Uri | undefined> => {
+      const fileText = resultWithDefault('', await getDocumentText(fileUri))
+      const containsBreadMention = fileText.includes(`@${breadIdentifier}`)
 
-        if (containsBreadMention) {
-          return fileUri
-        } else {
-          return undefined
-        }
-      },
-    ),
+      if (containsBreadMention) {
+        return fileUri
+      } else {
+        return undefined
+      }
+    }),
   )
 
   const filteredFileContexts = fileContexts.filter(

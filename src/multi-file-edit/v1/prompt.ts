@@ -118,6 +118,7 @@ ${[
   editMiddleOfAJsxExpressionEnsureIndentIsPreserved(configuration),
   truncationExample(configuration),
   allowingToCreateNewFilesAndRunShellCommands(configuration),
+  refactoringExampleWithNewFunction(configuration),
 ]
   // Some examples might be empty based on the configuration, skip them
   .filter((example) => example !== '')
@@ -125,6 +126,188 @@ ${[
 `
     // Add comments within the prompt more easily
     .replace(/\s*####[\s\S]*?####/g, '')
+
+const refactoringExampleWithNewFunction = (
+  configuration: SessionConfiguration,
+) => {
+  const breadIdentifier = configuration.taskIdentifier
+  let editableFileContext: FileContext = {
+    filePathRelativeToWorkspace: 'server.ts',
+    content: `import express from 'express'
+import { config } from './environment'
+import axios from 'axios'
+
+const app = express()
+
+const diagramsToTest = [ // range-start-diagrams
+  \`graph TD
+  A-->B\`,
+  \`graph TD
+  X-->Y
+  Y-->Z\`
+] // range-end-diagrams
+// range-start-after-diagrams
+app.get('/health-basic', async (req, res) => {  // range-start-health-checks
+  try {
+    const diagramSource = diagramsToTest[0]
+    const response = await axios.post(\`\${config.renderingServiceHost}/convert\`, { diagramSource })
+
+    if (response.data?.miroBoardLink) {
+      res.status(200).send('OK')
+    } else {
+      res.status(500).send('Server is not healthy')
+    }
+  } catch (error) {
+    res.status(500).send('Server is not healthy')
+  }
+})
+
+app.get('/health', async (req, res) => {
+  try {
+    for (const diagramSource of diagramsToTest) {
+      const response = await axios.post(\`\${config.renderingServiceHost}/convert\`, { diagramSource })
+
+      if (!response.data?.miroBoardLink) {
+        res.status(500).send('Server is not healthy')
+        return
+      }
+    }
+    res.status(200).send('OK')
+  } catch (error) {
+    res.status(500).send('Server is not healthy')
+  }
+}) // range-end-health-checks
+
+app.listen(3000)
+`,
+  }
+
+  if (configuration.includeLineNumbers) {
+    editableFileContext =
+      transformFileContextWithLineNumbers(editableFileContext)
+  }
+
+  const editableFileContextWithoutRangeAnnotations = {
+    ...editableFileContext,
+    content: removeRangeAnnotations(editableFileContext.content),
+  }
+
+  const fileContextPromptPart = mapFileContextToXml(
+    editableFileContextWithoutRangeAnnotations,
+  )
+
+  /**
+   * Steps:
+   * - Add new file with example diagrams
+   * - Add import for the new file (append after all imports)
+   * - Remove old diagrams
+   * - Create a helper function for /health and /health-basic (13: is the line
+   * after diagramsToTest is declared)
+   * - Use the helper function in /health and /health-basic
+   *
+   * Thoughts:
+   * should we update language?:
+   * <change> -> <replace>
+   * <range-to-replace> -> <range>
+   * new <insert-after>
+   * new <delete>
+   * new <move>
+   *
+   * More work, might futher confuse the model, as models get smarter would
+   * work better and deliver faster experience.
+   */
+  return `Input:
+<information-blob>@${breadIdentifier} Move test diagrams to a different file, create a helper for /health and /health-basic</information-blob>
+
+${fileContextPromptPart}
+
+<change>
+<path>exampleDiagrams.ts</path>
+<range-to-replace>
+0:
+</range-to-replace>
+<replacement>
+export const diagramsToTest = [
+  \`graph TD
+  A-->B\`,
+  \`graph TD
+  X-->Y
+  Y-->Z\`
+]
+</replacement>
+</change>
+
+<change>
+<path>server.ts</path>
+<range-to-replace>
+3:
+</range-to-replace>
+<replacement>
+import { diagramsToTest } from './exampleDiagrams'
+
+</replacement>
+</change>
+
+<change>
+<path>server.ts</path>
+<range-to-replace>
+${extractMatchingLineRange(
+  editableFileContext.content,
+  'range-start-diagrams',
+  'range-end-diagrams',
+)}
+</range-to-replace>
+<replacement>
+</replacement>
+</change>
+
+<change>
+<path>server.ts</path>
+<range-to-replace>
+${extractMatchingLineRange(
+  editableFileContext.content,
+  'range-start-after-diagrams',
+  'range-start-after-diagrams',
+)}
+</range-to-replace>
+<replacement>
+function returnOkIfAllRenderSuccessfully(diagramsToTest: string[], res: express.Response) {
+  try {
+    for (const diagramSource of diagramsToTest) {
+      const response = await axios.post(\`\${config.renderingServiceHost}/convert\`, { diagramSource })
+
+      if (!response.data?.miroBoardLink) {
+        res.status(500).send('Server is not healthy')
+        return
+      }
+    }
+    res.status(200).send('OK')
+  } catch {
+    res.status(500).send('Server is not healthy')
+  }
+}
+
+<change>
+<path>server.ts</path>
+<range-to-replace>
+${extractMatchingLineRange(
+  editableFileContext.content,
+  'range-start-health-checks',
+  'range-end-health-checks',
+)}
+</range-to-replace>
+<replacement>
+app.get('/health-basic', async (req, res) => {
+  returnOkIfAllRenderSuccessfully([diagramsToTest[0]], res)
+}
+
+app.get('/health', async (req, res) => {
+  returnOkIfAllRenderSuccessfully(diagramsToTest, res)
+})
+</replacement>
+<change>
+`
+}
 
 const typescriptHelloWorldParametrizationMultiFileExampleV2WithInsert = (
   configuration: SessionConfiguration,
@@ -167,6 +350,10 @@ console.log('Hello World');
    * I'm sort of reverting to structured prompting,
    * aka writing out a pretty detailed plan for the changes, still keeping the
    * old 'algorithm' stuff around
+   *
+   * TODO: Try removing range-to-replace and see if it helps with new file
+   * creation more reliably ... though we don't have test cases to verify, its
+   * a hunch
    */
 
   return `Input: 
@@ -419,13 +606,21 @@ function mapFileContextToXml(fileContext: FileContext): string {
   )
 }
 
+/*
+ * // range-(start|end)-<id> is used to mark the range to replace in the input.
+ * This function removes those annotations from the input before sumbitting it to llm
+ */
+function removeRangeAnnotations(text: string): string {
+  return text.replace(/\s*\/\/\s*range-(start|end)\S*/g, '')
+}
+
 /**
  * This function overall sucks because its flacky, should probably error out if
  * multiple matches are found, instead I will return last one for end term and
  * first one for start term.
  *
- * IDEA: A better version would be to add // start // end comments in the code
- * and use those to find the range.
+ * If there are multiple matches, use // range-(start|end)-<range-id> annotations.
+ * These will be stripped from the range string.
  *
  * I'm using a content based to find the target range because the line
  * numbers are implicit and I don't want to keep truck of them in case they
@@ -457,7 +652,7 @@ function extractMatchingLineRange(
     lines.length -
     1 -
     [...lines].reverse().findIndex((line) => line.includes(endTerm))
-  const lineRange = lines.slice(startLineIndex, endLineIndex + 1)
+  let lineRange = lines.slice(startLineIndex, endLineIndex + 1)
 
   /*
    * Including two lines in the front and in the end because the last line
@@ -467,13 +662,17 @@ function extractMatchingLineRange(
    * Currently unused
    */
   if (lineRange.length > 3) {
-    const truncatedLineRange = [
+    lineRange = [
       ...lineRange.slice(0, 2),
       '<truncated/>',
       ...lineRange.slice(lineRange.length - 2),
     ]
-    return truncatedLineRange.join('\n')
   }
 
-  return lineRange.join('\n')
+  const rangeWithPossibleAnnotations = lineRange.join('\n')
+  const rangeWithoutAnnotations = removeRangeAnnotations(
+    rangeWithPossibleAnnotations,
+  )
+
+  return rangeWithoutAnnotations
 }

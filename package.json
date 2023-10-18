@@ -84,7 +84,7 @@
     "install-local": "node scripts/install-local.mjs 'code-insiders'",
     "------------section-other------------": "",
     "lint": "eslint . --config configurations/.eslintrc.js --ext ts --fix",
-    "codegen:prompt-checkpoints": "MULTI_FILE_PROMPT_VERSION=v4-example-format-consistency-and-structured-self-prompting node ./out/script-generate-prompt-checkpoint.js"
+    "codegen:prompt-checkpoints": "MULTI_FILE_PROMPT_VERSION=v5-new-example-refactor-functions-with-similar-functionality node ./out/script-generate-prompt-checkpoint.js"
   },
   "devDependencies": {
     "@types/glob": "^8.1.0",
