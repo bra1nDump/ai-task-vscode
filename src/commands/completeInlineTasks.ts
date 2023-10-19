@@ -21,13 +21,10 @@ import dedent from 'dedent'
  * Parse the diffs
  * Apply them to the current file in place
  */
-export async function completeInlineTasksCommand(
-  this: {
-    extensionContext: vscode.ExtensionContext
-    sessionRegistry: Map<string, SessionContext>
-  },
-  execution?: vscode.NotebookCellExecution,
-) {
+export async function completeInlineTasksCommand(this: {
+  extensionContext: vscode.ExtensionContext
+  sessionRegistry: Map<string, SessionContext>
+}) {
   if (this.sessionRegistry.size !== 0) {
     console.log(`Existing session running, most likely a bug with @run + enter`)
     return

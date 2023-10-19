@@ -1,3 +1,4 @@
+import { getAnswer } from 'helpers/openai'
 import * as vscode from 'vscode'
 
 export class TaskController {
@@ -8,20 +9,14 @@ export class TaskController {
 
   private readonly _controller: vscode.NotebookController
   private _executionOrder = 0
-  private _startFunction: (
-    execution: vscode.NotebookCellExecution,
-  ) => Promise<void>
 
-  constructor(
-    startFunction: (execution: vscode.NotebookCellExecution) => Promise<void>,
-  ) {
+  constructor() {
     this._controller = vscode.notebooks.createNotebookController(
       this.controllerId,
       this.notebookType,
       this.label,
     )
 
-    this._startFunction = startFunction
     this._controller.supportedLanguages = this.supportedLanguages
     this._controller.supportsExecutionOrder = true
     this._controller.executeHandler = this._execute.bind(this)
@@ -44,10 +39,15 @@ export class TaskController {
   private async _doExecution(cell: vscode.NotebookCell): Promise<void> {
     const execution = this._controller.createNotebookCellExecution(cell)
     execution.executionOrder = ++this._executionOrder
-    execution.start(Date.now()) // Keep track of elapsed time to execute cell.
+    execution.start(Date.now())
+    void execution.clearOutput()
+
+    execution.token.onCancellationRequested(() => {
+      execution.end(true, Date.now())
+    })
+
+    await getAnswer(cell.document.getText(), execution)
 
     execution.end(true, Date.now())
-
-    void this._startFunction(execution)
   }
 }

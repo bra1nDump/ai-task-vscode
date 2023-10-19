@@ -17,17 +17,7 @@ export async function activate(context: vscode.ExtensionContext) {
     sessionRegistry,
   })
 
-  const wrappedCommand = function (
-    this: {
-      extensionContext: vscode.ExtensionContext
-      sessionRegistry: Map<string, SessionContext>
-    },
-    execution: vscode.NotebookCellExecution,
-  ) {
-    return commandWithBoundSession.call(this, execution)
-  }
-
-  context.subscriptions.push(new TaskController(wrappedCommand))
+  context.subscriptions.push(new TaskController())
 
   context.subscriptions.push(
     vscode.workspace.registerNotebookSerializer(
