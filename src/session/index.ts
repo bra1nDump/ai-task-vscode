@@ -27,7 +27,7 @@ export interface SessionContext {
 
   lowLevelLogger: (text: string) => Promise<void>
 
-  highOrNotebookLevelLogger: (text: string) => Promise<void>
+  highLevelLogger: (text: string) => Promise<void>
 
   /**
    * This is the document where raw LLM request is logged. This is mostly for
@@ -89,7 +89,7 @@ export async function startSession(
   const lowLevelLogger = (text: string) =>
     queueAnAppendToDocument(sessionMarkdownLowLevelFeedbackDocument, text)
 
-  const highOrNotebookLevelLogger = (text: string) => {
+  const highLevelLogger = (text: string) => {
     return markdownOrNotebook === 'markdown'
       ? queueAnAppendToDocument(sessionHighLevelFeedbackDocument, text)
       : queueAnAppendToMarkdownValue(sessionHighLevelFeedbackDocument, text)
@@ -206,7 +206,7 @@ export async function startSession(
       enableNewFilesAndShellCommands: true,
     },
     lowLevelLogger: lowLevelLogger,
-    highOrNotebookLevelLogger: highOrNotebookLevelLogger,
+    highLevelLogger: highLevelLogger,
     highLevelFeedbackDocument: sessionHighLevelFeedbackDocument,
     markdownLowLevelFeedbackDocument: sessionMarkdownLowLevelFeedbackDocument,
     contextManager: documentManager,

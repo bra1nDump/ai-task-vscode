@@ -36,8 +36,8 @@ export async function completeInlineTasksCommand(
   const sessionContext = await startSession(this.extensionContext)
   this.sessionRegistry.set(sessionContext.id, sessionContext)
 
-  void sessionContext.highOrNotebookLevelLogger('> Running ai-task\n')
-  void sessionContext.highOrNotebookLevelLogger(
+  void sessionContext.highLevelLogger('> Running ai-task\n')
+  void sessionContext.highLevelLogger(
     '\n[Join Discord to submit feedback](https://discord.gg/D8V6Rc63wQ)\n',
   )
 
@@ -152,7 +152,7 @@ export async function completeInlineTasksCommand(
 
   await startMultiFileEditing(sessionContext)
 
-  await sessionContext.highOrNotebookLevelLogger('\n\n> Done\n')
+  await sessionContext.highLevelLogger('\n\n> Done\n')
 
   await closeSession(sessionContext)
   this.sessionRegistry.delete(sessionContext.id)

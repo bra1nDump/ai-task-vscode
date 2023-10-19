@@ -25,13 +25,11 @@ export async function startMultiFileEditing(sessionContext: SessionContext) {
   const logFilePath = (fileContext: FileContext) => {
     const path = fileContext.filePathRelativeToWorkspace
     // Assumes we are in .task/sessions
-    void sessionContext.highOrNotebookLevelLogger(
-      `- [${path}](../../${path})\n`,
-    )
+    void sessionContext.highLevelLogger(`- [${path}](../../${path})\n`)
   }
 
   // Log files that we are submitting as context
-  void sessionContext.highOrNotebookLevelLogger(`\n## Files submitted:\n`)
+  void sessionContext.highLevelLogger(`\n## Files submitted:\n`)
   for (const fileContext of fileContexts) {
     logFilePath(fileContext)
   }
@@ -46,7 +44,7 @@ export async function startMultiFileEditing(sessionContext: SessionContext) {
   const relativePath = vscode.workspace.asRelativePath(
     sessionContext.markdownLowLevelFeedbackDocument.uri.path,
   )
-  void sessionContext.highOrNotebookLevelLogger(
+  void sessionContext.highLevelLogger(
     `\n\n[Raw LLM input + response](../../${relativePath}) [Debug]\n`,
   )
 
@@ -56,9 +54,7 @@ export async function startMultiFileEditing(sessionContext: SessionContext) {
     sessionContext,
   )
   if (streamResult.type === 'error') {
-    void sessionContext.highOrNotebookLevelLogger(
-      `\n\n${streamResult.error.message}\n`,
-    )
+    void sessionContext.highLevelLogger(`\n\n${streamResult.error.message}\n`)
     sessionContext.sessionAbortedEventEmitter.fire()
     return
   }
@@ -93,10 +89,10 @@ export async function startMultiFileEditing(sessionContext: SessionContext) {
   async function showPlanAsItBecomesAvailable() {
     const planStream = parsedPatchStream.pipe(mapAsync((x) => x.task))
     let lastPlan = ''
-    void sessionContext.highOrNotebookLevelLogger(`\n## Task:\n`)
+    void sessionContext.highLevelLogger(`\n## Task:\n`)
     for await (const plan of planStream) {
       const delta = plan.slice(lastPlan.length)
-      void sessionContext.highOrNotebookLevelLogger(delta)
+      void sessionContext.highLevelLogger(delta)
       lastPlan = plan
     }
   }
