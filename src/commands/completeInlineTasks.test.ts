@@ -40,6 +40,31 @@ suite('VSCode Extension Command Tests', function () {
       // Ignore errors
     }
 
+    /*
+     * We are now only picking up tasks from open tabs.
+     * Make sure all the files are opened as tabs as they would be in a real
+     * scenario.
+     */
+    async function openAndShowFile(fileName: string) {
+      const fileUri = vscode.Uri.joinPath(
+        vscode.workspace.workspaceFolders![0].uri,
+        fileName,
+      )
+      const document = await vscode.workspace.openTextDocument(fileUri)
+      const editor = await vscode.window.showTextDocument(
+        document,
+        // To ensure all tabs remain open
+        vscode.ViewColumn.Beside,
+      )
+      // Sleep a bit to make sure the file is opened
+      await new Promise((resolve) => setTimeout(resolve, 100))
+    }
+
+    // Open and show required files
+    await openAndShowFile('helloWorld.ts')
+    await openAndShowFile('environment.ts')
+    await openAndShowFile('main.ts')
+
     // Testing command is registered
     const releaseCommand = await vscode.commands
       .getCommands(true)

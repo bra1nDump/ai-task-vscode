@@ -33,6 +33,7 @@ https://github.com/mantinedev/mantine/issues
 https://github.com/tldraw/tldraw/issues
 
 # Bugs
+- Document closed error keeps popping up :D
 - Existing session running is flaky (repro when too many files found for instance)
 - [Might be resolved] bug with task not stopping even after the task is finished, cancel still running?? This is probably outdated local version
   - Nope, just saw it not terminate again even though it prints Done in feedback doc. Seems to be triggered with racy "Document has been closed" error
@@ -64,6 +65,7 @@ I think a better way is to use something like function calling with an option to
 
 ## UX - Product
 
+- Don't open new tabs for files that are already open, don't open tabs in the same group with the preview / notebook
 - Follow up task to fix errors after making changes - should be a button in the markdown
 - There should be stop and stop and undo buttons 
 - Cleanup @task mentions after running
