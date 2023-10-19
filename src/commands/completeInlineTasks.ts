@@ -117,9 +117,11 @@ export async function completeInlineTasksCommand(
   )
 
   /* Include open tabs if the user requested */
-  const includeTabs = [...breadMentionsFilesContent, ...breadFileBlobs].some(
-    (fileContent) => fileContent.includes('@' + 'tabs'),
-  )
+  const includeTabs = [
+    ...breadMentionsFilesContent,
+    ...breadFileBlobs,
+    optionalContextBlobRecivedFromAnotherExtension ?? '',
+  ].some((fileContent) => fileContent.includes('@' + 'tabs'))
   if (includeTabs) {
     await sessionContext.contextManager.addDocuments(
       'Open tabs',
