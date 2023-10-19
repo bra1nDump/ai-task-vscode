@@ -8,7 +8,6 @@ import { startInteractiveMultiFileApplication } from 'multi-file-edit/applyResol
 import { parsePartialMultiFileEdit } from './parse'
 import { makeToResolvedChangesTransformer } from './resolveTargetRange'
 import { SessionContext } from 'session'
-import { queueAnAppendToDocument } from 'helpers/fileSystem'
 
 import { map as mapAsync } from 'ix/asynciterable/operators'
 import { createMultiFileEditingMessages } from './prompt'
@@ -23,26 +22,16 @@ export async function startMultiFileEditing(sessionContext: SessionContext) {
     sessionContext.configuration,
   )
 
-  const highLevelLogger = (text: string) =>
-    queueAnAppendToDocument(
-      sessionContext.markdownHighLevelFeedbackDocument,
-      text,
-    )
-
-  const lowLevelLogger = (text: string) =>
-    queueAnAppendToDocument(
-      sessionContext.markdownLowLevelFeedbackDocument,
-      text,
-    )
-
   const logFilePath = (fileContext: FileContext) => {
     const path = fileContext.filePathRelativeToWorkspace
     // Assumes we are in .task/sessions
-    void highLevelLogger(`- [${path}](../../${path})\n`)
+    void sessionContext.highOrNotebookLevelLogger(
+      `- [${path}](../../${path})\n`,
+    )
   }
 
   // Log files that we are submitting as context
-  void highLevelLogger(`\n## Files submitted:\n`)
+  void sessionContext.highOrNotebookLevelLogger(`\n## Files submitted:\n`)
   for (const fileContext of fileContexts) {
     logFilePath(fileContext)
   }
@@ -57,13 +46,19 @@ export async function startMultiFileEditing(sessionContext: SessionContext) {
   const relativePath = vscode.workspace.asRelativePath(
     sessionContext.markdownLowLevelFeedbackDocument.uri.path,
   )
-  void highLevelLogger(
+  void sessionContext.highOrNotebookLevelLogger(
     `\n\n[Raw LLM input + response](../../${relativePath}) [Debug]\n`,
   )
 
-  const streamResult = await streamLlm(messages, lowLevelLogger, sessionContext)
+  const streamResult = await streamLlm(
+    messages,
+    sessionContext.lowLevelLogger,
+    sessionContext,
+  )
   if (streamResult.type === 'error') {
-    void highLevelLogger(`\n\n${streamResult.error.message}\n`)
+    void sessionContext.highOrNotebookLevelLogger(
+      `\n\n${streamResult.error.message}\n`,
+    )
     sessionContext.sessionAbortedEventEmitter.fire()
     return
   }
@@ -98,10 +93,10 @@ export async function startMultiFileEditing(sessionContext: SessionContext) {
   async function showPlanAsItBecomesAvailable() {
     const planStream = parsedPatchStream.pipe(mapAsync((x) => x.task))
     let lastPlan = ''
-    void highLevelLogger(`\n## Task:\n`)
+    void sessionContext.highOrNotebookLevelLogger(`\n## Task:\n`)
     for await (const plan of planStream) {
       const delta = plan.slice(lastPlan.length)
-      void highLevelLogger(delta)
+      void sessionContext.highOrNotebookLevelLogger(delta)
       lastPlan = plan
     }
   }

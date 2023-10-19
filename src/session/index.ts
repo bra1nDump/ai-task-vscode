@@ -1,4 +1,6 @@
 import { SessionContextManager } from 'context/manager'
+import { queueAnAppendToDocument } from 'helpers/fileSystem'
+import { queueAnAppendToMarkdownValue } from 'notebook/addToTask'
 import * as vscode from 'vscode'
 
 export interface SessionConfiguration {
@@ -21,7 +23,11 @@ export interface SessionContext {
    * This will be open to the side to show real time feedback of what is
    * happening in the session.
    */
-  markdownHighLevelFeedbackDocument: vscode.TextDocument
+  highLevelFeedbackDocument: vscode.TextDocument
+
+  lowLevelLogger: (text: string) => Promise<void>
+
+  highOrNotebookLevelLogger: (text: string) => Promise<void>
 
   /**
    * This is the document where raw LLM request is logged. This is mostly for
@@ -71,10 +77,23 @@ export async function startSession(
     )
   }
 
+  const markdownOrNotebook = vscode.workspace
+    .getConfiguration('ai-task')
+    .get<string>('markdownOrNotebook')!
+
   const {
-    sessionMarkdownHighLevelFeedbackDocument,
+    sessionHighLevelFeedbackDocument,
     sessionMarkdownLowLevelFeedbackDocument,
-  } = await createSessionLogDocuments()
+  } = await createSessionLogDocuments(markdownOrNotebook)
+
+  const lowLevelLogger = (text: string) =>
+    queueAnAppendToDocument(sessionMarkdownLowLevelFeedbackDocument, text)
+
+  const highOrNotebookLevelLogger = (text: string) => {
+    return markdownOrNotebook === 'markdown'
+      ? queueAnAppendToDocument(sessionHighLevelFeedbackDocument, text)
+      : queueAnAppendToMarkdownValue(sessionHighLevelFeedbackDocument, text)
+  }
 
   const cachedActiveEditor = vscode.window.activeTextEditor
 
@@ -82,12 +101,20 @@ export async function startSession(
    * Since we're opening to the side the focus is not taken.
    * Remove for recording simple demo
    */
-  /*
-   *await vscode.commands.executeCommand(
-   *  'markdown.showPreviewToSide',
-   *  sessionMarkdownHighLevelFeedbackDocument.uri,
-   *)
-   */
+
+  if (markdownOrNotebook === 'markdown') {
+    await vscode.commands.executeCommand(
+      'markdown.showPreviewToSide',
+      sessionHighLevelFeedbackDocument.uri,
+    )
+  } else {
+    await vscode.commands.executeCommand(
+      'vscode.open',
+      sessionHighLevelFeedbackDocument.uri,
+      vscode.ViewColumn.Beside,
+    )
+  }
+
   // Restore the focus
   if (cachedActiveEditor) {
     await vscode.window.showTextDocument(
@@ -123,7 +150,7 @@ export async function startSession(
            * 'Preview'
            */
           const abortSignalDocumentName =
-            sessionMarkdownHighLevelFeedbackDocument.uri.path.split('/').at(-1)!
+            sessionHighLevelFeedbackDocument.uri.path.split('/').at(-1)!
           return tab.label.includes(abortSignalDocumentName)
         })
       ) {
@@ -178,7 +205,9 @@ export async function startSession(
       includeLineNumbers: true,
       enableNewFilesAndShellCommands: true,
     },
-    markdownHighLevelFeedbackDocument: sessionMarkdownHighLevelFeedbackDocument,
+    lowLevelLogger: lowLevelLogger,
+    highOrNotebookLevelLogger: highOrNotebookLevelLogger,
+    highLevelFeedbackDocument: sessionHighLevelFeedbackDocument,
     markdownLowLevelFeedbackDocument: sessionMarkdownLowLevelFeedbackDocument,
     contextManager: documentManager,
     sessionAbortedEventEmitter,
@@ -191,7 +220,7 @@ export async function startSession(
 export async function closeSession(
   sessionContext: SessionContext,
 ): Promise<void> {
-  await sessionContext.markdownHighLevelFeedbackDocument.save()
+  await sessionContext.highLevelFeedbackDocument.save()
   await sessionContext.markdownLowLevelFeedbackDocument.save()
 
   /*
@@ -252,7 +281,7 @@ async function findMostRecentSessionLogIndexPrefix(
   return mostRecentSessionLogIndexPrefix
 }
 
-async function createSessionLogDocuments() {
+async function createSessionLogDocuments(markdownOrNotebook: string) {
   const taskMagicIdentifier = getBreadIdentifier()
   const sessionsDirectory = vscode.Uri.joinPath(
     vscode.workspace.workspaceFolders![0].uri,
@@ -268,11 +297,16 @@ async function createSessionLogDocuments() {
   const sessionNameBeforeAddingTopicSuffix = `${nextIndex}-${shortWeekday}`
 
   // High level feedback
-  const sessionMarkdownHighLevelFeedbackDocument =
-    await createAndOpenEmptyDocument(
-      sessionsDirectory,
-      `${sessionNameBeforeAddingTopicSuffix}.md`,
-    )
+  const sessionHighLevelFeedbackDocument =
+    markdownOrNotebook === 'markdown'
+      ? await createAndOpenEmptyDocument(
+          sessionsDirectory,
+          `${sessionNameBeforeAddingTopicSuffix}.md`,
+        )
+      : await createAndOpenEmptyDocument(
+          sessionsDirectory,
+          `${sessionNameBeforeAddingTopicSuffix}.task`,
+        )
   // Low level feedback
   const sessionMarkdownLowLevelFeedbackDocument =
     await createAndOpenEmptyDocument(
@@ -281,7 +315,7 @@ async function createSessionLogDocuments() {
     )
 
   return {
-    sessionMarkdownHighLevelFeedbackDocument,
+    sessionHighLevelFeedbackDocument,
     sessionMarkdownLowLevelFeedbackDocument,
   }
 }

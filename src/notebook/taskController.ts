@@ -46,7 +46,8 @@ export class TaskController {
     execution.executionOrder = ++this._executionOrder
     execution.start(Date.now()) // Keep track of elapsed time to execute cell.
 
-    await execution.clearOutput()
+    execution.end(true, Date.now())
+
     void this._startFunction(execution)
   }
 }

@@ -6,12 +6,10 @@ import {
 import { getFilesContent } from 'helpers/fileSystem'
 import { openedTabs } from 'context/atTabs'
 import { SessionContext, getBreadIdentifier } from 'session'
-import { queueAnAppendToDocument } from 'helpers/fileSystem'
 import { closeSession, startSession } from 'session'
 import { startMultiFileEditing } from 'multi-file-edit/v1'
 import { projectDiagnosticEntriesWithAffectedFileContext } from 'context/atErrors'
 import dedent from 'dedent'
-import { taskAppendToController } from 'notebook/taskAppendToController'
 
 /**
  * Generates and applies diffs to files in the workspace containing @bread
@@ -38,26 +36,10 @@ export async function completeInlineTasksCommand(
   const sessionContext = await startSession(this.extensionContext)
   this.sessionRegistry.set(sessionContext.id, sessionContext)
 
-  void queueAnAppendToDocument(
-    sessionContext.markdownHighLevelFeedbackDocument,
-    '> Running ai-task\n',
-  )
-
-  if (execution) {
-    taskAppendToController(execution, '> Running ai-task\n')
-  }
-
-  void queueAnAppendToDocument(
-    sessionContext.markdownHighLevelFeedbackDocument,
+  void sessionContext.highOrNotebookLevelLogger('> Running ai-task\n')
+  void sessionContext.highOrNotebookLevelLogger(
     '\n[Join Discord to submit feedback](https://discord.gg/D8V6Rc63wQ)\n',
   )
-
-  if (execution) {
-    taskAppendToController(
-      execution,
-      '\n[Join Discord to submit feedback](https://discord.gg/D8V6Rc63wQ)\n',
-    )
-  }
 
   // Functionality specific to bread mentions
   const breadIdentifier = getBreadIdentifier()
@@ -170,14 +152,7 @@ export async function completeInlineTasksCommand(
 
   await startMultiFileEditing(sessionContext)
 
-  await queueAnAppendToDocument(
-    sessionContext.markdownHighLevelFeedbackDocument,
-    '\n\n> Done\n',
-  )
-
-  if (execution) {
-    execution.end(true, Date.now())
-  }
+  await sessionContext.highOrNotebookLevelLogger('\n\n> Done\n')
 
   await closeSession(sessionContext)
   this.sessionRegistry.delete(sessionContext.id)
