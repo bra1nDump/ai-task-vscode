@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 
-export function taskAppendToController(
+export function taskAppendAnswerToOutput(
   execution: vscode.NotebookCellExecution,
   text: string,
 ) {

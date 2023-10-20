@@ -12,7 +12,7 @@ import { undefinedIfStringEmpty } from './optional'
 import { Stream } from 'openai/streaming'
 import { APIError } from 'openai/error'
 import { hell } from './constants'
-import { taskAppendToController } from 'notebook/taskAppendToController'
+import { taskAppendAnswerToOutput } from 'notebook/taskAppendAnswerToOutput'
 
 export type OpenAiMessage = OpenAI.Chat.Completions.ChatCompletionMessageParam
 
@@ -289,7 +289,7 @@ export async function getAnswer(
     const delta = response.choices[0]?.delta?.content
     result += delta
     if (delta) {
-      taskAppendToController(execution, result)
+      taskAppendAnswerToOutput(execution, result)
     }
   }
 }
