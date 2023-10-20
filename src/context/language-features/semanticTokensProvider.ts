@@ -41,7 +41,7 @@ export class TaskSemanticTokensProvider
     ]
     const specialExpressionsWithSpaces = specialExpressions
       // For highlighting lets ensure this is a stand alone keyword
-      .map((x) => ({ ...x, expression: ` ${x.expression}` }))
+      .map((x) => ({ ...x, expression: `${x.expression}` }))
 
     const linesWithExpressions = Array.from(
       { length: document.lineCount },

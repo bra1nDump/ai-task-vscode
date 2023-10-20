@@ -286,6 +286,9 @@ export async function getAnswer(
 
   let result = ''
   for await (const response of stream) {
+    if (execution.token.isCancellationRequested) {
+      return
+    }
     const delta = response.choices[0]?.delta?.content
     result += delta
     if (delta) {

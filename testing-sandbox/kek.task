@@ -1,1 +1,1 @@
-[{"kind":2,"language":"task-book","value":"столица россии","outputs":[{"mime":"text/markdown","value":"Столицей России является город Москва."}]}]
+[{"kind":2,"language":"task-book","value":"@task @run @errors @tabs","outputs":[{"mime":"text/markdown","value":"В JavaScript есть ещё и специальные значения, которые не относятся к типам данных вы"}]}]

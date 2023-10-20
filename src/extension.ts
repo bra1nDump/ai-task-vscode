@@ -41,6 +41,10 @@ export async function activate(context: vscode.ExtensionContext) {
     ),
   )
 
+  const isTaskFile = (document: vscode.TextDocument) => {
+    return document.uri.path.endsWith('.task')
+  }
+
   context.subscriptions.unshift(
     /*
      * Not sure how to register a command on enter,
@@ -57,7 +61,6 @@ export async function activate(context: vscode.ExtensionContext) {
      *   },
      * ),
      */
-
     // Kickoff on @run mention
     vscode.workspace.onDidChangeTextDocument((event) => {
       /*
@@ -67,6 +70,10 @@ export async function activate(context: vscode.ExtensionContext) {
       const isRunInLine = (document: vscode.TextDocument, line: number) => {
         const lineText = document.lineAt(line).text
         return lineText.includes('@run')
+      }
+
+      if (isTaskFile(event.document)) {
+        return
       }
 
       if (
@@ -95,7 +102,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const allLanguages = await vscode.languages.getLanguages()
   const languageForFiles = allLanguages.map((language) => ({
     language,
-    scheme: 'file',
+    schema: 'file',
   }))
 
   /*
@@ -118,7 +125,7 @@ export async function activate(context: vscode.ExtensionContext) {
       '@',
     ),
     vscode.languages.registerCodeLensProvider(
-      languageForFiles,
+      languageForFiles.filter((language) => language.language !== 'task-book'),
       new TaskCodeLensProvider(sessionConfiguration),
     ),
     vscode.languages.registerDocumentSemanticTokensProvider(
