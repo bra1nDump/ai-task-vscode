@@ -31,6 +31,7 @@ This VSCode extension uses AI to write code and proactively suggests fixes to er
 - Cancel at any moment by clicking the `Cancel` button in the bottom right corner of VSCode
 - To undo changes per file simply use `Cmd+z` on Mac and `Ctrl+z` on Windows
 - To edit multiple files, make sure they are opened as tabs and include `@tabs` in your comment
+- **New** Add a file `.task.md` extension to add custom instructions such as style guidelines
 - **New** Include `@errors` to provide context for compile errors and fix them in bulk
 
 # [Beta] How to search for errors
