@@ -1,4 +1,4 @@
-<h1 align="center">Rabbit: Proactive Code Assistant</h1>
+<h1 align="center">Proactive Code Assistant</h1>
 
 <p align="center">
     <a href="https://discord.gg/v4WEH5uJ">
@@ -12,7 +12,7 @@
     <b>Stop wasting time chasing down cryptic errors and performing tedious edits</b><br>
     A VSCode extension that edits your files based on a @task comment and searches the web for errors in your terminal without your input<br>
     <!-- <br><a href="https://calendly.com/kirill-dubovitskiy/demo">Be among first 10 users - schedule a demo with founders</a> -->
-    <br><a href="https://calendly.com/kirill-dubovitskiy/demo">Schedule a 20 min demo with founders to help to test on your codebase</a>
+    <br><a href="https://calendly.com/kirill-dubovitskiy/demo">Tell me about your coding pains in a 20 min call</a>
 </p>
 
 ![](documents/demo-videos/longer-demo/with-loading-bar.gif)
