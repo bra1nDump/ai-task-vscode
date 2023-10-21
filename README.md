@@ -6,7 +6,7 @@
     </a>
     <!-- https://shields.io/badges/visual-studio-marketplace-downloads -->
     <a href="https://marketplace.visualstudio.com/items?itemName=bra1ndump.ai-task">
-        <img alt="VSCode" src="https://img.shields.io/visual-studio-marketplace/d/bra1ndump.ai-task?style=flat&logoColor=white&label=VSCode"/>
+        <img alt="VSCode" src="https://img.shields.io/visual-studio-marketplace/d/bra1ndump.ai-task?style=flat&logoColor=white&label=VSCode&logo=visualstudiocode"/>
     </a>
     <br>
     <b>Stop wasting time chasing down cryptic errors and performing tedious edits</b><br>
