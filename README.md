@@ -1,4 +1,4 @@
-<h1 align="center">Proactive Code Assistant</h1>
+<h1 align="center">Proactive AI Coding Assistant</h1>
 
 <p align="center">
     <a href="https://discord.gg/v4WEH5uJ">
@@ -8,14 +8,21 @@
     <a href="https://marketplace.visualstudio.com/items?itemName=bra1ndump.ai-task">
         <img alt="VSCode" src="https://img.shields.io/visual-studio-marketplace/d/bra1ndump.ai-task?style=flat&logoColor=white&label=VSCode&logo=visualstudiocode"/>
     </a>
-    <br>
-    <b>Stop wasting time chasing down cryptic errors and performing tedious edits</b><br>
-    A VSCode extension that edits your files based on a @task comment and searches the web for errors in your terminal without your input<br>
-    <!-- <br><a href="https://calendly.com/kirill-dubovitskiy/demo">Be among first 10 users - schedule a demo with founders</a> -->
-    <br><a href="https://calendly.com/kirill-dubovitskiy/demo">Tell me about your coding pains in a 20 min call</a>
 </p>
 
+> Ever **lost hours** debugging what seemed like a **trivial problem**? Or felt the drag of **tedious code changes** that could easily be automated?
+
+This VSCode extension uses AI to write code and proactively suggests fixes to errors.
+
+## How it works
+- Describe your intentions in a comment. Watch the tool automatically adjusts the code across multiple files.
+- This extension automatically searches GitHub and the wider Internet to provide you with potential solutions to errors, exceptions, crashes, panics, and bugs that appear in your code. It runs in the background watching your development process.
+
 ![](documents/demo-videos/longer-demo/with-loading-bar.gif)
+
+<p align="center">
+    <br><a href="https://calendly.com/kirill-dubovitskiy/demo">Tell me about your coding pains in a 20 min call</a>
+</p>
 
 # How to edit files
 
@@ -28,7 +35,8 @@
 
 # [Beta] How to search for errors
 
-As we said previously - you don't need to do anything. You don't need to trigger the search manually. As you work, the extension operates quietly in the background, and will show you the results when it finds something relevant to your errors.
+- The extension analyzes your application's stderr and stdout in real time to detect issues. Once an error or issue is found, it proactively searches for solutions or relevant GitHub issues to help you resolve it.
+- You don't need to trigger the search manually. As you work, the extension operates quietly in the background, and will show you the results when it finds something relevant to your errors.
 
 # How to install
 
