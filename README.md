@@ -1,33 +1,44 @@
-# Multi-File editing that doesn't suck
+<h1 align="center">Rabbit: Proactive Code Assistant</h1>
 
-- **Automatic**: Detects ranges in the file that should be updated
-- **Multi-file**: Can edit/create multiple files at once
-- **Efficient**: Applies patches instead of regenerating entire file contents
-- **Fix compile errors**: Fix trivial errors in bulk resulting from a refactor
+<p align="center">
+    <a href="https://discord.gg/v4WEH5uJ">
+        <img alt="Discord" src="https://img.shields.io/discord/1149170085676728390?logo=discord&style=flat&logoColor=white"/>
+    </a>
+    <!-- https://shields.io/badges/visual-studio-marketplace-downloads -->
+    <a href="https://marketplace.visualstudio.com/items?itemName=bra1ndump.ai-task">
+        <img alt="VSCode" src="https://img.shields.io/visual-studio-marketplace/d/bra1ndump.ai-task?style=flat&logoColor=white&label=VSCode"/>
+    </a>
+    <br>
+    <b>Stop wasting time chasing down cryptic errors and performing tedious edits</b><br>
+    A VSCode extension that edits your files based on a @task comment and searches the web for errors in your terminal without your input<br>
+    <!-- <br><a href="https://calendly.com/kirill-dubovitskiy/demo">Be among first 10 users - schedule a demo with founders</a> -->
+    <br><a href="https://calendly.com/kirill-dubovitskiy/demo">Schedule a 20 min demo with founders to help to test on your codebase</a>
+</p>
 
 ![](documents/demo-videos/longer-demo/with-loading-bar.gif)
 
-# How it works
+# How to edit files
 
-- Add a comment with your task `// @task split the function below into a helper and the main function, move helper to a new file`
+- Add a comment with your task like this: `// @task split the function below into a helper and the main function, move helper to a new file`
 - Click `Run @task` to start
-- If you want multiple existing files to be edited open them as tabs in VSCode and include `@tabs` in your comment
 - Cancel at any moment by clicking the `Cancel` button in the bottom right corner of VSCode
 - To undo changes per file simply use `Cmd+z` on Mac and `Ctrl+z` on Windows
-- **New** Try adding `@errors` along with `@task` to fix all errors within the file in bulk
+- To edit multiple files, make sure they are opened as tabs and include `@tabs` in your comment
+- **New** Include `@errors` to provide context for compile errors and fix them in bulk
 
-# How to try it
+# [Beta] How to search for errors
+
+As we said previously - you don't need to do anything. You don't need to trigger the search manually. As you work, the extension operates quietly in the background, and will show you the results when it finds something relevant to your errors.
+
+# How to install
 
 [Install from VSCode Marketplace](https://marketplace.visualstudio.com/items?itemName=bra1ndump.ai-task)
 
-[Join the discord](https://discord.gg/D8V6Rc63wQ) to ask questions, give feedback or just lurk :D
-
 # Roadmap
 
-- Test on windows - looking for help!
+- Using VSCode Notebook as the chat interface
 - Context providers like @url "docs.apple.com" or @semantic-search "function that adds line number to a file"
 - Allow users to create custom javascript scripts to make whole code based transformations
-- Using VSCode Notebook as the chat interface
 
 [More complete list of upcoming features](documents/backlog.md)
 
@@ -37,7 +48,8 @@
 
 - [Bets setting this project aside from competition](documents/bets.md)
 - [Extension control flow overview](documents/development/architecture.md)
-- In the case this becomes a company **your shares will be determined using LLM value scoring of your commit history, on the same terms as anyone elses who contributed**. The algorithm is not set in stone **this is a pinky promise** (known to be more reliable than any other contract) to implement it at some point. [Equity splitting](documents/equity.md).
+- In the case this becomes a company **your shares will be determined using LLM value scoring of your commit history, on the same terms as anyone elses who contributed**. The algorithm is not set in stone **this is a pinky promise** (known to be more reliable than any other contract) to implement it at some point. [Equity splitting](documents/equity.md)
+  - Reach out if you are interested in contributing and want to get a more concrete idea of how this will work. There will likely be a pool dedicated for all contributors, something around 20% of the total equity.
 
 > :warning: **License restricting commercial distribution**: This project currently uses Business Source License 1.1. I currently don't know where I want to take this project, so I'm using this license for the time being to protect it from people/companies freely taking code from it and making money off of it. If you want to use this project for commercial purposes, please contact me by email in my github profile or though discord. I can give you a commercial license for free, or licence a piece of code you are interested in specifically. I'm open to other suggestions as well.
 
