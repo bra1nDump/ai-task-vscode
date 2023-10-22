@@ -20,8 +20,8 @@ import { openedTabs } from 'context/atTabs'
  * This is a new entry point for the command,
  * the old one will now be used to start the task from the notebook execution
  * context This function will only create the notebook if its not already
- * available create a cell with @ task and execute the first cell all subsequent
- * executions will call the old entry point
+ * available create a cell with @ task and execute the first cell all
+ * subsequent executions will call the old entry point
  */
 export async function newCompleteInlineTasksCommandFromVSCodeCommand() {
   let notebook = vscode.window.visibleNotebookEditors.filter(

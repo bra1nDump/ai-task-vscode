@@ -60,6 +60,10 @@
       {
         "command": "ai-task.completeInlineTasks",
         "title": "AI Task: Address @task comments in opened tabs"
+      },
+      {
+        "command": "ai-task.newTaskNotebook",
+        "title": "AI Task: a new notebook has been created"
       }
     ],
     "configuration": {
@@ -102,6 +106,11 @@
         "command": "ai-task.completeInlineTasks",
         "key": "ctrl+y",
         "mac": "cmd+y"
+      },
+      {
+        "command": "ai-task.newTaskNotebook",
+        "key": "ctrl+shift+i",
+        "mac": "cmd+shift+i"
       }
     ]
   },
