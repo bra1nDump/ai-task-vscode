@@ -1,18 +1,18 @@
 import * as vscode from 'vscode'
 
 import { FileContext } from 'context/types'
-import { streamLlm } from 'helpers/openai'
-import { from, last } from 'ix/asynciterable'
+import { OpenAiMessage, streamLlm } from 'helpers/openai'
+import { from } from 'ix/asynciterable'
 
-import { startInteractiveMultiFileApplication } from 'multi-file-edit/applyResolvedChange'
-import { parsePartialMultiFileEdit } from './parse'
-import { makeToResolvedChangesTransformer } from './resolveTargetRange'
 import { SessionContext } from 'session'
 
 import { map as mapAsync } from 'ix/asynciterable/operators'
-import { createMultiFileEditingMessages } from './prompt'
+import { createQuestionAnsweringWithContext } from './HACK_questionAnsweringPrompt'
 
-export async function startMultiFileEditing(sessionContext: SessionContext) {
+export async function startQuestionAnsweringStreamWIthContext(
+  sessionContext: SessionContext,
+  messagesInput: OpenAiMessage[],
+) {
   /*
    * WARNING - dependin on plaform line separators might be different!!!
    * \n, on windows we want to convert to that at some point??
@@ -25,11 +25,11 @@ export async function startMultiFileEditing(sessionContext: SessionContext) {
   const fileContexts = sessionContext.contextManager.getEditableFileContexts()
   const blobContexts = sessionContext.contextManager.getBlobContexts()
 
-  const messages = createMultiFileEditingMessages(
+  const messages = createQuestionAnsweringWithContext(
     fileContexts,
     blobContexts,
     sessionContext.configuration,
-  )
+  ).concat(messagesInput)
 
   const logFilePath = (fileContext: FileContext) => {
     const path = fileContext.filePathRelativeToWorkspace
@@ -65,7 +65,7 @@ export async function startMultiFileEditing(sessionContext: SessionContext) {
   if (streamResult.type === 'error') {
     void sessionContext.highLevelLogger(`\n\n${streamResult.error.message}\n`)
     sessionContext.sessionAbortedEventEmitter.fire()
-    return
+    throw streamResult.error
   }
 
   const [rawLlmResponseStream, abortController] = streamResult.value
@@ -78,44 +78,15 @@ export async function startMultiFileEditing(sessionContext: SessionContext) {
    * Parsing will be performed multiple times for the same payload,
    * see openai.ts
    */
-  const parsedPatchStream = from(rawLlmResponseStream).pipe(
+  const partialResultsStream = from(rawLlmResponseStream).pipe(
     mapAsync(({ cumulativeResponse, delta }) => {
       /*
        * Try parsing the xml, even if it's complete it should still be able to
        * apply the diffs
        */
-      return parsePartialMultiFileEdit(cumulativeResponse)
+      return cumulativeResponse
     }),
   )
 
-  /*
-   * Split the stream into stream with plan and changes to apply
-   * Process in parallell
-   * Currently has an issue where I am unable to log the delta and am forced to
-   * wait until an item is fully generated
-   * Refactor: Parsing should pass deltas because it is used all over the place
-   */
-  async function showPlanAsItBecomesAvailable() {
-    const planStream = parsedPatchStream.pipe(mapAsync((x) => x.task))
-    let lastPlan = ''
-    void sessionContext.highLevelLogger(`\n## Task:\n`)
-    for await (const plan of planStream) {
-      const delta = plan.slice(lastPlan.length)
-      void sessionContext.highLevelLogger(delta)
-      lastPlan = plan
-    }
-  }
-
-  async function startApplication() {
-    const patchSteam = from(
-      parsedPatchStream,
-      makeToResolvedChangesTransformer(sessionContext.contextManager),
-    )
-    void last(patchSteam).then((value) => {
-      console.log(JSON.stringify(value, null, 2))
-    })
-    await startInteractiveMultiFileApplication(patchSteam, sessionContext)
-  }
-
-  await Promise.all([showPlanAsItBecomesAvailable(), startApplication()])
+  return partialResultsStream
 }

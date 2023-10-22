@@ -1,4 +1,11 @@
 import { SessionContextManager } from 'context/manager'
+import { queueAnAppendToDocument } from 'helpers/fileSystem'
+import {
+  currentCellOutputContentMap,
+  documentContents,
+  pendingEdits,
+  queueAnAppendToExecutionOutput,
+} from 'notebook/addToTask'
 import * as vscode from 'vscode'
 
 export interface SessionConfiguration {
@@ -18,10 +25,16 @@ export interface SessionContext {
   configuration: SessionConfiguration
 
   /**
+   * DEPRECATED - now using high level logger to append to the output
+   *
    * This will be open to the side to show real time feedback of what is
    * happening in the session.
    */
-  markdownHighLevelFeedbackDocument: vscode.TextDocument
+  // highLevelFeedbackDocument: vscode.TextDocument
+
+  lowLevelLogger: (text: string) => Promise<void>
+
+  highLevelLogger: (text: string) => Promise<void>
 
   /**
    * This is the document where raw LLM request is logged. This is mostly for
@@ -58,6 +71,7 @@ export interface SessionContext {
 
 export async function startSession(
   context: vscode.ExtensionContext,
+  execution: vscode.NotebookCellExecution,
 ): Promise<SessionContext> {
   /*
    * There's a hard assumption across the code base that there's at least one
@@ -71,10 +85,31 @@ export async function startSession(
     )
   }
 
+  const markdownOrNotebook = vscode.workspace
+    .getConfiguration('ai-task')
+    .get<string>('markdownOrNotebook')!
+
   const {
-    sessionMarkdownHighLevelFeedbackDocument,
+    // sessionHighLevelFeedbackDocument,
     sessionMarkdownLowLevelFeedbackDocument,
-  } = await createSessionLogDocuments()
+  } = await createSessionLogDocuments(markdownOrNotebook)
+
+  const lowLevelLogger = (text: string) =>
+    queueAnAppendToDocument(sessionMarkdownLowLevelFeedbackDocument, text)
+
+  const highLevelLogger = async (text: string) => {
+    /*
+     * Always append to exeuction output
+     * taskAppendWithoutErasing(execution, text)
+     */
+    void queueAnAppendToExecutionOutput(execution, text)
+
+    /*
+     * return markdownOrNotebook === 'markdown'
+     *   ? queueAnAppendToDocument(sessionHighLevelFeedbackDocument, text)
+     *   : queueAnAppendToMarkdownValue(sessionHighLevelFeedbackDocument, text)
+     */
+  }
 
   const cachedActiveEditor = vscode.window.activeTextEditor
 
@@ -82,18 +117,36 @@ export async function startSession(
    * Since we're opening to the side the focus is not taken.
    * Remove for recording simple demo
    */
-  await vscode.commands.executeCommand(
-    'markdown.showPreviewToSide',
-    sessionMarkdownHighLevelFeedbackDocument.uri,
-  )
 
-  // Restore the focus
-  if (cachedActiveEditor) {
-    await vscode.window.showTextDocument(
-      cachedActiveEditor.document,
-      cachedActiveEditor.viewColumn,
-    )
-  }
+  /*
+   * We are only supporting notebooks!!!! We are also opening notebooks outside
+   * of the session creation - session is created per cell execution, implying
+   * the notebook is already active.
+   *
+   *
+   * if (markdownOrNotebook === 'markdown') {
+   *   await vscode.commands.executeCommand(
+   *     'markdown.showPreviewToSide',
+   *     sessionHighLevelFeedbackDocument.uri,
+   *   )
+   * } else {
+   *   await vscode.commands.executeCommand(
+   *     'vscode.open',
+   *     sessionHighLevelFeedbackDocument.uri,
+   *     vscode.ViewColumn.Beside,
+   *   )
+   * }
+   */
+
+  /*
+   * Restore the focus
+   * if (cachedActiveEditor) {
+   *   await vscode.window.showTextDocument(
+   *     cachedActiveEditor.document,
+   *     cachedActiveEditor.viewColumn,
+   *   )
+   * }
+   */
 
   /*
    * Create document manager that will help us backdate edits throughout this
@@ -109,27 +162,31 @@ export async function startSession(
    */
   const sessionEndedEventEmitter = new vscode.EventEmitter<void>()
 
-  const textDocumentCloseSubscription = vscode.window.tabGroups.onDidChangeTabs(
-    ({ closed: closedTabs }) => {
-      /*
-       * input contains viewType key: 'mainThreadWebview-markdown.preview'
-       * Label has the format 'Preview <name of the file>'
-       */
-      if (
-        closedTabs.find((tab) => {
-          /*
-           * Trying to be mindful of potential internationalization of the word
-           * 'Preview'
-           */
-          const abortSignalDocumentName =
-            sessionMarkdownHighLevelFeedbackDocument.uri.path.split('/').at(-1)!
-          return tab.label.includes(abortSignalDocumentName)
-        })
-      ) {
-        sessionAbortedEventEmitter.fire()
-      }
-    },
-  )
+  // / NOTE: We used to stop the session when the user closed the high level
+  // feedback document, but i got feedback that tahts unexpected behavior + we
+  // are moving to notebooks :D
+  //
+  // const textDocumentCloseSubscription = vscode.window.tabGroups.onDidChangeTabs(
+  //   ({ closed: closedTabs }) => {
+  //     /*
+  //      * input contains viewType key: 'mainThreadWebview-markdown.preview'
+  //      * Label has the format 'Preview <name of the file>'
+  //      */
+  //     if (
+  //       closedTabs.find((tab) => {
+  //         /*
+  //          * Trying to be mindful of potential internationalization of the word
+  //          * 'Preview'
+  //          */
+  //         const abortSignalDocumentName =
+  //           sessionHighLevelFeedbackDocument.uri.path.split('/').at(-1)!
+  //         return tab.label.includes(abortSignalDocumentName)
+  //       })
+  //     ) {
+  //       sessionAbortedEventEmitter.fire()
+  //     }
+  //   },
+  // )
 
   void vscode.window.withProgress(
     {
@@ -177,12 +234,14 @@ export async function startSession(
       includeLineNumbers: true,
       enableNewFilesAndShellCommands: true,
     },
-    markdownHighLevelFeedbackDocument: sessionMarkdownHighLevelFeedbackDocument,
+    lowLevelLogger: lowLevelLogger,
+    highLevelLogger: highLevelLogger,
+    // highLevelFeedbackDocument: sessionHighLevelFeedbackDocument,
     markdownLowLevelFeedbackDocument: sessionMarkdownLowLevelFeedbackDocument,
     contextManager: documentManager,
     sessionAbortedEventEmitter,
     sessionEndedEventEmitter,
-    subscriptions: [textDocumentCloseSubscription],
+    subscriptions: [],
   }
 }
 
@@ -190,7 +249,7 @@ export async function startSession(
 export async function closeSession(
   sessionContext: SessionContext,
 ): Promise<void> {
-  await sessionContext.markdownHighLevelFeedbackDocument.save()
+  // await sessionContext.highLevelFeedbackDocument.save()
   await sessionContext.markdownLowLevelFeedbackDocument.save()
 
   /*
@@ -223,9 +282,14 @@ export async function closeSession(
 
   sessionContext.sessionEndedEventEmitter.fire()
   sessionContext.sessionEndedEventEmitter.dispose()
+
+  ///// HACCCCCCCCKs HACK:
+  currentCellOutputContentMap.clear()
+  documentContents.clear()
+  pendingEdits.clear()
 }
 
-async function findMostRecentSessionLogIndexPrefix(
+export async function findMostRecentSessionLogIndexPrefix(
   sessionsDirectory: vscode.Uri,
 ) {
   // Check if directory exists before reading
@@ -251,7 +315,7 @@ async function findMostRecentSessionLogIndexPrefix(
   return mostRecentSessionLogIndexPrefix
 }
 
-async function createSessionLogDocuments() {
+async function createSessionLogDocuments(markdownOrNotebook: string) {
   const taskMagicIdentifier = getBreadIdentifier()
   const sessionsDirectory = vscode.Uri.joinPath(
     vscode.workspace.workspaceFolders![0].uri,
@@ -266,13 +330,20 @@ async function createSessionLogDocuments() {
   })
   const sessionNameBeforeAddingTopicSuffix = `${nextIndex}-${shortWeekday}`
 
-  // High level feedback
-  const sessionMarkdownHighLevelFeedbackDocument =
-    await createAndOpenEmptyDocument(
-      sessionsDirectory,
-      `${sessionNameBeforeAddingTopicSuffix}.md`,
-    )
-  // Low level feedback
+  /*
+   * High level feedback
+   * const sessionHighLevelFeedbackDocument =
+   *   markdownOrNotebook === 'markdown'
+   *     ? await createAndOpenEmptyDocument(
+   *         sessionsDirectory,
+   *         `${sessionNameBeforeAddingTopicSuffix}.md`,
+   *       )
+   *     : await createAndOpenEmptyDocument(
+   *         sessionsDirectory,
+   *         `${sessionNameBeforeAddingTopicSuffix}.task`,
+   *       )
+   * Low level feedback
+   */
   const sessionMarkdownLowLevelFeedbackDocument =
     await createAndOpenEmptyDocument(
       sessionsDirectory,
@@ -280,12 +351,12 @@ async function createSessionLogDocuments() {
     )
 
   return {
-    sessionMarkdownHighLevelFeedbackDocument,
+    // sessionHighLevelFeedbackDocument,
     sessionMarkdownLowLevelFeedbackDocument,
   }
 }
 
-async function createAndOpenEmptyDocument(
+export async function createAndOpenEmptyDocument(
   sessionsDirectory: vscode.Uri,
   name: string,
 ) {

@@ -9,7 +9,57 @@
 - Reached out to 5 potential collaborators
 - Replaced continue on the current project
 
-# Next up
+# Before our demos
+
+## New control flow
+
+When user hits run (or runs command from command palette)
+  - we create a new notebook
+  - open it
+  - do gynmnastics to add a new cell to it using commands (so if its already opend we append to the end)
+  - start executing the cell
+
+Now all actual file editing is kicked off from the notebook execution
+  - We create a new session, given the cell execution to append high level results to
+  - If the cell does not have a task in it
+    - Similar to how we do this in completeInlineTasks, parse the cell content for @ mentions and modify context
+    - use a simplified prompt to simply generate markdown reponse - no edits
+    - dump context manager + previous cell contents into the messages
+
+## Next up:
+This is useful as there will be new people trying the product
+- Add a shortcut to create a new notebook
+- Add a walkthrough that will show how to create a new notebook (it will be created in the session folder)
+
+Better format is better :D
+- Create a cell with markdown showing discord link
+- Smaller heading size for files / task etc - takes too much space
+- In output remove start / end messages - redundant
+- Don't show output of files submitted and others if there is no need
+
+## If we have time
+- Allow writing custom tasks in the notebook and actually running file editing on those
+- This would require passing the custom @ task command to the completeInlineTasks function and passing it in correctly to the context manager or as a message.
+- There is some command @command:notebook.action.toggleNotebookStickyScroll (open command pallet and explore "Notebook: " commands). No idea what this does, but might help with keeping the bottom part visible
+
+
+## Later - after the demo
+- When adding a task in a followup - include the output of the non-editing commands in the context.
+  - This is useful if the user asks a question and when they like the answer (code related) they can run a task to apply them to the code instead of copy pasting and having to specify the same task 
+  - This will also give better overall results because the prompt is easier when generating initial code suggestions - no mulit file edit. Next the multi-file edit can just focus on applying the known changes to the code - harder to fuck up
+- Output markdown flickers - we should replace output with actual markdown cells so we can edit them inrementally to avoid this
+
+Error: 
+rejected promise not handled within 1 second: Error: Cannot modify cell output after calling resolve
+extensionHostProcess.js:131
+stack trace: Error: Cannot modify cell output after calling resolve
+	at h.t (/Applications/Visual Studio Code - Insiders.app/Contents/Resources/app/out/vs/workbench/api/node/extensionHostProcess.js:127:105565)
+	at Object.replaceOutput (/Applications/Visual Studio Code - Insiders.app/Contents/Resources/app/out/vs/workbench/api/node/extensionHostProcess.js:127:107002)
+	at applyEdit (/Users/kirilldubovitskiy/projects/bread/dist/extension.js:1247:25)
+
+# Later
+
+Split up different user requests into different openai user messages. This will be closer to what the chat is used to do - adjust based on the user input.
 
 Stability
 - change prompt for new files for stability (just remove range-to-replace)

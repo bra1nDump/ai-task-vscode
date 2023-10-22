@@ -4,114 +4,15 @@ import {
   findAndCollectDotBreadFiles,
 } from 'context/atTask'
 import { getFilesContent } from 'helpers/fileSystem'
-import {
-  SessionContext,
-  createAndOpenEmptyDocument,
-  findMostRecentSessionLogIndexPrefix,
-  getBreadIdentifier,
-} from 'session'
+import { SessionContext, getBreadIdentifier } from 'session'
 import { closeSession, startSession } from 'session'
-import { startMultiFileEditing } from 'multi-file-edit/v1'
 import { projectDiagnosticEntriesWithAffectedFileContext } from 'context/atErrors'
 import dedent from 'dedent'
 import { openedTabs } from 'context/atTabs'
+import { OpenAiMessage } from 'helpers/openai'
+import { startQuestionAnsweringStreamWIthContext } from 'multi-file-edit/v1/HACK_questionMessageCreation'
 
-/*
- * This is a new entry point for the command,
- * the old one will now be used to start the task from the notebook execution
- * context This function will only create the notebook if its not already
- * available create a cell with @ task and execute the first cell all subsequent
- * executions will call the old entry point
- */
-export async function newCompleteInlineTasksCommandFromVSCodeCommand() {
-  let notebook = vscode.window.visibleNotebookEditors.filter(
-    (editor) => editor.notebook.notebookType === 'task-notebook',
-  )[0]?.notebook
-
-  if (notebook === undefined) {
-    // COPIED OVER FROM session/index
-    const taskMagicIdentifier = getBreadIdentifier()
-    const sessionsDirectory = vscode.Uri.joinPath(
-      vscode.workspace.workspaceFolders![0].uri,
-      `.${taskMagicIdentifier}/sessions`,
-    )
-    const nextIndex =
-      (await findMostRecentSessionLogIndexPrefix(sessionsDirectory)) + 1
-
-    const shortWeekday = new Date().toLocaleString('en-US', {
-      weekday: 'short',
-    })
-    const sessionNameBeforeAddingTopicSuffix = `${nextIndex}-${shortWeekday}.task`
-    const newNotebookDocument = await createAndOpenEmptyDocument(
-      sessionsDirectory,
-      sessionNameBeforeAddingTopicSuffix,
-    )
-
-    notebook = await vscode.workspace.openNotebookDocument(
-      newNotebookDocument.uri,
-    )
-    await vscode.window.showNotebookDocument(notebook, {
-      viewColumn: vscode.ViewColumn.Two,
-    })
-  } else {
-    /*
-     * Hoping this will simply focus the notebook
-     * TODO: Open in the same column as the current one, we are simply focusing
-     * on it!
-     * WORKAROUDN: Always open in the second column
-     */
-    await vscode.window.showNotebookDocument(notebook, {
-      viewColumn: vscode.ViewColumn.Two,
-    })
-  }
-
-  /*
-   * Inserting cells looks difficult ...
-   * Ivan found a way to work around it by writing to the file directly
-   * Easiest seems to run commands
-   * first focus notebook (by reopning it??)
-   * @command:notebook.focusBottom
-   * @command:notebook.cell.insertCodeCellBelow
-   *
-   * Do we event need to insert a cell here? Maybe just create a new notebook
-   * with a cell? If its already created we still need to append a cell though
-   * ...
-   */
-
-  // Insert a new cell at the bottom of the notebook
-  await vscode.commands.executeCommand('notebook.focusBottom')
-  await vscode.commands.executeCommand('notebook.cell.insertCodeCellBelow')
-
-  /*
-   * Type Running "@ task from inline command" into the cell
-   * Execute it
-   */
-
-  if (notebook.cellCount === 0) {
-    void vscode.window.showErrorMessage(
-      `No cells in the notebook, most likely a bug`,
-    )
-    return
-  }
-
-  // Get the last cell in the notebook
-  const lastCell = notebook.getCells().slice(-1)[0]
-
-  // Set the cell's text to "@ task from inline command"
-  const cellDocumentEditorMaybe = await vscode.window.showTextDocument(
-    lastCell.document,
-  )
-
-  await cellDocumentEditorMaybe.edit((editBuilder) => {
-    editBuilder.insert(
-      new vscode.Position(0, 0),
-      '@' + 'task from inline command',
-    )
-  })
-
-  // Execute the cell
-  await vscode.commands.executeCommand('notebook.cell.execute')
-}
+//////////////////// THIS ENTIRE FILE IS A HACK - COPIED OVER FROM comleteInlineTasks ////////////////////
 
 /**
  * This will now only get invoked from the notebook controller
@@ -125,10 +26,11 @@ export async function newCompleteInlineTasksCommandFromVSCodeCommand() {
  * Parse the diffs
  * Apply them to the current file in place
  */
-export async function completeInlineTasksCommand(
+export async function answerQuestionCommand(
   extensionContext: vscode.ExtensionContext,
   sessionRegistry: Map<string, SessionContext>,
   execution: vscode.NotebookCellExecution,
+  previousMessages: OpenAiMessage[],
 ) {
   if (sessionRegistry.size !== 0) {
     console.log(`Existing session running, most likely a bug with @run + enter`)
@@ -139,28 +41,56 @@ export async function completeInlineTasksCommand(
   sessionRegistry.set(sessionContext.id, sessionContext)
 
   try {
-    await throwingCompleteInlineTasksCommand(sessionContext)
+    /*
+     * This works differently from the completeInlineTasksCommand because it
+     * returns before we are done with the stream - it returns the stream itself
+     */
+    const stream = await throwingQuestionAnswering(
+      sessionContext,
+      previousMessages,
+    )
+
+    if (stream === undefined) {
+      throw new Error('Stream is undefined')
+    }
+
+    /*
+     * This is a hack to keep the first output (what files were submitted etc)
+     * if it exists before we start replying
+     */
+    const firstOutputWithContext = execution.cell.outputs.at(0)
+
+    for await (const answerString of stream) {
+      if (execution.token.isCancellationRequested) {
+        break
+      }
+      void execution.replaceOutput([
+        ...(firstOutputWithContext ? [firstOutputWithContext] : []),
+        new vscode.NotebookCellOutput([
+          vscode.NotebookCellOutputItem.text(answerString, 'text/markdown'),
+        ]),
+      ])
+    }
+
+    // For last output write
+    await new Promise((resolve) => setTimeout(resolve, 100))
   } catch (error) {
     console.error(error)
     if (error instanceof Error) {
       await sessionContext.highLevelLogger(`\n\n> Error: ${error.message}`)
     }
   } finally {
-    await sessionContext.highLevelLogger('\n\n> Done\n')
+    // await sessionContext.highLevelLogger('\n\n> Done\n')
 
     await closeSession(sessionContext)
     sessionRegistry.delete(sessionContext.id)
   }
 }
 
-async function throwingCompleteInlineTasksCommand(
+async function throwingQuestionAnswering(
   sessionContext: SessionContext,
+  previousMessages: OpenAiMessage[],
 ) {
-  void sessionContext.highLevelLogger('> Running ai-task\n')
-  void sessionContext.highLevelLogger(
-    '\n[Join Discord to submit feedback](https://discord.gg/D8V6Rc63wQ)\n',
-  )
-
   ////// Compile the context, pull in task files and other context based on mentions //////
   const openTabsFileUris = openedTabs()
 
@@ -173,19 +103,6 @@ async function throwingCompleteInlineTasksCommand(
     breadIdentifier,
     openTabsFileUris,
   )
-
-  /*
-   * Its okay to not have any task mentions - for instance for other extension
-   * adding to the context
-   */
-  if (fileUrisWithBreadMentions.length === 0) {
-    void vscode.window.showErrorMessage(
-      `No tasks found. Remember to add 
-@${breadIdentifier} mention to at least one file in the workspace.`,
-    )
-    await closeSession(sessionContext)
-    return
-  }
 
   await sessionContext.contextManager.addDocuments(
     'Files with bread mentions',
@@ -214,6 +131,26 @@ async function throwingCompleteInlineTasksCommand(
     await sessionContext.contextManager.addDocuments(
       'Open tabs',
       openTabsFileUris,
+    )
+  }
+
+  /*
+   * Always include active text editor as the questions are likely to be
+   * related to it
+   */
+  if (vscode.window.visibleTextEditors.length) {
+    await sessionContext.contextManager.addDocuments(
+      'Visible text editor',
+      vscode.window.visibleTextEditors
+        .filter(
+          (editor) =>
+            /*
+             * Don't return files with .task in them,
+             * they are probably a notebook
+             */
+            !editor.document.uri.path.includes('.task'),
+        )
+        .map((editor) => editor.document.uri),
     )
   }
 
@@ -283,5 +220,8 @@ async function throwingCompleteInlineTasksCommand(
 
   console.log('fileManager', sessionContext.contextManager.dumpState())
 
-  await startMultiFileEditing(sessionContext)
+  return await startQuestionAnsweringStreamWIthContext(
+    sessionContext,
+    previousMessages,
+  )
 }

@@ -1,31 +1,51 @@
-import { completeInlineTasksCommand } from 'commands/completeInlineTasks'
+import { newCompleteInlineTasksCommandFromVSCodeCommand } from 'commands/completeInlineTasks'
 import { TaskExpressionCompletionItemProvider } from 'context/language-features/completionItemProvider'
 import { TaskCodeLensProvider } from 'context/language-features/codeLensProvider'
 import { TaskSemanticTokensProvider } from 'context/language-features/semanticTokensProvider'
 import { SessionContext } from 'session'
 import * as vscode from 'vscode'
+import { TaskController } from 'notebook/taskController'
+import { TaskSerializer } from 'notebook/taskSerializer'
 
 export async function activate(context: vscode.ExtensionContext) {
   console.log('activating bread extension')
 
   // Poor men's dependency injection
   const sessionRegistry = new Map<string, SessionContext>()
-  const commandWithBoundSession = completeInlineTasksCommand.bind({
-    extensionContext: context,
-    sessionRegistry,
-  })
+
+  context.subscriptions.push(new TaskController(context, sessionRegistry))
+
+  context.subscriptions.push(
+    vscode.workspace.registerNotebookSerializer(
+      'task-notebook',
+      new TaskSerializer(),
+      {
+        transientOutputs: false,
+        transientCellMetadata: {
+          inputCollapsed: true,
+          outputCollapsed: true,
+        },
+      },
+    ),
+  )
 
   // Commands also need to be defined in package.json
   context.subscriptions.unshift(
     vscode.commands.registerCommand(
       'ai-task.completeInlineTasks',
-      commandWithBoundSession,
+      async () => {
+        await newCompleteInlineTasksCommandFromVSCodeCommand()
+      },
       /*
        * TODO: this acctually accepts this as a third argument,
        * so bind above can be removed and this can be passed here insted
        */
     ),
   )
+
+  const isTaskFile = (document: vscode.TextDocument) => {
+    return document.uri.path.endsWith('.task')
+  }
 
   context.subscriptions.unshift(
     /*
@@ -43,7 +63,6 @@ export async function activate(context: vscode.ExtensionContext) {
      *   },
      * ),
      */
-
     // Kickoff on @run mention
     vscode.workspace.onDidChangeTextDocument((event) => {
       /*
@@ -53,6 +72,10 @@ export async function activate(context: vscode.ExtensionContext) {
       const isRunInLine = (document: vscode.TextDocument, line: number) => {
         const lineText = document.lineAt(line).text
         return lineText.includes('@run')
+      }
+
+      if (isTaskFile(event.document)) {
+        return
       }
 
       if (
@@ -73,7 +96,7 @@ export async function activate(context: vscode.ExtensionContext) {
          * Previously I was undoing the enter change,
          * but it introduces additional jitter to the user experience
          */
-        void commandWithBoundSession()
+        void newCompleteInlineTasksCommandFromVSCodeCommand()
       }
     }),
   )
@@ -81,7 +104,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const allLanguages = await vscode.languages.getLanguages()
   const languageForFiles = allLanguages.map((language) => ({
     language,
-    scheme: 'file',
+    schema: 'file',
   }))
 
   /*
@@ -104,7 +127,9 @@ export async function activate(context: vscode.ExtensionContext) {
       '@',
     ),
     vscode.languages.registerCodeLensProvider(
-      languageForFiles,
+      languageForFiles.filter(
+        (language) => language.language !== 'task-notebook',
+      ),
       new TaskCodeLensProvider(sessionConfiguration),
     ),
     vscode.languages.registerDocumentSemanticTokensProvider(

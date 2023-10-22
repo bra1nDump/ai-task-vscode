@@ -137,3 +137,11 @@ Basically create an onboarding for an issue. Same infra than for the previous id
 # Watch the data
 The diagram comes in - I want to watch all transformations it goes through and get code pointers.
 Its similar to profiling / tracing but for data transformations
+
+# Search old code in your repo (that you removed say)
+And re-apply to the current code base
+
+# Resolve merge conflicts
+
+# Show recent edits and figure out what the fuck was i doing ...
+Seems like a good plugin feature contributed by users?
