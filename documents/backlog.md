@@ -11,20 +11,32 @@
 
 # Before our demos
 
-When user hits run - we create a new notebook 
-  Ideally with the task that kicked off being included in the notebook's cell (for now we will just say "@task is in the code")
-  We programmatically start executing the first cell
+## New control flow
 
-On cell execution:
+When user hits run (or runs command from command palette)
+  - we create a new notebook
+  - open it
+  - do gynmnastics to add a new cell to it using commands (so if its already opend we append to the end)
+  - start executing the cell
+
+Now all actual file editing is kicked off from the notebook execution
   - We create a new session, given the cell execution to append high level results to
-  - If the cell does not have a task in it - use a simplified prompt that will dump context manager + previous cell contents into the messages
+  - If the cell does not have a task in it
+    - Similar to how we do this in completeInlineTasks, parse the cell content for @ mentions and modify context
+    - use a simplified prompt to simply generate markdown reponse - no edits
+    - dump context manager + previous cell contents into the messages
 
-When user uses @task @tabs etc in the notebook we create the correct context and run the task.
-When user does followup tasks - we add these to the
+## Fixups:
+- Create a cell with markdown showing discord link
+- Smaller heading size for files / task etc - takes too much space
+- In output remove start / end messages - redundant
+- Editing is happening not in the original tab group, but in the group with the notebook. We should keep the notebook visible and open the files in the original group. I think this can be accessed from tabs api. Search tabs in the codebase.
 
-- Read Ivan's code
-- If task is mentioned - kick off task execution. Create a session per cell?
-- Keep the history of the chat
+## If we have time
+- When adding a task in a followup - include the output of the non-editing commands in the context.
+  - This is useful if the user asks a question and when they like the answer (code related) they can run a task to apply them to the code instead of copy pasting and having to specify the same task 
+  - This will also give better overall results because the prompt is easier when generating initial code suggestions - no mulit file edit. Next the multi-file edit can just focus on applying the known changes to the code - harder to fuck up
+- There is some command @command:notebook.action.toggleNotebookStickyScroll (open command pallet and explore "Notebook: " commands). No idea what this does, but might help with keeping the bottom part visible
 
 # Later
 

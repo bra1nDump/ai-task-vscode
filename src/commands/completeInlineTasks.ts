@@ -4,14 +4,117 @@ import {
   findAndCollectDotBreadFiles,
 } from 'context/atTask'
 import { getFilesContent } from 'helpers/fileSystem'
-import { SessionContext, getBreadIdentifier } from 'session'
+import {
+  SessionContext,
+  createAndOpenEmptyDocument,
+  findMostRecentSessionLogIndexPrefix,
+  getBreadIdentifier,
+} from 'session'
 import { closeSession, startSession } from 'session'
 import { startMultiFileEditing } from 'multi-file-edit/v1'
 import { projectDiagnosticEntriesWithAffectedFileContext } from 'context/atErrors'
 import dedent from 'dedent'
 import { openedTabs } from 'context/atTabs'
 
+/*
+ * This is a new entry point for the command,
+ * the old one will now be used to start the task from the notebook execution
+ * context This function will only create the notebook if its not already
+ * available create a cell with @ task and execute the first cell all subsequent
+ * executions will call the old entry point
+ */
+export async function newCompleteInlineTasksCommandFromVSCodeCommand() {
+  let notebook = vscode.window.visibleNotebookEditors.filter(
+    (editor) => editor.notebook.notebookType === 'task-notebook',
+  )[0]?.notebook
+
+  if (notebook === undefined) {
+    // COPIED OVER FROM session/index
+    const taskMagicIdentifier = getBreadIdentifier()
+    const sessionsDirectory = vscode.Uri.joinPath(
+      vscode.workspace.workspaceFolders![0].uri,
+      `.${taskMagicIdentifier}/sessions`,
+    )
+    const nextIndex =
+      (await findMostRecentSessionLogIndexPrefix(sessionsDirectory)) + 1
+
+    const shortWeekday = new Date().toLocaleString('en-US', {
+      weekday: 'short',
+    })
+    const sessionNameBeforeAddingTopicSuffix = `${nextIndex}-${shortWeekday}.task`
+    const newNotebookDocument = await createAndOpenEmptyDocument(
+      sessionsDirectory,
+      sessionNameBeforeAddingTopicSuffix,
+    )
+
+    notebook = await vscode.workspace.openNotebookDocument(
+      newNotebookDocument.uri,
+    )
+    await vscode.window.showNotebookDocument(notebook, {
+      viewColumn: vscode.ViewColumn.Two,
+    })
+  } else {
+    /*
+     * Hoping this will simply focus the notebook
+     * TODO: Open in the same column as the current one, we are simply focusing
+     * on it!
+     * WORKAROUDN: Always open in the second column
+     */
+    await vscode.window.showNotebookDocument(notebook, {
+      viewColumn: vscode.ViewColumn.Two,
+    })
+  }
+
+  /*
+   * Inserting cells looks difficult ...
+   * Ivan found a way to work around it by writing to the file directly
+   * Easiest seems to run commands
+   * first focus notebook (by reopning it??)
+   * @command:notebook.focusBottom
+   * @command:notebook.cell.insertCodeCellBelow
+   *
+   * Do we event need to insert a cell here? Maybe just create a new notebook
+   * with a cell? If its already created we still need to append a cell though
+   * ...
+   */
+
+  // Insert a new cell at the bottom of the notebook
+  await vscode.commands.executeCommand('notebook.focusBottom')
+  await vscode.commands.executeCommand('notebook.cell.insertCodeCellBelow')
+
+  /*
+   * Type Running "@ task from inline command" into the cell
+   * Execute it
+   */
+
+  if (notebook.cellCount === 0) {
+    void vscode.window.showErrorMessage(
+      `No cells in the notebook, most likely a bug`,
+    )
+    return
+  }
+
+  // Get the last cell in the notebook
+  const lastCell = notebook.getCells().slice(-1)[0]
+
+  // Set the cell's text to "@ task from inline command"
+  const cellDocumentEditorMaybe = await vscode.window.showTextDocument(
+    lastCell.document,
+  )
+
+  await cellDocumentEditorMaybe.edit((editBuilder) => {
+    editBuilder.insert(
+      new vscode.Position(0, 0),
+      '@' + 'task from inline command',
+    )
+  })
+
+  // Execute the cell
+  await vscode.commands.executeCommand('notebook.cell.execute')
+}
+
 /**
+ * This will now only get invoked from the notebook controller
  *
  * Generates and applies diffs to files in the workspace containing task
  * mention.
@@ -25,13 +128,14 @@ import { openedTabs } from 'context/atTabs'
 export async function completeInlineTasksCommand(
   extensionContext: vscode.ExtensionContext,
   sessionRegistry: Map<string, SessionContext>,
+  execution: vscode.NotebookCellExecution,
 ) {
   if (sessionRegistry.size !== 0) {
     console.log(`Existing session running, most likely a bug with @run + enter`)
     return
   }
 
-  const sessionContext = await startSession(extensionContext)
+  const sessionContext = await startSession(extensionContext, execution)
   sessionRegistry.set(sessionContext.id, sessionContext)
 
   try {

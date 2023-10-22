@@ -12,6 +12,10 @@ export function taskAppendAnswerToOutput(
   )
 }
 
+/*
+ * ALright, we need to re-write the whole thing ...
+ * that sucks ...
+ */
 export function taskAppendWithoutErasing(
   execution: vscode.NotebookCellExecution,
   text: string,

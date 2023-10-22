@@ -1,16 +1,21 @@
+import { completeInlineTasksCommand } from 'commands/completeInlineTasks'
 import { getAnswer } from 'helpers/openai'
+import { SessionContext } from 'session'
 import * as vscode from 'vscode'
 
 export class TaskController {
   readonly controllerId = 'task-controller-id'
   readonly notebookType = 'task-notebook'
   readonly label = 'Task Notebook'
-  readonly supportedLanguages = ['task-book']
+  readonly supportedLanguages = ['task-notebook']
 
   private readonly _controller: vscode.NotebookController
   private _executionOrder = 0
 
-  constructor() {
+  constructor(
+    private extensionContext: vscode.ExtensionContext,
+    private sessionRegistry: Map<string, SessionContext>,
+  ) {
     this._controller = vscode.notebooks.createNotebookController(
       this.controllerId,
       this.notebookType,
@@ -57,7 +62,15 @@ export class TaskController {
        */
     })
 
-    await getAnswer(cell.document.getText(), execution)
+    if (cell.document.getText().includes('@' + 'task')) {
+      await completeInlineTasksCommand(
+        this.extensionContext,
+        this.sessionRegistry,
+        execution,
+      )
+    } else {
+      await getAnswer(cell.document.getText(), execution)
+    }
 
     execution.end(true, Date.now())
   }

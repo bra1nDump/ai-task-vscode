@@ -1,4 +1,4 @@
-import { completeInlineTasksCommand } from 'commands/completeInlineTasks'
+import { newCompleteInlineTasksCommandFromVSCodeCommand } from 'commands/completeInlineTasks'
 import { TaskExpressionCompletionItemProvider } from 'context/language-features/completionItemProvider'
 import { TaskCodeLensProvider } from 'context/language-features/codeLensProvider'
 import { TaskSemanticTokensProvider } from 'context/language-features/semanticTokensProvider'
@@ -13,7 +13,7 @@ export async function activate(context: vscode.ExtensionContext) {
   // Poor men's dependency injection
   const sessionRegistry = new Map<string, SessionContext>()
 
-  context.subscriptions.push(new TaskController())
+  context.subscriptions.push(new TaskController(context, sessionRegistry))
 
   context.subscriptions.push(
     vscode.workspace.registerNotebookSerializer(
@@ -34,7 +34,7 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       'ai-task.completeInlineTasks',
       async () => {
-        await completeInlineTasksCommand(context, sessionRegistry)
+        await newCompleteInlineTasksCommandFromVSCodeCommand()
       },
       /*
        * TODO: this acctually accepts this as a third argument,
@@ -96,7 +96,7 @@ export async function activate(context: vscode.ExtensionContext) {
          * Previously I was undoing the enter change,
          * but it introduces additional jitter to the user experience
          */
-        void completeInlineTasksCommand(context, sessionRegistry)
+        void newCompleteInlineTasksCommandFromVSCodeCommand()
       }
     }),
   )
@@ -127,7 +127,9 @@ export async function activate(context: vscode.ExtensionContext) {
       '@',
     ),
     vscode.languages.registerCodeLensProvider(
-      languageForFiles.filter((language) => language.language !== 'task-book'),
+      languageForFiles.filter(
+        (language) => language.language !== 'task-notebook',
+      ),
       new TaskCodeLensProvider(sessionConfiguration),
     ),
     vscode.languages.registerDocumentSemanticTokensProvider(
