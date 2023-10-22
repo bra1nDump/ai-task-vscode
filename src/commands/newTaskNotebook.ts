@@ -52,7 +52,7 @@ export async function newTaskNotebook() {
       new vscode.Position(0, 0),
       `## Working with task notebook
 
-### Create a cell with \`+ Code\` button
+### Create a cell with \`+Code\` button
     
 ##### Communicating with GPT  
   You can easily communicate with GPT by creating a cell and asking it a question.

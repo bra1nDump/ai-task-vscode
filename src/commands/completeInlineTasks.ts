@@ -53,6 +53,34 @@ export async function newCompleteInlineTasksCommandFromVSCodeCommand() {
     await vscode.window.showNotebookDocument(notebook, {
       viewColumn: vscode.ViewColumn.Two,
     })
+
+    // insert markdown cell with discord
+    await vscode.commands.executeCommand('notebook.focusBottom')
+    await vscode.commands.executeCommand(
+      'notebook.cell.insertMarkdownCellBelow',
+    )
+
+    if (notebook.cellCount === 0) {
+      void vscode.window.showErrorMessage(
+        `No cells in the notebook, most likely a bug`,
+      )
+      return
+    }
+
+    const lastCell = notebook.getCells().slice(-1)[0]
+
+    const cellDocumentEditorMaybe = await vscode.window.showTextDocument(
+      lastCell.document,
+    )
+
+    await cellDocumentEditorMaybe.edit((editBuilder) => {
+      editBuilder.insert(
+        new vscode.Position(0, 0),
+        `[Join Discord to submit feedback](https://discord.gg/D8V6Rc63wQ)`,
+      )
+    })
+
+    await vscode.commands.executeCommand('notebook.cell.quitEdit')
   } else {
     /*
      * Hoping this will simply focus the notebook
@@ -78,32 +106,6 @@ export async function newCompleteInlineTasksCommandFromVSCodeCommand() {
    * ...
    */
 
-  // insert markdown cell with discord
-  await vscode.commands.executeCommand('notebook.focusBottom')
-  await vscode.commands.executeCommand('notebook.cell.insertMarkdownCellBelow')
-
-  if (notebook.cellCount === 0) {
-    void vscode.window.showErrorMessage(
-      `No cells in the notebook, most likely a bug`,
-    )
-    return
-  }
-
-  let lastCell = notebook.getCells().slice(-1)[0]
-
-  let cellDocumentEditorMaybe = await vscode.window.showTextDocument(
-    lastCell.document,
-  )
-
-  await cellDocumentEditorMaybe.edit((editBuilder) => {
-    editBuilder.insert(
-      new vscode.Position(0, 0),
-      `[Join Discord to submit feedback](https://discord.gg/D8V6Rc63wQ)`,
-    )
-  })
-
-  await vscode.commands.executeCommand('notebook.cell.quitEdit')
-
   // Insert a new cell at the bottom of the notebook
   await vscode.commands.executeCommand('notebook.focusBottom')
   await vscode.commands.executeCommand('notebook.cell.insertCodeCellBelow')
@@ -121,10 +123,10 @@ export async function newCompleteInlineTasksCommandFromVSCodeCommand() {
   }
 
   // Get the last cell in the notebook
-  lastCell = notebook.getCells().slice(-1)[0]
+  const lastCell = notebook.getCells().slice(-1)[0]
 
   // Set the cell's text to "@ task from inline command"
-  cellDocumentEditorMaybe = await vscode.window.showTextDocument(
+  const cellDocumentEditorMaybe = await vscode.window.showTextDocument(
     lastCell.document,
   )
 
