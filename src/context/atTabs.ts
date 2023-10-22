@@ -30,3 +30,8 @@ function tabsToUris(tabs: readonly vscode.Tab[]): vscode.Uri[] {
     }
   })
 }
+
+export function findTabsMatching(path: string): vscode.Uri[] {
+  const tabs = vscode.window.tabGroups.all.flatMap((tabGroup) => tabGroup.tabs)
+  return tabsToUris(tabs).filter((uri) => uri.path.includes(path))
+}

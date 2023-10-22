@@ -163,7 +163,9 @@ async function highlightTargetRangesAsTheyBecomeAvailable(
       // Show the editor if it is not already shown
       if (!shownEditorAndRevealedRange.has(index)) {
         // Decorations can only be set on active editors
-        const editor = await vscode.window.showTextDocument(change.fileUri)
+        const editor = await vscode.window.showTextDocument(change.fileUri, {
+          viewColumn: vscode.ViewColumn.One,
+        })
 
         // We want to show the user the area we're updating
         editor.revealRange(
@@ -248,7 +250,11 @@ async function showFilesOnceWeKnowWeWantToModifyThem(
         const document = await vscode.workspace.openTextDocument(change.fileUri)
         const relativeFilepath = vscode.workspace.asRelativePath(change.fileUri)
         void context.highLevelLogger(`\n### Modifying ${relativeFilepath}\n`)
-        await vscode.window.showTextDocument(document)
+
+        // A better solution is to use findTabsMatching
+        await vscode.window.showTextDocument(document, {
+          viewColumn: vscode.ViewColumn.One,
+        })
         shownChangeIndexes.add(change.fileUri.fsPath)
       }
     }
@@ -278,7 +284,10 @@ export async function applyResolvedChangesWhileShowingTheEditor(
   const document = await vscode.workspace.openTextDocument(
     resolvedChange.fileUri,
   )
-  const editor = await vscode.window.showTextDocument(document)
+  // A better solution is to use findTabsMatching
+  const editor = await vscode.window.showTextDocument(document, {
+    viewColumn: vscode.ViewColumn.One,
+  })
 
   /*
    *This will throw if the editor has been de allocated!

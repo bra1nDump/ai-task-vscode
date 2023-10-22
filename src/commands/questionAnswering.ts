@@ -135,6 +135,26 @@ async function throwingQuestionAnswering(
   }
 
   /*
+   * Always include active text editor as the questions are likely to be
+   * related to it
+   */
+  if (vscode.window.visibleTextEditors.length) {
+    await sessionContext.contextManager.addDocuments(
+      'Visible text editor',
+      vscode.window.visibleTextEditors
+        .filter(
+          (editor) =>
+            /*
+             * Don't return files with .task in them,
+             * they are probably a notebook
+             */
+            !editor.document.uri.path.includes('.task'),
+        )
+        .map((editor) => editor.document.uri),
+    )
+  }
+
+  /*
    * Provide problems context
    * Include files with errors if the user requested
    */
