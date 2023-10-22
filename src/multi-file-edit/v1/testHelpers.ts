@@ -53,6 +53,7 @@ export async function resolveAndApplyChangesToSingleFile(
 export async function resolveAndApplyChangesToMultipleFiles(
   patch: LlmGeneratedPatchXmlV1,
 ) {
+  // This is ok to be inefficient because it's only used in tests
   const allWorkspaceUris = await safeWorkspaceQueryAllFiles()
   const documentUris = patch.changes.map(
     (fileChange) =>

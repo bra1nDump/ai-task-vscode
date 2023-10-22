@@ -109,7 +109,9 @@ export async function queueAnAppendToDocument(
  *
  * Fix: does not include documents when its not saved
  */
-export async function safeWorkspaceQueryAllFiles(): Promise<vscode.Uri[]> {
+export async function safeWorkspaceQueryAllFiles(
+  globPattern = '**/*.{ts,py,md,task,js,jsx,tsx,html,css,scss,less,json,yml,yaml,txt}',
+): Promise<vscode.Uri[]> {
   const config = vscode.workspace.getConfiguration('ai-task')
 
   const defaultExcludedDirectories = [
@@ -129,14 +131,12 @@ export async function safeWorkspaceQueryAllFiles(): Promise<vscode.Uri[]> {
    * open are text files. This has crashed the extension previously
    */
   const allFilesInWorkspace = await vscode.workspace.findFiles(
-    '**/*.{ts,py,md,task,js,jsx,tsx,html,css,scss,less,json,yml,yaml,txt}',
+    globPattern,
     `**/{${excludedDirectories.join(',')}}`,
     1000,
   )
 
-  if (allFilesInWorkspace.length === 0) {
-    throw new Error('No files in workspace')
-  } else if (allFilesInWorkspace.length > 200) {
+  if (allFilesInWorkspace.length > 200) {
     throw new Error(`Too many files matched: ${allFilesInWorkspace.length}`)
   }
 

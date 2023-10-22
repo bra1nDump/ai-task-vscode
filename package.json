@@ -34,7 +34,7 @@
     "commands": [
       {
         "command": "ai-task.completeInlineTasks",
-        "title": "AI Task: Address @task comments"
+        "title": "AI Task: Address @task comments in opened tabs"
       }
     ],
     "configuration": {

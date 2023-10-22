@@ -9,12 +9,8 @@ import { resultWithDefault } from 'helpers/result'
  */
 export async function findAndCollectBreadMentionedFiles(
   breadIdentifier: string,
-  searchSpace: vscode.Uri[] | undefined = undefined,
+  searchSpace: vscode.Uri[],
 ): Promise<vscode.Uri[]> {
-  if (searchSpace === undefined) {
-    searchSpace = await safeWorkspaceQueryAllFiles()
-  }
-
   const fileContexts = await Promise.all(
     searchSpace.map(async (fileUri): Promise<vscode.Uri | undefined> => {
       const fileText = resultWithDefault('', await getDocumentText(fileUri))
@@ -41,7 +37,7 @@ export async function findAndCollectBreadMentionedFiles(
 export async function findAndCollectDotBreadFiles(
   breadIdentifier: string,
 ): Promise<vscode.Uri[]> {
-  const allFilesInWorkspace = await safeWorkspaceQueryAllFiles()
+  const allFilesInWorkspace = await safeWorkspaceQueryAllFiles('**/*.task[.md]')
 
   const fileContexts = allFilesInWorkspace.flatMap((fileUri) => {
     const isBreadDotfile = fileUri.path.includes(`.${breadIdentifier}`)

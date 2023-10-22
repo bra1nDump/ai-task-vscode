@@ -13,6 +13,7 @@ import dedent from 'dedent'
 import { openedTabs } from 'context/atTabs'
 
 /**
+ *
  * Generates and applies diffs to files in the workspace containing task
  * mention.
  *
@@ -50,6 +51,26 @@ export async function completeInlineTasksCommand(
   const sessionContext = await startSession(this.extensionContext)
   this.sessionRegistry.set(sessionContext.id, sessionContext)
 
+  try {
+    await throwingCompleteInlineTasksCommand(
+      sessionContext,
+      optionalContextBlobRecivedFromAnotherExtension,
+    )
+  } catch (error) {
+    console.error(error)
+    if (error instanceof Error) {
+      await vscode.window.showErrorMessage(`Error: ${error.message}`)
+    }
+  } finally {
+    await closeSession(sessionContext)
+    this.sessionRegistry.delete(sessionContext.id)
+  }
+}
+
+async function throwingCompleteInlineTasksCommand(
+  sessionContext: SessionContext,
+  optionalContextBlobRecivedFromAnotherExtension: string | undefined,
+) {
   // TODO: Move this to session/index.ts
   void queueAnAppendToDocument(
     sessionContext.markdownHighLevelFeedbackDocument,
@@ -201,7 +222,4 @@ export async function completeInlineTasksCommand(
     sessionContext.markdownHighLevelFeedbackDocument,
     '\n\n> Done\n',
   )
-
-  await closeSession(sessionContext)
-  this.sessionRegistry.delete(sessionContext.id)
 }
