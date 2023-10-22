@@ -54,15 +54,6 @@ export class TaskController {
 
     void execution.clearOutput()
 
-    execution.token.onCancellationRequested(() => {
-      /*
-       * I think we would need to add a hook to stop openai request here.
-       * I think this was causing the double promise rejection error.
-       *
-       * execution.end(true, Date.now())
-       */
-    })
-
     if (cell.document.getText().includes('@' + 'task from inline command')) {
       // Stock editing based on currently opened files
       await completeInlineTasksCommand(
@@ -91,11 +82,11 @@ export class TaskController {
             },
           ]
 
-          const cellOutput = cell.outputs[0]?.items[0]
+          const cellOutput = cell.outputs.at(-1)?.items[0]
           if (cellOutput?.mime === 'text/markdown') {
             messages.push({
               content: new TextDecoder().decode(cellOutput.data),
-              role: 'system',
+              role: 'assistant',
             })
           }
 

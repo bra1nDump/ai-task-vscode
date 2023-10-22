@@ -166,6 +166,11 @@ export async function completeInlineTasksCommand(
   const sessionContext = await startSession(extensionContext, execution)
   sessionRegistry.set(sessionContext.id, sessionContext)
 
+  // If the user cancels the execution, we should cancel the session
+  execution.token.onCancellationRequested(() => {
+    sessionContext.sessionAbortedEventEmitter.fire()
+  })
+
   try {
     await throwingCompleteInlineTasksCommand(sessionContext)
   } catch (error) {
