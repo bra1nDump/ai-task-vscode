@@ -62,6 +62,8 @@ export async function newTaskNotebook() {
       
 ##### Creating Notes
   You can also create notes for yourself using Markdown capabilities. Just create a new cell and start writing your note, using the Markdown syntax for formatting.
+
+  [Join Discord to submit feedback](https://discord.gg/D8V6Rc63wQ)
 `,
     )
   })

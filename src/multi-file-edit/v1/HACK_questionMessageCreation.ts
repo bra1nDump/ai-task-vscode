@@ -38,7 +38,7 @@ export async function startQuestionAnsweringStreamWIthContext(
   }
 
   // Log files that we are submitting as context
-  void sessionContext.highLevelLogger(`\n## Files submitted:\n`)
+  void sessionContext.highLevelLogger(`\n### Files submitted:\n`)
   for (const fileContext of fileContexts) {
     logFilePath(fileContext)
   }

@@ -38,7 +38,7 @@ export async function startMultiFileEditing(sessionContext: SessionContext) {
   }
 
   // Log files that we are submitting as context
-  void sessionContext.highLevelLogger(`\n## Files submitted:\n`)
+  void sessionContext.highLevelLogger(`\n### Files submitted:\n`)
   for (const fileContext of fileContexts) {
     logFilePath(fileContext)
   }
@@ -98,7 +98,7 @@ export async function startMultiFileEditing(sessionContext: SessionContext) {
   async function showPlanAsItBecomesAvailable() {
     const planStream = parsedPatchStream.pipe(mapAsync((x) => x.task))
     let lastPlan = ''
-    void sessionContext.highLevelLogger(`\n## Task:\n`)
+    void sessionContext.highLevelLogger(`\n### Task:\n`)
     for await (const plan of planStream) {
       const delta = plan.slice(lastPlan.length)
       void sessionContext.highLevelLogger(delta)
