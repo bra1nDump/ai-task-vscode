@@ -6,6 +6,13 @@ const documentContents = new Map<
   { kind: number; language: string; value: string }[]
 >()
 
+/*
+ * This is currently limited to append to append to the first cell in the
+ * notebook.
+ *
+ * Lets replace this with appending to output of the last cell.
+ *
+ */
 export async function queueAnAppendToMarkdownValue(
   document: vscode.TextDocument,
   text: string,
@@ -47,6 +54,7 @@ export async function queueAnAppendToMarkdownValue(
     }
 
     // Append text to the value of the first object in the array
+
     currentContentArray[0].value += text
 
     const data = new TextEncoder().encode(JSON.stringify(currentContentArray))

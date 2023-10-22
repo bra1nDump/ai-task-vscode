@@ -40,10 +40,21 @@ export class TaskController {
     const execution = this._controller.createNotebookCellExecution(cell)
     execution.executionOrder = ++this._executionOrder
     execution.start(Date.now())
+
+    /*
+     * Check if cell has @ task mention and kick off task if yes,
+     * passing execution
+     */
+
     void execution.clearOutput()
 
     execution.token.onCancellationRequested(() => {
-      execution.end(true, Date.now())
+      /*
+       * I think we would need to add a hook to stop openai request here.
+       * I think this was causing the double promise rejection error.
+       *
+       * execution.end(true, Date.now())
+       */
     })
 
     await getAnswer(cell.document.getText(), execution)

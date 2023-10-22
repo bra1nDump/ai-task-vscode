@@ -5,9 +5,20 @@ export function taskAppendAnswerToOutput(
   text: string,
 ) {
   void execution.clearOutput()
-  void execution.appendOutput([
+  void execution.appendOutput(
     new vscode.NotebookCellOutput([
       vscode.NotebookCellOutputItem.text(text, 'text/markdown'),
     ]),
-  ])
+  )
+}
+
+export function taskAppendWithoutErasing(
+  execution: vscode.NotebookCellExecution,
+  text: string,
+) {
+  void execution.appendOutput(
+    new vscode.NotebookCellOutput([
+      vscode.NotebookCellOutputItem.text(text, 'text/markdown'),
+    ]),
+  )
 }

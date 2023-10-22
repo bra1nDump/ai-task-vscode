@@ -12,10 +12,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Poor men's dependency injection
   const sessionRegistry = new Map<string, SessionContext>()
-  const commandWithBoundSession = completeInlineTasksCommand.bind({
-    extensionContext: context,
-    sessionRegistry,
-  })
 
   context.subscriptions.push(new TaskController())
 
@@ -37,7 +33,9 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.unshift(
     vscode.commands.registerCommand(
       'ai-task.completeInlineTasks',
-      commandWithBoundSession,
+      async () => {
+        await completeInlineTasksCommand(context, sessionRegistry)
+      },
       /*
        * TODO: this acctually accepts this as a third argument,
        * so bind above can be removed and this can be passed here insted
@@ -98,7 +96,7 @@ export async function activate(context: vscode.ExtensionContext) {
          * Previously I was undoing the enter change,
          * but it introduces additional jitter to the user experience
          */
-        void commandWithBoundSession()
+        void completeInlineTasksCommand(context, sessionRegistry)
       }
     }),
   )

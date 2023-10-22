@@ -9,7 +9,26 @@
 - Reached out to 5 potential collaborators
 - Replaced continue on the current project
 
-# Next up
+# Before our demos
+
+When user hits run - we create a new notebook 
+  Ideally with the task that kicked off being included in the notebook's cell (for now we will just say "@task is in the code")
+  We programmatically start executing the first cell
+
+On cell execution:
+  - We create a new session, given the cell execution to append high level results to
+  - If the cell does not have a task in it - use a simplified prompt that will dump context manager + previous cell contents into the messages
+
+When user uses @task @tabs etc in the notebook we create the correct context and run the task.
+When user does followup tasks - we add these to the
+
+- Read Ivan's code
+- If task is mentioned - kick off task execution. Create a session per cell?
+- Keep the history of the chat
+
+# Later
+
+Split up different user requests into different openai user messages. This will be closer to what the chat is used to do - adjust based on the user input.
 
 Stability
 - change prompt for new files for stability (just remove range-to-replace)

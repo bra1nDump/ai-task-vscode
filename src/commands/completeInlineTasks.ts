@@ -21,40 +21,21 @@ import { openedTabs } from 'context/atTabs'
  * Call openai api (through langchain)
  * Parse the diffs
  * Apply them to the current file in place
- *
- * @param optionalContextBlobRecivedFromAnotherExtension - This extension can be
- * programmatically invoked by other extensions and they can pass context
- * containing information for the LLM to accompish the task better, or even
- * communicate the task itself
  */
 export async function completeInlineTasksCommand(
-  this: {
-    extensionContext: vscode.ExtensionContext
-    sessionRegistry: Map<string, SessionContext>
-  },
-  optionalContextBlobRecivedFromAnotherExtension:
-    | string
-    | undefined = undefined,
+  extensionContext: vscode.ExtensionContext,
+  sessionRegistry: Map<string, SessionContext>,
 ) {
-  if (this.sessionRegistry.size !== 0) {
+  if (sessionRegistry.size !== 0) {
     console.log(`Existing session running, most likely a bug with @run + enter`)
     return
   }
-  if (
-    typeof optionalContextBlobRecivedFromAnotherExtension !== 'string' ||
-    optionalContextBlobRecivedFromAnotherExtension.length === 0
-  ) {
-    optionalContextBlobRecivedFromAnotherExtension = undefined
-  }
 
-  const sessionContext = await startSession(this.extensionContext)
-  this.sessionRegistry.set(sessionContext.id, sessionContext)
+  const sessionContext = await startSession(extensionContext)
+  sessionRegistry.set(sessionContext.id, sessionContext)
 
   try {
-    await throwingCompleteInlineTasksCommand(
-      sessionContext,
-      optionalContextBlobRecivedFromAnotherExtension,
-    )
+    await throwingCompleteInlineTasksCommand(sessionContext)
   } catch (error) {
     console.error(error)
     if (error instanceof Error) {
@@ -64,25 +45,17 @@ export async function completeInlineTasksCommand(
     await sessionContext.highLevelLogger('\n\n> Done\n')
 
     await closeSession(sessionContext)
-    this.sessionRegistry.delete(sessionContext.id)
+    sessionRegistry.delete(sessionContext.id)
   }
 }
 
 async function throwingCompleteInlineTasksCommand(
   sessionContext: SessionContext,
-  optionalContextBlobRecivedFromAnotherExtension: string | undefined,
 ) {
   void sessionContext.highLevelLogger('> Running ai-task\n')
   void sessionContext.highLevelLogger(
     '\n[Join Discord to submit feedback](https://discord.gg/D8V6Rc63wQ)\n',
   )
-
-  // Add any context that was passed in from another extension
-  if (optionalContextBlobRecivedFromAnotherExtension) {
-    sessionContext.contextManager.addBlobContexts([
-      optionalContextBlobRecivedFromAnotherExtension,
-    ])
-  }
 
   ////// Compile the context, pull in task files and other context based on mentions //////
   const openTabsFileUris = openedTabs()
@@ -101,10 +74,7 @@ async function throwingCompleteInlineTasksCommand(
    * Its okay to not have any task mentions - for instance for other extension
    * adding to the context
    */
-  if (
-    fileUrisWithBreadMentions.length === 0 &&
-    !optionalContextBlobRecivedFromAnotherExtension
-  ) {
+  if (fileUrisWithBreadMentions.length === 0) {
     void vscode.window.showErrorMessage(
       `No tasks found. Remember to add 
 @${breadIdentifier} mention to at least one file in the workspace.`,
@@ -133,11 +103,9 @@ async function throwingCompleteInlineTasksCommand(
   )
 
   /* Include open tabs if the user requested */
-  const includeTabs = [
-    ...breadMentionsFilesContent,
-    ...breadFileBlobs,
-    optionalContextBlobRecivedFromAnotherExtension ?? '',
-  ].some((fileContent) => fileContent.includes('@' + 'tabs'))
+  const includeTabs = [...breadMentionsFilesContent, ...breadFileBlobs].some(
+    (fileContent) => fileContent.includes('@' + 'tabs'),
+  )
   if (includeTabs) {
     await sessionContext.contextManager.addDocuments(
       'Open tabs',
