@@ -1,8 +1,5 @@
 import * as vscode from 'vscode'
-import {
-  findAndCollectBreadMentionedFiles,
-  findAndCollectDotBreadFiles,
-} from 'context/atTask'
+import { findAndCollectDotBreadFiles } from 'context/atTask'
 import { getFilesContent } from 'helpers/fileSystem'
 import { SessionContext, getBreadIdentifier } from 'session'
 import { closeSession, startSession } from 'session'
@@ -92,6 +89,10 @@ async function throwingQuestionAnswering(
   sessionContext: SessionContext,
   previousMessages: OpenAiMessage[],
 ) {
+  // Only use most recent message to pull in context
+  const mostRecentUserMessageText =
+    previousMessages.filter(({ role }) => role === 'user').at(-1)?.content ?? ''
+
   ////// Compile the context, pull in task files and other context based on mentions //////
   const openTabsFileUris = openedTabs()
 
@@ -100,32 +101,14 @@ async function throwingQuestionAnswering(
    * unaddressed for the time being, but don't want to errase it
    */
   const breadIdentifier = getBreadIdentifier()
-  const fileUrisWithBreadMentions = await findAndCollectBreadMentionedFiles(
-    breadIdentifier,
-    openTabsFileUris,
-  )
-
-  await sessionContext.contextManager.addDocuments(
-    'Files with bread mentions',
-    fileUrisWithBreadMentions,
-  )
 
   /* .task files */
   const dotBreadFileUris = await findAndCollectDotBreadFiles(breadIdentifier)
   const breadFileBlobs = await getFilesContent(dotBreadFileUris)
   sessionContext.contextManager.addBlobContexts(breadFileBlobs)
 
-  /*
-   * Before we have proper task expression parsing,
-   * we will just search all task files for a mention of special
-   * sub-expressions
-   */
-  const breadMentionsFilesContent = await getFilesContent(
-    fileUrisWithBreadMentions,
-  )
-
   /* Include open tabs if the user requested */
-  const includeTabs = [...breadMentionsFilesContent, ...breadFileBlobs].some(
+  const includeTabs = [...breadFileBlobs, mostRecentUserMessageText].some(
     (fileContent) => fileContent.includes('@' + 'tabs'),
   )
   if (includeTabs) {
@@ -159,7 +142,7 @@ async function throwingQuestionAnswering(
    * Provide problems context
    * Include files with errors if the user requested
    */
-  const includeErrors = [...breadMentionsFilesContent, ...breadFileBlobs].some(
+  const includeErrors = [...breadFileBlobs, mostRecentUserMessageText].some(
     (fileContent) => fileContent.includes('@' + 'errors'),
   )
   if (includeErrors) {

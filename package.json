@@ -3,7 +3,7 @@
   "displayName": " AI Task: Proactive Coding Assistant, automatically search errors, perform multi-file edits and more!",
   "publisher": "bra1nDump",
   "description": "Use comments with @task to perform multi-file changes, automatically get your errors in console searched on the web and more!",
-  "version": "0.0.30",
+  "version": "0.0.32",
   "license": "Business Source License 1.1",
   "icon": "icon.png",
   "repository": {
@@ -109,20 +109,20 @@
       },
       {
         "command": "ai-task.newTaskNotebook",
-        "key": "ctrl+shift+i",
-        "mac": "cmd+shift+i"
+        "key": "ctrl+u",
+        "mac": "cmd+u"
       }
     ],
     "walkthroughs": [
       {
         "id": "createNotebookWalkthrough",
-        "title": "Notebook Creation Walkthrough",
+        "title": "Use AI Task",
         "description": "Learn how to create a notebook using our shortcut.",
         "steps": [
           {
             "id": "shortcutStep",
-            "title": "Using the Shortcut",
-            "description": "To create a new notebook quickly:\n- Focus on the editor.\n- Press `ctrl+shift+I`.\nA new notebook will be created!",
+            "title": "Create new AI Task Chat",
+            "description": "To create a new notebook quickly:\n- Focus on the editor.\n- Press `Cmd+U` on Mac or `Ctrl+U` on Windows.\nA new notebook will be created!",
             "media": {
               "image": "./documents/assets/walkthrough-notebook.jpg",
               "altText": "Demonstration of using the shortcut"

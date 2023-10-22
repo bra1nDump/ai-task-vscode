@@ -37,7 +37,7 @@ export async function findAndCollectBreadMentionedFiles(
 export async function findAndCollectDotBreadFiles(
   breadIdentifier: string,
 ): Promise<vscode.Uri[]> {
-  const allFilesInWorkspace = await safeWorkspaceQueryAllFiles('**/*.task[.md]')
+  const allFilesInWorkspace = await safeWorkspaceQueryAllFiles('**/*.task.md')
 
   const fileContexts = allFilesInWorkspace.flatMap((fileUri) => {
     const isBreadDotfile = fileUri.path.includes(`.${breadIdentifier}`)

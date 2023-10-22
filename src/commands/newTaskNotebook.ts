@@ -50,23 +50,24 @@ export async function newTaskNotebook() {
   await cellDocumentEditorMaybe.edit((editBuilder) => {
     editBuilder.insert(
       new vscode.Position(0, 0),
-      `## Working with task notebook
+      `#### How to ask questions:
+- Try typing a question, for example how to write a function in python?
+- Hit plan or \`Shift+Enter\` to get an answer from GPT-4
 
-### Create a cell with \`+Code\` button
-    
-##### Communicating with GPT  
-  You can easily communicate with GPT by creating a cell and asking it a question.
-      
-##### Editing Code   
-  If you wish to start editing code, simply type the command \`@run\` in your cell.
-      
-##### Creating Notes
-  You can also create notes for yourself using Markdown capabilities. Just create a new cell and start writing your note, using the Markdown syntax for formatting.
+#### How to add file information:
+- The currently visible files in the editor will be included by default
+- Include open tabs by including \`@tabs\` in your question
 
-  [Join Discord to submit feedback](https://discord.gg/D8V6Rc63wQ)
+#### [Beta] To edit code directly in your files:
+- Open the file you want to edit and create a comment with \`@task\` in it
+- Add details about what you want to do in the comment
+
+  [Join Discord to support the project and get help!](https://discord.gg/D8V6Rc63wQ)
 `,
     )
   })
 
   await vscode.commands.executeCommand('notebook.cell.quitEdit')
+
+  await vscode.commands.executeCommand('notebook.cell.insertCodeCellBelow')
 }
