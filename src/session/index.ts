@@ -1,6 +1,11 @@
 import { SessionContextManager } from 'context/manager'
 import { queueAnAppendToDocument } from 'helpers/fileSystem'
-import { queueAnAppendToExecutionOutput } from 'notebook/addToTask'
+import {
+  currentCellOutputContentMap,
+  documentContents,
+  pendingEdits,
+  queueAnAppendToExecutionOutput,
+} from 'notebook/addToTask'
 import * as vscode from 'vscode'
 
 export interface SessionConfiguration {
@@ -277,6 +282,11 @@ export async function closeSession(
 
   sessionContext.sessionEndedEventEmitter.fire()
   sessionContext.sessionEndedEventEmitter.dispose()
+
+  ///// HACCCCCCCCKs HACK:
+  currentCellOutputContentMap.clear()
+  documentContents.clear()
+  pendingEdits.clear()
 }
 
 export async function findMostRecentSessionLogIndexPrefix(

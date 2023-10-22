@@ -33,10 +33,15 @@ Now all actual file editing is kicked off from the notebook execution
 - Editing is happening not in the original tab group, but in the group with the notebook. We should keep the notebook visible and open the files in the original group. I think this can be accessed from tabs api. Search tabs in the codebase.
 
 ## If we have time
+- Allow writing custom tasks in the notebook and actually running file editing on those
+- There is some command @command:notebook.action.toggleNotebookStickyScroll (open command pallet and explore "Notebook: " commands). No idea what this does, but might help with keeping the bottom part visible
+
+
+## Later - after the demo
 - When adding a task in a followup - include the output of the non-editing commands in the context.
   - This is useful if the user asks a question and when they like the answer (code related) they can run a task to apply them to the code instead of copy pasting and having to specify the same task 
   - This will also give better overall results because the prompt is easier when generating initial code suggestions - no mulit file edit. Next the multi-file edit can just focus on applying the known changes to the code - harder to fuck up
-- There is some command @command:notebook.action.toggleNotebookStickyScroll (open command pallet and explore "Notebook: " commands). No idea what this does, but might help with keeping the bottom part visible
+- Output markdown flickers - we should replace output with actual markdown cells so we can edit them inrementally to avoid this
 
 # Later
 

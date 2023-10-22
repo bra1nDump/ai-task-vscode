@@ -1,5 +1,6 @@
 import { completeInlineTasksCommand } from 'commands/completeInlineTasks'
-import { getAnswer } from 'helpers/openai'
+import { answerQuestionCommand } from 'commands/questionAnswering'
+import { OpenAiMessage } from 'helpers/openai'
 import { SessionContext } from 'session'
 import * as vscode from 'vscode'
 
@@ -62,14 +63,45 @@ export class TaskController {
        */
     })
 
-    if (cell.document.getText().includes('@' + 'task')) {
+    if (cell.document.getText().includes('@' + 'task from inline command')) {
+      // Stock editing based on currently opened files
       await completeInlineTasksCommand(
         this.extensionContext,
         this.sessionRegistry,
         execution,
       )
+      /*
+       * TODO (later): Add an if case where we add a custom task in the
+       * notebook. Include the task in the prompt and start
+       * completeInlineTasksCommand
+       */
     } else {
-      await getAnswer(cell.document.getText(), execution)
+      const cellsUpToThisOne = cell.notebook.getCells().slice(0, cell.index + 1)
+
+      await answerQuestionCommand(
+        this.extensionContext,
+        this.sessionRegistry,
+        execution,
+        cellsUpToThisOne.flatMap((cell) => {
+          const cellValue = cell.document.getText()
+          const messages: OpenAiMessage[] = [
+            {
+              content: cellValue,
+              role: 'user',
+            },
+          ]
+
+          const cellOutput = cell.outputs[0]?.items[0]
+          if (cellOutput?.mime === 'text/markdown') {
+            messages.push({
+              content: new TextDecoder().decode(cellOutput.data),
+              role: 'system',
+            })
+          }
+
+          return messages
+        }),
+      )
     }
 
     execution.end(true, Date.now())

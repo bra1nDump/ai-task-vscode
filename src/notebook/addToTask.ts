@@ -1,7 +1,7 @@
 import * as vscode from 'vscode'
 
-const pendingEdits = new Map<string, Promise<void>>()
-const documentContents = new Map<
+export const pendingEdits = new Map<string, Promise<void>>()
+export const documentContents = new Map<
   string,
   { kind: number; language: string; value: string }[]
 >()
@@ -81,7 +81,7 @@ export async function queueAnAppendToMarkdownValue(
  */
 
 // THIS WILL LEAK MEMORY!! Probably move to session scope
-const currentCellOutputContentMap = new Map<string, string>()
+export const currentCellOutputContentMap = new Map<string, string>()
 export async function queueAnAppendToExecutionOutput(
   execution: vscode.NotebookCellExecution,
   text: string,

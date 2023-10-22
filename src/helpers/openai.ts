@@ -12,7 +12,6 @@ import { undefinedIfStringEmpty } from './optional'
 import { Stream } from 'openai/streaming'
 import { APIError } from 'openai/error'
 import { hell } from './constants'
-import { taskAppendAnswerToOutput } from 'notebook/taskAppendAnswerToOutput'
 
 export type OpenAiMessage = OpenAI.Chat.Completions.ChatCompletionMessageParam
 
@@ -213,86 +212,4 @@ export async function streamLlm(
     })
 
   return resultSuccess([multicastStream, stream.controller])
-}
-
-export async function getAnswer(
-  question: string,
-  execution: vscode.NotebookCellExecution,
-) {
-  const key: string | undefined =
-    process.env.OPENAI_API_KEY ??
-    undefinedIfStringEmpty(
-      vscode.workspace.getConfiguration('ai-task').get('openaiApiKey'),
-    )
-
-  const openai =
-    key === undefined
-      ? new OpenAI({
-          apiKey: `sk-helicone-proxy-${hell}`,
-          baseURL: 'https://oai.hconeai.com/v1',
-
-          defaultHeaders: {
-            /*
-             * Analytics, this header is kind of redundant but is still needed
-             * to have requests logged in the dashboard, discouraging simple
-             * scraping, this key is not important though
-             */
-            'Helicone-Auth':
-              `Bearer ` +
-              `s` +
-              `k` +
-              '-helicone' +
-              '-nw' +
-              '5' +
-              'a' +
-              '63' +
-              'y' +
-              '-333' +
-              'utiq' +
-              '-qs' +
-              '62' +
-              'fma' +
-              '-grnofmi',
-
-            'Helicone-User-Id': '1111',
-            // Do not store user's data
-            'Helicone-Omit-Request': 'true',
-            'Helicone-Omit-Response': 'true',
-          },
-        })
-      : new OpenAI({
-          apiKey: key,
-          baseURL: 'https://api.openai.com/v1',
-        })
-
-  if (execution.token.isCancellationRequested) {
-    return
-  }
-
-  const stream = await openai.chat.completions.create({
-    model: process.env.OPENAI_DEFAULT_MODEL ?? 'gpt-4',
-    messages: [
-      {
-        role: 'system',
-        content: 'You are a helpful assistant.',
-      },
-      {
-        role: 'user',
-        content: question,
-      },
-    ],
-    stream: true,
-  })
-
-  let result = ''
-  for await (const response of stream) {
-    if (execution.token.isCancellationRequested) {
-      return
-    }
-    const delta = response.choices[0]?.delta?.content
-    result += delta
-    if (delta) {
-      taskAppendAnswerToOutput(execution, result)
-    }
-  }
 }

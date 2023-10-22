@@ -142,3 +142,6 @@ Its similar to profiling / tracing but for data transformations
 And re-apply to the current code base
 
 # Resolve merge conflicts
+
+# Show recent edits and figure out what the fuck was i doing ...
+Seems like a good plugin feature contributed by users?
