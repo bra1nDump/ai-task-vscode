@@ -3,7 +3,7 @@
   "displayName": " AI Task: Multi-file edit coding assistant",
   "publisher": "bra1nDump",
   "description": "Use comments with @task to perform multi-file changes, fix your bugs with @errors and more!",
-  "version": "0.0.27",
+  "version": "0.0.28",
   "license": "Business Source License 1.1",
   "icon": "icon.png",
   "repository": {
@@ -20,6 +20,9 @@
   ],
   "activationEvents": [
     "*"
+  ],
+  "extensionDependencies": [
+    "marxism.ai-error-search-assistant"
   ],
   "keywords": [
     "ai",

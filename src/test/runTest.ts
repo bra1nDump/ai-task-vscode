@@ -1,6 +1,11 @@
 import * as path from 'path'
+import * as cp from 'child_process'
 
-import { runTests } from '@vscode/test-electron'
+import {
+  downloadAndUnzipVSCode,
+  resolveCliArgsFromVSCodeExecutablePath,
+  runTests,
+} from '@vscode/test-electron'
 import { config } from 'dotenv'
 
 async function main() {
@@ -18,7 +23,21 @@ async function main() {
     const extensionTestsPath = path.resolve(__dirname, 'mochaTestRunner')
 
     console.log('test runner path:', extensionTestsPath)
-    console.log(__dirname)
+
+    // https://code.visualstudio.com/api/working-with-extensions/testing-extension#custom-setup-with-vscodetestelectron
+    const vscodeExecutablePath = await downloadAndUnzipVSCode('1.83.1')
+    const [cliPath, ...args] =
+      resolveCliArgsFromVSCodeExecutablePath(vscodeExecutablePath)
+
+    // Use cp.spawn / cp.exec for custom setup
+    cp.spawnSync(
+      cliPath,
+      [...args, '--install-extension', 'marxism.ai-error-search-assistant'],
+      {
+        encoding: 'utf-8',
+        stdio: 'inherit',
+      },
+    )
 
     /*
      * Used for CI,
@@ -36,10 +55,14 @@ async function main() {
 
     // Download VS Code, unzip it and run the integration test
     await runTests({
+      vscodeExecutablePath,
       extensionTestsEnv: env,
       extensionDevelopmentPath,
       extensionTestsPath,
-      launchArgs: ['testing-sandbox', '--disable-extensions'],
+      launchArgs: [
+        'testing-sandbox',
+        '--disable-extensions', // Disables other extensions, wont work once we add a dependency, trying to figure out if tests fail because of this
+      ],
     })
   } catch (err) {
     console.error('Failed to run tests', err)

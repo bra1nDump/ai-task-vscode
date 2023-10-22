@@ -44,6 +44,7 @@ Better format is better :D
 
 
 ## Later - after the demo
+- Fix tests!!!!! Not sure at what point we broke them
 - When adding a task in a followup - include the output of the non-editing commands in the context.
   - This is useful if the user asks a question and when they like the answer (code related) they can run a task to apply them to the code instead of copy pasting and having to specify the same task 
   - This will also give better overall results because the prompt is easier when generating initial code suggestions - no mulit file edit. Next the multi-file edit can just focus on applying the known changes to the code - harder to fuck up
