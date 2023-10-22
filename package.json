@@ -60,6 +60,10 @@
       {
         "command": "ai-task.completeInlineTasks",
         "title": "AI Task: Address @task comments in opened tabs"
+      },
+      {
+        "command": "ai-task.newTaskNotebook",
+        "title": "AI Task: Create a new task notebook"
       }
     ],
     "configuration": {
@@ -102,6 +106,29 @@
         "command": "ai-task.completeInlineTasks",
         "key": "ctrl+y",
         "mac": "cmd+y"
+      },
+      {
+        "command": "ai-task.newTaskNotebook",
+        "key": "ctrl+shift+i",
+        "mac": "cmd+shift+i"
+      }
+    ],
+    "walkthroughs": [
+      {
+        "id": "createNotebookWalkthrough",
+        "title": "Notebook Creation Walkthrough",
+        "description": "Learn how to create a notebook using our shortcut.",
+        "steps": [
+          {
+            "id": "shortcutStep",
+            "title": "Using the Shortcut",
+            "description": "To create a new notebook quickly:\n- Focus on the editor.\n- Press `ctrl+shift+I`.\nA new notebook will be created!",
+            "media": {
+              "image": "./documents/assets/walkthrough-notebook.jpg",
+              "altText": "Demonstration of using the shortcut"
+            }
+          }
+        ]
       }
     ]
   },

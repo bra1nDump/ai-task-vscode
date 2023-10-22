@@ -20,8 +20,8 @@ import { openedTabs } from 'context/atTabs'
  * This is a new entry point for the command,
  * the old one will now be used to start the task from the notebook execution
  * context This function will only create the notebook if its not already
- * available create a cell with @ task and execute the first cell all subsequent
- * executions will call the old entry point
+ * available create a cell with @ task and execute the first cell all
+ * subsequent executions will call the old entry point
  */
 export async function newCompleteInlineTasksCommandFromVSCodeCommand() {
   let notebook = vscode.window.visibleNotebookEditors.filter(
@@ -53,6 +53,34 @@ export async function newCompleteInlineTasksCommandFromVSCodeCommand() {
     await vscode.window.showNotebookDocument(notebook, {
       viewColumn: vscode.ViewColumn.Two,
     })
+
+    // insert markdown cell with discord
+    await vscode.commands.executeCommand('notebook.focusBottom')
+    await vscode.commands.executeCommand(
+      'notebook.cell.insertMarkdownCellBelow',
+    )
+
+    if (notebook.cellCount === 0) {
+      void vscode.window.showErrorMessage(
+        `No cells in the notebook, most likely a bug`,
+      )
+      return
+    }
+
+    const lastCell = notebook.getCells().slice(-1)[0]
+
+    const cellDocumentEditorMaybe = await vscode.window.showTextDocument(
+      lastCell.document,
+    )
+
+    await cellDocumentEditorMaybe.edit((editBuilder) => {
+      editBuilder.insert(
+        new vscode.Position(0, 0),
+        `[Join Discord to submit feedback](https://discord.gg/D8V6Rc63wQ)`,
+      )
+    })
+
+    await vscode.commands.executeCommand('notebook.cell.quitEdit')
   } else {
     /*
      * Hoping this will simply focus the notebook
@@ -146,8 +174,6 @@ export async function completeInlineTasksCommand(
       await sessionContext.highLevelLogger(`\n\n> Error: ${error.message}`)
     }
   } finally {
-    await sessionContext.highLevelLogger('\n\n> Done\n')
-
     await closeSession(sessionContext)
     sessionRegistry.delete(sessionContext.id)
   }
@@ -156,11 +182,6 @@ export async function completeInlineTasksCommand(
 async function throwingCompleteInlineTasksCommand(
   sessionContext: SessionContext,
 ) {
-  void sessionContext.highLevelLogger('> Running ai-task\n')
-  void sessionContext.highLevelLogger(
-    '\n[Join Discord to submit feedback](https://discord.gg/D8V6Rc63wQ)\n',
-  )
-
   ////// Compile the context, pull in task files and other context based on mentions //////
   const openTabsFileUris = openedTabs()
 

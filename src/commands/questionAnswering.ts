@@ -43,7 +43,8 @@ export async function answerQuestionCommand(
   try {
     /*
      * This works differently from the completeInlineTasksCommand because it
-     * returns before we are done with the stream - it returns the stream itself
+     * returns before we are done with the stream - it returns the stream
+     * itself
      */
     const stream = await throwingQuestionAnswering(
       sessionContext,

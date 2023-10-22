@@ -6,6 +6,7 @@ import { SessionContext } from 'session'
 import * as vscode from 'vscode'
 import { TaskController } from 'notebook/taskController'
 import { TaskSerializer } from 'notebook/taskSerializer'
+import { newTaskNotebook } from 'commands/newTaskNotebook'
 
 export async function activate(context: vscode.ExtensionContext) {
   console.log('activating bread extension')
@@ -41,6 +42,12 @@ export async function activate(context: vscode.ExtensionContext) {
        * so bind above can be removed and this can be passed here insted
        */
     ),
+  )
+
+  context.subscriptions.unshift(
+    vscode.commands.registerCommand('ai-task.newTaskNotebook', async () => {
+      await newTaskNotebook()
+    }),
   )
 
   const isTaskFile = (document: vscode.TextDocument) => {

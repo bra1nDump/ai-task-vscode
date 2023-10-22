@@ -3,157 +3,133 @@
 // Hover to view descriptions of existing attributes.
 // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
 {
-	"version": "0.2.0",
-	"configurations": [
-		/////////////////////// Testing the extension on a toy project ///////////////////////
-		{
-			"name": "Sandbox",
-			"type": "extensionHost",
-			"request": "launch",
-			"args": [
-				"${workspaceFolder}/testing-sandbox",
-				"${workspaceFolder}/testing-sandbox/helloWorld.ts",
-				"--extensionDevelopmentPath=${workspaceFolder}",
-				"--disable-extensions", // Disables other extensions
-			],
-			"outFiles": [
-				"${workspaceFolder}/dist/**/*.js"
-			],
-			"preLaunchTask": "${defaultBuildTask}"
-		},
-		/////////////////////// Testing the extension on other real projects (specific to Kirill) ///////////////////////
-		{
-			"name": "GitHub JOINs",
-			"type": "extensionHost",
-			"request": "launch",
-			"args": [
-				"${workspaceFolder}/../github-search-join",
-				"--extensionDevelopmentPath=${workspaceFolder}",
-				// Remove all extensions that distract from recording the video, but keep github copilot for tab completion - its a feature when creating the task!
-				"--disable-extension",
-				"eamodio.gitlens",
-				"--disable-extension",
-				"pokey.cursorless"
-			],
-			"outFiles": [
-				"${workspaceFolder}/dist/**/*.js"
-			],
-			"preLaunchTask": "${defaultBuildTask}"
-		},
-		{
-			"name": "Empty Test Project",
-			"type": "extensionHost",
-			"request": "launch",
-			"args": [
-				"${workspaceFolder}/../test-project",
-				"--extensionDevelopmentPath=${workspaceFolder}",
-				// Remove all extensions that distract from recording the video, but keep github copilot for tab completion - its a feature when creating the task!
-				"--disable-extension",
-				"eamodio.gitlens",
-				"--disable-extension",
-				"pokey.cursorless"
-			],
-			"outFiles": [
-				"${workspaceFolder}/dist/**/*.js"
-			],
-			"preLaunchTask": "${defaultBuildTask}"
-		},
-		{
-			// Soft linked to the current project, overcoming vscode not being able to open two windows of the same directory
-			"name": "Self",
-			"type": "extensionHost",
-			"request": "launch",
-			"args": [
-				"${workspaceFolder}/../bread-soft-linked",
-				"--extensionDevelopmentPath=${workspaceFolder}",
-				"--disable-extension",
-				"dbaeumer.vscode-eslint",
-			],
-			"outFiles": [
-				"${workspaceFolder}/dist/**/*.js"
-			],
-			"preLaunchTask": "${defaultBuildTask}"
-		},
-		{
-			"name": "Git to Blog",
-			"type": "extensionHost",
-			"request": "launch",
-			"args": [
-				"${workspaceFolder}/../git-history-to-blog",
-				"--extensionDevelopmentPath=${workspaceFolder}"
-			],
-			"outFiles": [
-				"${workspaceFolder}/dist/**/*.js"
-			],
-			"preLaunchTask": "${defaultBuildTask}"
-		},
-		{
-			"name": "Show Me",
-			"type": "extensionHost",
-			"request": "launch",
-			"args": [
-				"${workspaceFolder}/../show-me-chatgpt-plugin",
-				"--extensionDevelopmentPath=${workspaceFolder}"
-			],
-			"outFiles": [
-				"${workspaceFolder}/dist/**/*.js"
-			],
-			"preLaunchTask": "${defaultBuildTask}"
-		},
-		{
-			"name": "Mermiad to Miro",
-			"type": "extensionHost",
-			"request": "launch",
-			"args": [
-				"${workspaceFolder}/../mermaid-laid-out-graph",
-				"--extensionDevelopmentPath=${workspaceFolder}"
-			],
-			"outFiles": [
-				"${workspaceFolder}/dist/**/*.js"
-			],
-			"preLaunchTask": "${defaultBuildTask}"
-		},
-		/////////////////////// Unit tests ///////////////////////
-		// Docs: https://code.visualstudio.com/api/working-with-extensions/testing-extension
-		// test/runTest.ts has the same configuration, but is for running tests in the terminal / CI
-		{
-			"name": "Tests",
-			"type": "extensionHost",
-			"request": "launch",
-			"args": [
-				"${workspaceFolder}/testing-sandbox",
-				"--disable-extensions", // Disables other extensions
-				"--extensionDevelopmentPath=${workspaceFolder}",
-				"--extensionTestsPath=${workspaceFolder}/out/test/mochaTestRunner.js"
-			],
-			"envFile": "${workspaceFolder}/.env",
-			"env": {
-				"MOCHA_IGNORE_TIMEOUT": "true",
-			},
-			"outFiles": [
-				"${workspaceFolder}/out/**/*.js",
-				"${workspaceFolder}/dist/**/*.js"
-			],
-			"preLaunchTask": "${defaultBuildTask}",
-			// Because the test compilation tasks or watch tasks they will not rebuild unless content changes
-			// So if we just clean the out directory it will not trigger a re-run
-			// "postDebugTask": "clean: out-directory"
-		},
-		/////////////////////// Prompt engineering ///////////////////////
-		{
-			"name": "Prompt codegen",
-			"type": "node",
-			"runtimeExecutable": "npm",
-			"runtimeArgs": [
-				"run-script",
-				"codegen:prompt-checkpoints"
-			],
-			"request": "launch",
-			"outFiles": [
-				"${workspaceFolder}/out/**/*.js",
-				"${workspaceFolder}/dist/**/*.js"
-			],
-			"preLaunchTask": "${defaultBuildTask}",
-		}
-	]
+  "version": "0.2.0",
+  "configurations": [
+    /////////////////////// Testing the extension on a toy project ///////////////////////
+    {
+      "name": "Sandbox",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "${workspaceFolder}/testing-sandbox",
+        "${workspaceFolder}/testing-sandbox/helloWorld.ts",
+        "--extensionDevelopmentPath=${workspaceFolder}"
+      ],
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "preLaunchTask": "${defaultBuildTask}"
+    },
+    /////////////////////// Testing the extension on other real projects (specific to Kirill) ///////////////////////
+    {
+      "name": "GitHub JOINs",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "${workspaceFolder}/../github-search-join",
+        "--extensionDevelopmentPath=${workspaceFolder}",
+        // Remove all extensions that distract from recording the video, but keep github copilot for tab completion - its a feature when creating the task!
+        "--disable-extension",
+        "eamodio.gitlens",
+        "--disable-extension",
+        "pokey.cursorless"
+      ],
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "preLaunchTask": "${defaultBuildTask}"
+    },
+    {
+      "name": "Empty Test Project",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "${workspaceFolder}/../test-project",
+        "--extensionDevelopmentPath=${workspaceFolder}",
+        // Remove all extensions that distract from recording the video, but keep github copilot for tab completion - its a feature when creating the task!
+        "--disable-extension",
+        "eamodio.gitlens",
+        "--disable-extension",
+        "pokey.cursorless"
+      ],
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "preLaunchTask": "${defaultBuildTask}"
+    },
+    {
+      // Soft linked to the current project, overcoming vscode not being able to open two windows of the same directory
+      "name": "Self",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "${workspaceFolder}/../bread-soft-linked",
+        "--extensionDevelopmentPath=${workspaceFolder}",
+        "--disable-extension",
+        "dbaeumer.vscode-eslint"
+      ],
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "preLaunchTask": "${defaultBuildTask}"
+    },
+    {
+      "name": "Git to Blog",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "${workspaceFolder}/../git-history-to-blog",
+        "--extensionDevelopmentPath=${workspaceFolder}"
+      ],
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "preLaunchTask": "${defaultBuildTask}"
+    },
+    {
+      "name": "Show Me",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "${workspaceFolder}/../show-me-chatgpt-plugin",
+        "--extensionDevelopmentPath=${workspaceFolder}"
+      ],
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "preLaunchTask": "${defaultBuildTask}"
+    },
+    {
+      "name": "Mermiad to Miro",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "${workspaceFolder}/../mermaid-laid-out-graph",
+        "--extensionDevelopmentPath=${workspaceFolder}"
+      ],
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "preLaunchTask": "${defaultBuildTask}"
+    },
+    /////////////////////// Unit tests ///////////////////////
+    // Docs: https://code.visualstudio.com/api/working-with-extensions/testing-extension
+    // test/runTest.ts has the same configuration, but is for running tests in the terminal / CI
+    {
+      "name": "Tests",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "${workspaceFolder}/testing-sandbox",
+        "--disable-extensions", // Disables other extensions
+        "--extensionDevelopmentPath=${workspaceFolder}",
+        "--extensionTestsPath=${workspaceFolder}/out/test/mochaTestRunner.js"
+      ],
+      "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "MOCHA_IGNORE_TIMEOUT": "true"
+      },
+      "outFiles": ["${workspaceFolder}/out/**/*.js", "${workspaceFolder}/dist/**/*.js"],
+      "preLaunchTask": "${defaultBuildTask}"
+      // Because the test compilation tasks or watch tasks they will not rebuild unless content changes
+      // So if we just clean the out directory it will not trigger a re-run
+      // "postDebugTask": "clean: out-directory"
+    },
+    /////////////////////// Prompt engineering ///////////////////////
+    {
+      "name": "Prompt codegen",
+      "type": "node",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run-script", "codegen:prompt-checkpoints"],
+      "request": "launch",
+      "outFiles": ["${workspaceFolder}/out/**/*.js", "${workspaceFolder}/dist/**/*.js"],
+      "preLaunchTask": "${defaultBuildTask}"
+    }
+  ]
 }

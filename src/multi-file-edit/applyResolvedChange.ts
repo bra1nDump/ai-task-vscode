@@ -249,7 +249,7 @@ async function showFilesOnceWeKnowWeWantToModifyThem(
       if (!shownChangeIndexes.has(change.fileUri.fsPath)) {
         const document = await vscode.workspace.openTextDocument(change.fileUri)
         const relativeFilepath = vscode.workspace.asRelativePath(change.fileUri)
-        void context.highLevelLogger(`\n### Modifying ${relativeFilepath}\n`)
+        void context.highLevelLogger(`\n#### Modifying ${relativeFilepath}\n`)
 
         // A better solution is to use findTabsMatching
         await vscode.window.showTextDocument(document, {
@@ -269,7 +269,7 @@ async function showWarningWhenNoFileWasModified(
     growingSetOfFileChanges,
   )
   if (!finalSetOfChangesToMultipleFiles) {
-    void context.highLevelLogger('\n## No files got changed thats strange\n')
+    void context.highLevelLogger('\n### No files got changed thats strange\n')
   }
 }
 
@@ -387,7 +387,7 @@ async function runTerminalCommands(
   for await (const changesForMultipleFiles of terminalCommands) {
     for (const [index, change] of changesForMultipleFiles.entries()) {
       if (!runCommands.has(index)) {
-        void context.highLevelLogger(`\n### Running ${change.command}\n`)
+        void context.highLevelLogger(`\n#### Running ${change.command}\n`)
         void runTerminalCommand(change.command)
         runCommands.add(index)
       }
