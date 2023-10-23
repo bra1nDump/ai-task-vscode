@@ -28,22 +28,9 @@ Now all actual file editing is kicked off from the notebook execution
 
 ## Next up:
 
-- Show walkthrough after installing the extension
-- Add a dedicated activity bar icon for the extension
-
-## If we have time
-- Allow writing custom tasks in the notebook and actually running file editing on those
-- This would require passing the custom @ task command to the completeInlineTasks function and passing it in correctly to the context manager or as a message.
-- There is some command @command:notebook.action.toggleNotebookStickyScroll (open command pallet and explore "Notebook: " commands). No idea what this does, but might help with keeping the bottom part visible
-- If user runs task by hitting play button - add cell programmatically
-
-## Later - after the demo
 - Fix tests!!!!! Not sure at what point we broke them
-- When adding a task in a followup - include the output of the non-editing commands in the context.
-  - This is useful if the user asks a question and when they like the answer (code related) they can run a task to apply them to the code instead of copy pasting and having to specify the same task 
-  - This will also give better overall results because the prompt is easier when generating initial code suggestions - no mulit file edit. Next the multi-file edit can just focus on applying the known changes to the code - harder to fuck up
-- Output markdown flickers - we should replace output with actual markdown cells so we can edit them inrementally to avoid this ... this will icrease UI clunkiness further though
-
+- Document the new control flow in architecture.md roughly (don't spend too much time on it)
+- Fix error that is currently popping up (again, not critical)
 Error: 
 rejected promise not handled within 1 second: Error: Cannot modify cell output after calling resolve
 extensionHostProcess.js:131
@@ -52,55 +39,42 @@ stack trace: Error: Cannot modify cell output after calling resolve
 	at Object.replaceOutput (/Applications/Visual Studio Code - Insiders.app/Contents/Resources/app/out/vs/workbench/api/node/extensionHostProcess.js:127:107002)
 	at applyEdit (/Users/kirilldubovitskiy/projects/bread/dist/extension.js:1247:25)
 
-# Later
+- Show walkthrough after installing the extension (implement, but don't enable yet, so if (false) hack to disable it)
+- Add a dedicated activity bar icon for the extension so it has an easy place to access
+  - Add a button to create a new notebook
+- If user runs task by hitting play button - add cell programmatically. Should be the same experience as if they hit shift enter
 
-Split up different user requests into different openai user messages. This will be closer to what the chat is used to do - adjust based on the user input.
+- cleanup old high level document stuff - probably not going back to that ever so lets just kill it. Kill everything related to that (keep the abstraction for logging though)
+- think how things can be better scoped to a session - see some hacks I added to clean up the maps of edits / cell outputs in closing session
+- ... clenup hacks produced while getting notebooks to work. Lets plan this one out before we do it. For now lets just document some ideas on how to improve the situation
 
-Stability
-- change prompt for new files for stability (just remove range-to-replace)
-- fix imports in middle of a file - add example
-- also add example of splitting a function - struggles to append, always decides to do 0: instead of appending to end of file maybe also new prompt ? insert?
+- Explore during the walkthrough creating a sample project in system temp folder and opening it in vscode as a way to show the users how to use the extension's full power
+
+- Keep on the lookout for "Document closed error" - it keeps popping up during editing :D
+
+## Later
 - When context is large its a good idea to give the cursor as input so the model is grounded on the right task more likely
-
-Users
-- reach out to the 3 people willing to use the extension already and help them get setup on their project
-
-IQ drop issues (a fallback if multi file is malfunctioning)
 - make a @task-inline mode that simply prints to the cursor without the multi file complex prompt
 
-# Better demos
-https://github.com/novuhq/novu/issues/4438
-https://github.com/bluesky-social/social-app/issues
-- Requires signup
-https://github.com/TabbyML/tabby/issues
-https://github.com/bitwarden/clients/issues
-https://github.com/mantinedev/mantine/issues
-https://github.com/tldraw/tldraw/issues
-
 # Bugs
-- Document closed error keeps popping up :D
+
 - Existing session running is flaky (repro when too many files found for instance)
 - [Might be resolved] bug with task not stopping even after the task is finished, cancel still running?? This is probably outdated local version
   - Nope, just saw it not terminate again even though it prints Done in feedback doc. Seems to be triggered with racy "Document has been closed" error
   - Also didn't complete even witout the document error 
 - prompt issue with merging two separate change sets into a single one
-- Changing markdown files doesn't currently work, it opens the preview for the file, but then switches the preview to show the file we are trying to edit. Preview always shows the current md file on the left ...
-  - It is also unable to actually apply change to the file for some reason - investigate
 - [first issue] @+run causes the run to happen even if the space is not right after the run command
-- still appears to be an issue when too many files are available for selection. Extension hangs on Join Discrod. Repro in show me plugin repo [bra1nDump.ai-task]Too many files matched: 239
-  - Be smarter about this + show an error to end user suggesting a solution
+- still appears to be an issue when too many files are available for selection. Extension hangs on Join Discrod. Repro in show me plugin repo [bra1nDump.ai-task]
 
 # Unsorted
 
-- keeping tasks is not a bad idea - keeping a history like in chatgpt is good
+- Output markdown flickers - not sure if there is a fix for this. We can't seem to append to those outputs, only replace them.
 - Requiring a user to invoke the tool is difficult
 - Lower latency
 
 - Inquire on how to use vscode itself. We have a list of commands and probably can also lookup what they do on the web. We can also run vscode commands
 
 ## Notes
-When doing a refactor the log of tasks is very useful for upcoming tasks. We might want to include this in the following prompts by default somehow. ... Chat interface strikes again? Notebooks?
-
 Cleanup is also very annoying which is the product of making comments in code.
 Only works for inline generation or with auto-cleanup
 
@@ -110,13 +84,8 @@ I think a better way is to use something like function calling with an option to
 
 ## UX - Product
 
-- Don't open new tabs for files that are already open, don't open tabs in the same group with the preview / notebook
 - Follow up task to fix errors after making changes - should be a button in the markdown
 - There should be stop and stop and undo buttons 
-- Cleanup @task mentions after running
-- Highlighting contexts expressions with better files.
-  - It is tricky to pick good token types as they are very likely to collide with the existing colors in the file, possibly confusing the user.
-  - I can also provide my own a theme that will only effect my own tokens, but that is more work. Let's do this later
 - Only addressed tasks within the open tabs, not the entire project
 - New unsaved file should work as a @ task input
   - It also currently hangs in this case - investigate
@@ -126,17 +95,7 @@ I think a better way is to use something like function calling with an option to
 - Delay scroll into view until there's only a single match ? I thought it would already do that
 - Indentation should ideally be taken into account when generating diffs to match the indentation preferred by the user. This is low priority since type script does not care about it
 - Preview also scrolls up all the time as we are re-writing the document. I wonder if we were to append to the document instead of write to fs scroll would be preserved
-- Preview for the high level oftentimes flickers. Not sure what causes itb but try larger outputs
-  - we rewriting the entire file. Workaround documented in append function
 - Provide token count on the input and provide approximate price
-
-## Demo 
-- Have a task alias - ai-task? for demo / brand purposes
-- Have audio - probably why retention so low - peoplea are not entertained
-- Have better splash screen 
-- Less stuff happening in the demo - no command line running
-- Shorter video
-
 
 ## Developer experience working on ai-task
 
@@ -154,10 +113,7 @@ This is a complex task that will require rewriting roughly 1/3 of the code base 
 Will function calling help me getter faster? I would not need to deal with Xml parsing, but I will have to deal with new apis and parsing partial JSON
 
 ## Uncategorized
-
-- Improve new line character usage across the code base. This will suck because we print many logs relying on \n. For now I will just fix the code that has to do with line splitting for range calculation because that definitely needs to be robust.
 - Create a company and apply for open ai credits
-- Suggest respecting original indentation [20min]
 - New file creation is confusing, we should use a different Xml tag for it. I can keep it on the level of parsing and not change the model 
 
 - Refine the truncation mechanism to truncate more aggressively
@@ -165,6 +121,19 @@ Will function calling help me getter faster? I would not need to deal with Xml p
 - Only provide certain lines as potential starts and finishes for the range
 
 # Done
+
+
+- Don't open new tabs for files that are already open, don't open tabs in the same group with the preview / notebook
+
+Too many files matched: 239
+  - Be smarter about this + show an error to end user suggesting a solution
+
+- Improve new line character usage across the code base. This will suck because we print many logs relying on \n. For now I will just fix the code that has to do with line splitting for range calculation because that definitely needs to be robust.
+
+Stability
+- change prompt for new files for stability (just remove range-to-replace)
+- fix imports in middle of a file - add example
+- also add example of splitting a function - struggles to append, always decides to do 0: instead of appending to end of file maybe also new prompt ? insert?
 
 This is useful as there will be new people trying the product
 - Add a shortcut to create a new notebook
@@ -187,3 +156,10 @@ Better format is better :D
 ## Record gifs for new file + cmd 3 more takes on the main video [2hr + 2hr editing] NO DAVINCI RESOLVE ?
 
 - Switch to mp4 - no looping needed
+
+
+# Archive
+
+- Highlighting contexts expressions with better files.
+  - It is tricky to pick good token types as they are very likely to collide with the existing colors in the file, possibly confusing the user.
+  - I can also provide my own a theme that will only effect my own tokens, but that is more work. Let's do this later
