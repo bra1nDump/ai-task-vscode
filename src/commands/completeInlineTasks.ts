@@ -141,6 +141,7 @@ export async function newCompleteInlineTasksCommandFromVSCodeCommand() {
   }
 
   // Get the last cell in the notebook
+  await new Promise((resolve) => setTimeout(resolve, 100))
   const lastCell = notebook.getCells().slice(-1)[0]
 
   // Set the cell's text to "@ task from inline command"
