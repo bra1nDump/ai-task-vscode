@@ -54,18 +54,13 @@ export class TaskController {
 
     void execution.clearOutput()
 
-    if (cell.document.getText().includes('@' + 'task from inline command')) {
+    if (cell.document.getText().includes('@' + 'task')) {
       // Stock editing based on currently opened files
       await completeInlineTasksCommand(
         this.extensionContext,
         this.sessionRegistry,
         execution,
       )
-      /*
-       * TODO (later): Add an if case where we add a custom task in the
-       * notebook. Include the task in the prompt and start
-       * completeInlineTasksCommand
-       */
     } else {
       const cellsUpToThisOne = cell.notebook.getCells().slice(0, cell.index + 1)
 

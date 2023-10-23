@@ -4,17 +4,14 @@ import {
   findAndCollectDotBreadFiles,
 } from 'context/atTask'
 import { getFilesContent } from 'helpers/fileSystem'
-import {
-  SessionContext,
-  createAndOpenEmptyDocument,
-  findMostRecentSessionLogIndexPrefix,
-  getBreadIdentifier,
-} from 'session'
+import { SessionContext, getBreadIdentifier } from 'session'
 import { closeSession, startSession } from 'session'
 import { startMultiFileEditing } from 'multi-file-edit/v1'
 import { projectDiagnosticEntriesWithAffectedFileContext } from 'context/atErrors'
 import dedent from 'dedent'
 import { openedTabs } from 'context/atTabs'
+import { newTaskNotebook } from './newTaskNotebook'
+import { OpenAiMessage } from 'helpers/openai'
 
 /*
  * This is a new entry point for the command,
@@ -29,58 +26,74 @@ export async function newCompleteInlineTasksCommandFromVSCodeCommand() {
   )[0]?.notebook
 
   if (notebook === undefined) {
-    // COPIED OVER FROM session/index
-    const taskMagicIdentifier = getBreadIdentifier()
-    const sessionsDirectory = vscode.Uri.joinPath(
-      vscode.workspace.workspaceFolders![0].uri,
-      `.${taskMagicIdentifier}/sessions`,
-    )
-    const nextIndex =
-      (await findMostRecentSessionLogIndexPrefix(sessionsDirectory)) + 1
+    notebook = await newTaskNotebook()
+    /*
+     * COPIED OVER FROM session/index
+     * const taskMagicIdentifier = getBreadIdentifier()
+     * const sessionsDirectory = vscode.Uri.joinPath(
+     *   vscode.workspace.workspaceFolders![0].uri,
+     *   `.${taskMagicIdentifier}/sessions`,
+     * )
+     * const nextIndex =
+     *   (await findMostRecentSessionLogIndexPrefix(sessionsDirectory)) + 1
+     */
 
-    const shortWeekday = new Date().toLocaleString('en-US', {
-      weekday: 'short',
-    })
-    const sessionNameBeforeAddingTopicSuffix = `${nextIndex}-${shortWeekday}.task`
-    const newNotebookDocument = await createAndOpenEmptyDocument(
-      sessionsDirectory,
-      sessionNameBeforeAddingTopicSuffix,
-    )
+    /*
+     * const shortWeekday = new Date().toLocaleString('en-US', {
+     *   weekday: 'short',
+     * })
+     * const sessionNameBeforeAddingTopicSuffix =
+     * `${nextIndex}-${shortWeekday}.task` const newNotebookDocument = await
+     * createAndOpenEmptyDocument(
+     *   sessionsDirectory,
+     *   sessionNameBeforeAddingTopicSuffix,
+     * )
+     */
 
-    notebook = await vscode.workspace.openNotebookDocument(
-      newNotebookDocument.uri,
-    )
-    await vscode.window.showNotebookDocument(notebook, {
-      viewColumn: vscode.ViewColumn.Two,
-    })
+    /*
+     * notebook = await vscode.workspace.openNotebookDocument(
+     *   newNotebookDocument.uri,
+     * )
+     * await vscode.window.showNotebookDocument(notebook, {
+     *   viewColumn: vscode.ViewColumn.Two,
+     * })
+     */
 
-    // insert markdown cell with discord
-    await vscode.commands.executeCommand('notebook.focusBottom')
-    await vscode.commands.executeCommand(
-      'notebook.cell.insertMarkdownCellBelow',
-    )
+    /*
+     * insert markdown cell with discord
+     * await vscode.commands.executeCommand('notebook.focusBottom')
+     * await vscode.commands.executeCommand(
+     *   'notebook.cell.insertMarkdownCellBelow',
+     * )
+     */
 
-    if (notebook.cellCount === 0) {
-      void vscode.window.showErrorMessage(
-        `No cells in the notebook, most likely a bug`,
-      )
-      return
-    }
+    /*
+     * if (notebook.cellCount === 0) {
+     *   void vscode.window.showErrorMessage(
+     *     `No cells in the notebook, most likely a bug`,
+     *   )
+     *   return
+     * }
+     */
 
-    const lastCell = notebook.getCells().slice(-1)[0]
+    // const lastCell = notebook.getCells().slice(-1)[0]
 
-    const cellDocumentEditorMaybe = await vscode.window.showTextDocument(
-      lastCell.document,
-    )
+    /*
+     * const cellDocumentEditorMaybe = await vscode.window.showTextDocument(
+     *   lastCell.document,
+     * )
+     */
 
-    await cellDocumentEditorMaybe.edit((editBuilder) => {
-      editBuilder.insert(
-        new vscode.Position(0, 0),
-        `[Join Discord to submit feedback](https://discord.gg/D8V6Rc63wQ)`,
-      )
-    })
+    /*
+     * await cellDocumentEditorMaybe.edit((editBuilder) => {
+     *   editBuilder.insert(
+     *     new vscode.Position(0, 0),
+     *     `[Join Discord to submit feedback](https://discord.gg/D8V6Rc63wQ)`,
+     *   )
+     * })
+     */
 
-    await vscode.commands.executeCommand('notebook.cell.quitEdit')
+    // await vscode.commands.executeCommand('notebook.cell.quitEdit')
   } else {
     /*
      * Hoping this will simply focus the notebook
@@ -91,6 +104,10 @@ export async function newCompleteInlineTasksCommandFromVSCodeCommand() {
     await vscode.window.showNotebookDocument(notebook, {
       viewColumn: vscode.ViewColumn.Two,
     })
+
+    // Old notebooks will need new cells to insert the task
+    await vscode.commands.executeCommand('notebook.focusBottom')
+    await vscode.commands.executeCommand('notebook.cell.insertCodeCellBelow')
   }
 
   /*
@@ -106,9 +123,10 @@ export async function newCompleteInlineTasksCommandFromVSCodeCommand() {
    * ...
    */
 
-  // Insert a new cell at the bottom of the notebook
-  await vscode.commands.executeCommand('notebook.focusBottom')
-  await vscode.commands.executeCommand('notebook.cell.insertCodeCellBelow')
+  /*
+   * TODO: This is likely to create mutliple cells
+   * Insert a new cell at the bottom of the notebook
+   */
 
   /*
    * Type Running "@ task from inline command" into the cell
@@ -158,6 +176,36 @@ export async function completeInlineTasksCommand(
   sessionRegistry: Map<string, SessionContext>,
   execution: vscode.NotebookCellExecution,
 ) {
+  /*
+   * TODO: Refactor to pass this in as an argument / sessionContext? Not sure,
+   * but at least extract the logic, its now repeated in two places
+   */
+  const chatHistory = [...execution.cell.notebook.getCells().entries()].flatMap(
+    ([index, cell]) => {
+      if (index === 0 && cell.kind === vscode.NotebookCellKind.Markup) {
+        // First documentation cell - skip
+        return []
+      }
+
+      const messages: OpenAiMessage[] = [
+        {
+          role: 'user',
+          content: cell.document.getText(),
+        },
+      ]
+
+      const output = cell.outputs.at(-1)
+      if (output && output.items.length !== 0) {
+        messages.push({
+          role: 'assistant',
+          content: output.items.at(-1)!.data.toString(),
+        })
+      }
+
+      return messages
+    },
+  )
+
   if (sessionRegistry.size !== 0) {
     console.log(`Existing session running, most likely a bug with @run + enter`)
     return
@@ -172,7 +220,7 @@ export async function completeInlineTasksCommand(
   })
 
   try {
-    await throwingCompleteInlineTasksCommand(sessionContext)
+    await throwingCompleteInlineTasksCommand(sessionContext, chatHistory)
   } catch (error) {
     console.error(error)
     if (error instanceof Error) {
@@ -186,6 +234,7 @@ export async function completeInlineTasksCommand(
 
 async function throwingCompleteInlineTasksCommand(
   sessionContext: SessionContext,
+  chatHistory: OpenAiMessage[],
 ) {
   ////// Compile the context, pull in task files and other context based on mentions //////
   const openTabsFileUris = openedTabs()
@@ -200,11 +249,49 @@ async function throwingCompleteInlineTasksCommand(
     openTabsFileUris,
   )
 
+  // Add chat history to blobs
+  const messageHistoryBlob: string = chatHistory.reduce(
+    (acc, message): string => `${acc}
+${message.role === 'user' ? '<user>' : '<assistant>'}
+${message.content}
+${message.role === 'user' ? '</user>' : '</assistant>'}`,
+    `Here is the chat history. The last message is likely to contain the task you need to accomplish. PAY ATTENTION TO IT!`,
+  )
+
+  sessionContext.contextManager.addBlobContexts([messageHistoryBlob])
+
+  /*
+   * Always include active text editor as the questions are likely to be
+   * related to it
+   */
+  if (vscode.window.visibleTextEditors.length) {
+    await sessionContext.contextManager.addDocuments(
+      'Visible text editor',
+      vscode.window.visibleTextEditors
+        .filter(
+          (editor) =>
+            /*
+             * Don't return files with .task in them,
+             * they are probably a notebook
+             */
+            !editor.document.uri.path.includes('.task'),
+        )
+        .map((editor) => editor.document.uri),
+    )
+  }
+
+  const lastUserMessage = chatHistory.at(-1)?.content ?? ''
+
   /*
    * Its okay to not have any task mentions - for instance for other extension
    * adding to the context
    */
-  if (fileUrisWithBreadMentions.length === 0) {
+  if (
+    fileUrisWithBreadMentions.length === 0 &&
+    // The task is expected to come from inline (as a file comment)
+    (lastUserMessage === '@' + 'task from inline command' ||
+      lastUserMessage === '')
+  ) {
     void vscode.window.showErrorMessage(
       `No tasks found. Remember to add 
 @${breadIdentifier} mention to at least one file in the workspace.`,
@@ -233,9 +320,11 @@ async function throwingCompleteInlineTasksCommand(
   )
 
   /* Include open tabs if the user requested */
-  const includeTabs = [...breadMentionsFilesContent, ...breadFileBlobs].some(
-    (fileContent) => fileContent.includes('@' + 'tabs'),
-  )
+  const includeTabs = [
+    ...breadMentionsFilesContent,
+    ...breadFileBlobs,
+    lastUserMessage,
+  ].some((fileContent) => fileContent.includes('@' + 'tabs'))
   if (includeTabs) {
     await sessionContext.contextManager.addDocuments(
       'Open tabs',
@@ -247,9 +336,11 @@ async function throwingCompleteInlineTasksCommand(
    * Provide problems context
    * Include files with errors if the user requested
    */
-  const includeErrors = [...breadMentionsFilesContent, ...breadFileBlobs].some(
-    (fileContent) => fileContent.includes('@' + 'errors'),
-  )
+  const includeErrors = [
+    ...breadMentionsFilesContent,
+    ...breadFileBlobs,
+    lastUserMessage,
+  ].some((fileContent) => fileContent.includes('@' + 'errors'))
   if (includeErrors) {
     const diagnosticsAlongWithTheirFileContexts =
       projectDiagnosticEntriesWithAffectedFileContext()

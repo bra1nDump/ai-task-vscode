@@ -27,28 +27,22 @@ Now all actual file editing is kicked off from the notebook execution
     - dump context manager + previous cell contents into the messages
 
 ## Next up:
-This is useful as there will be new people trying the product
-- Add a shortcut to create a new notebook
-- Add a walkthrough that will show how to create a new notebook (it will be created in the session folder)
 
-Better format is better :D
-- Create a cell with markdown showing discord link
-- Smaller heading size for files / task etc - takes too much space
-- In output remove start / end messages - redundant
-- Don't show output of files submitted and others if there is no need
+- Show walkthrough after installing the extension
+- Add a dedicated activity bar icon for the extension
 
 ## If we have time
 - Allow writing custom tasks in the notebook and actually running file editing on those
 - This would require passing the custom @ task command to the completeInlineTasks function and passing it in correctly to the context manager or as a message.
 - There is some command @command:notebook.action.toggleNotebookStickyScroll (open command pallet and explore "Notebook: " commands). No idea what this does, but might help with keeping the bottom part visible
-
+- If user runs task by hitting play button - add cell programmatically
 
 ## Later - after the demo
 - Fix tests!!!!! Not sure at what point we broke them
 - When adding a task in a followup - include the output of the non-editing commands in the context.
   - This is useful if the user asks a question and when they like the answer (code related) they can run a task to apply them to the code instead of copy pasting and having to specify the same task 
   - This will also give better overall results because the prompt is easier when generating initial code suggestions - no mulit file edit. Next the multi-file edit can just focus on applying the known changes to the code - harder to fuck up
-- Output markdown flickers - we should replace output with actual markdown cells so we can edit them inrementally to avoid this
+- Output markdown flickers - we should replace output with actual markdown cells so we can edit them inrementally to avoid this ... this will icrease UI clunkiness further though
 
 Error: 
 rejected promise not handled within 1 second: Error: Cannot modify cell output after calling resolve
@@ -171,6 +165,16 @@ Will function calling help me getter faster? I would not need to deal with Xml p
 - Only provide certain lines as potential starts and finishes for the range
 
 # Done
+
+This is useful as there will be new people trying the product
+- Add a shortcut to create a new notebook
+- Add a walkthrough that will show how to create a new notebook (it will be created in the session folder)
+
+Better format is better :D
+- Create a cell with markdown showing discord link
+- Smaller heading size for files / task etc - takes too much space
+- In output remove start / end messages - redundant
+- Don't show output of files submitted and others if there is no need
 
 - release a windows compatible version
 - kick off multi file editing with all tabs up for modification after a command with input

@@ -38,7 +38,7 @@ export async function newTaskNotebook() {
     void vscode.window.showErrorMessage(
       `No cells in the notebook, most likely a bug`,
     )
-    return
+    throw new Error(`No cells in the notebook, most likely a bug`)
   }
 
   const lastCell = notebook.getCells().slice(-1)[0]
@@ -61,6 +61,7 @@ export async function newTaskNotebook() {
 #### [Beta] To edit code directly in your files:
 - Open the file you want to edit and create a comment with \`@task\` in it
 - Add details about what you want to do in the comment
+- Hit 'Run @task' right above the comment to start editing
 
   [Join Discord to support the project and get help!](https://discord.gg/D8V6Rc63wQ)
 `,
@@ -70,4 +71,6 @@ export async function newTaskNotebook() {
   await vscode.commands.executeCommand('notebook.cell.quitEdit')
 
   await vscode.commands.executeCommand('notebook.cell.insertCodeCellBelow')
+
+  return notebook
 }
