@@ -39,6 +39,8 @@ async function main() {
       },
     )
 
+    console.log('installed error lookup extension')
+
     /*
      * Used for CI,
      * Duplicates setup in .vscode/launch.json > Tests:

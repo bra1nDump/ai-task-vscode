@@ -12,6 +12,7 @@ import dedent from 'dedent'
 import { openedTabs } from 'context/atTabs'
 import { newTaskNotebook } from './newTaskNotebook'
 import { OpenAiMessage } from 'helpers/openai'
+import { extractChatHistory } from '../notebook/taskController'
 
 /*
  * This is a new entry point for the command,
@@ -153,20 +154,20 @@ export async function newCompleteInlineTasksCommandFromVSCodeCommand(
     lastCell.document,
   )
 
-  await cellDocumentEditorMaybe.edit((editBuilder) => {
-    // If the task is coming from a sibling extension, use that
-    if (taskFromSiblingExtension !== undefined) {
+  if (taskFromSiblingExtension !== undefined) {
+    await cellDocumentEditorMaybe.edit((editBuilder) => {
       editBuilder.insert(new vscode.Position(0, 0), taskFromSiblingExtension)
-    } else {
+    })
+  } else {
+    await cellDocumentEditorMaybe.edit((editBuilder) => {
       editBuilder.insert(
         new vscode.Position(0, 0),
         '@' + 'task was provided in a comment in one of the submitted files',
       )
-    }
-  })
-
-  // Execute the cell
-  await vscode.commands.executeCommand('notebook.cell.execute')
+    })
+    // Don't execute if we are running from a sibling extension
+    await vscode.commands.executeCommand('notebook.cell.execute')
+  }
 }
 
 /**
@@ -186,45 +187,7 @@ export async function completeInlineTasksCommand(
   sessionRegistry: Map<string, SessionContext>,
   execution: vscode.NotebookCellExecution,
 ) {
-  /*
-   * REFACTOR: Extract the logic, its now repeated in two places. This is the
-   * preffered implementation
-   */
-  const chatHistory = execution.cell.notebook
-    .getCells()
-    // Get all cells up to the current one
-    .slice(0, execution.cell.index + 1)
-    // Skip first cell, skip last cell's output (re-running)
-    .flatMap((cell, index, array) => {
-      if (index === 0 && cell.kind === vscode.NotebookCellKind.Markup) {
-        // First documentation cell - skip
-        return []
-      }
-
-      const messages: OpenAiMessage[] = [
-        {
-          role: 'user',
-          content: cell.document.getText(),
-        },
-      ]
-
-      const output = cell.outputs.at(-1)
-      if (
-        output &&
-        output.items.length !== 0 &&
-        /*
-         * Dont include last cell's output as this means we are re-running it
-         */
-        index !== array.length - 1
-      ) {
-        messages.push({
-          role: 'assistant',
-          content: output.items.at(-1)!.data.toString(),
-        })
-      }
-
-      return messages
-    })
+  const chatHistory = extractChatHistory(execution)
 
   if (sessionRegistry.size !== 0) {
     throw new Error(

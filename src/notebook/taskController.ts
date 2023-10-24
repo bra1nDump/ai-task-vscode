@@ -62,34 +62,56 @@ export class TaskController {
         execution,
       )
     } else {
-      const cellsUpToThisOne = cell.notebook.getCells().slice(0, cell.index + 1)
-
       await answerQuestionCommand(
         this.extensionContext,
         this.sessionRegistry,
         execution,
-        cellsUpToThisOne.flatMap((cell) => {
-          const cellValue = cell.document.getText()
-          const messages: OpenAiMessage[] = [
-            {
-              content: cellValue,
-              role: 'user',
-            },
-          ]
-
-          const cellOutput = cell.outputs.at(-1)?.items[0]
-          if (cellOutput?.mime === 'text/markdown') {
-            messages.push({
-              content: new TextDecoder().decode(cellOutput.data),
-              role: 'assistant',
-            })
-          }
-
-          return messages
-        }),
+        extractChatHistory(execution),
       )
     }
 
     execution.end(true, Date.now())
   }
+}
+
+export function extractChatHistory(
+  execution: vscode.NotebookCellExecution,
+): OpenAiMessage[] {
+  return (
+    execution.cell.notebook
+      .getCells()
+      // Get all cells up to the current one
+      .slice(0, execution.cell.index + 1)
+      // Skip first cell, skip last cell's output (re-running)
+      .flatMap((cell, index, array) => {
+        if (index === 0 && cell.kind === vscode.NotebookCellKind.Markup) {
+          // First documentation cell - skip
+          return []
+        }
+
+        const messages: OpenAiMessage[] = [
+          {
+            role: 'user',
+            content: cell.document.getText(),
+          },
+        ]
+
+        const output = cell.outputs.at(-1)
+        if (
+          output &&
+          output.items.length !== 0 &&
+          /*
+           * Dont include last cell's output as this means we are re-running it
+           */
+          index !== array.length - 1
+        ) {
+          messages.push({
+            role: 'assistant',
+            content: output.items.at(-1)!.data.toString(),
+          })
+        }
+
+        return messages
+      })
+  )
 }
