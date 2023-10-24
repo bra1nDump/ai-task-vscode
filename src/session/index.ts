@@ -317,10 +317,23 @@ export async function findMostRecentSessionLogIndexPrefix(
 
 async function createSessionLogDocuments(markdownOrNotebook: string) {
   const taskMagicIdentifier = getBreadIdentifier()
+
   const sessionsDirectory = vscode.Uri.joinPath(
     vscode.workspace.workspaceFolders![0].uri,
     `.${taskMagicIdentifier}/sessions`,
   )
+
+  // No need to wait for this to finish
+  void (async () => {
+    const gitignorePath = vscode.Uri.joinPath(sessionsDirectory, '.gitignore')
+    const gitignoreExists = await vscode.workspace.fs.stat(gitignorePath).then(
+      () => true,
+      () => false,
+    )
+    if (!gitignoreExists) {
+      await vscode.workspace.fs.writeFile(gitignorePath, Buffer.from('*\n'))
+    }
+  })()
 
   const nextIndex =
     (await findMostRecentSessionLogIndexPrefix(sessionsDirectory)) + 1
