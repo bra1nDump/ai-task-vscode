@@ -20,7 +20,9 @@ import { OpenAiMessage } from 'helpers/openai'
  * available create a cell with @ task and execute the first cell all
  * subsequent executions will call the old entry point
  */
-export async function newCompleteInlineTasksCommandFromVSCodeCommand() {
+export async function newCompleteInlineTasksCommandFromVSCodeCommand(
+  taskFromSiblingExtension?: string,
+) {
   let notebook = vscode.window.visibleNotebookEditors.filter(
     (editor) => editor.notebook.notebookType === 'task-notebook',
   )[0]?.notebook
@@ -129,8 +131,8 @@ export async function newCompleteInlineTasksCommandFromVSCodeCommand() {
    */
 
   /*
-   * Type Running "@ task from inline command" into the cell
-   * Execute it
+   * Type Running "@ task was provided in a comment in one of the submitted
+   * files" into the cell Execute it
    */
 
   if (notebook.cellCount === 0) {
@@ -143,16 +145,24 @@ export async function newCompleteInlineTasksCommandFromVSCodeCommand() {
   // Get the last cell in the notebook
   const lastCell = notebook.getCells().slice(-1)[0]
 
-  // Set the cell's text to "@ task from inline command"
+  /*
+   * Set the cell's text to "@ task was provided in a comment in one of the
+   * submitted files"
+   */
   const cellDocumentEditorMaybe = await vscode.window.showTextDocument(
     lastCell.document,
   )
 
   await cellDocumentEditorMaybe.edit((editBuilder) => {
-    editBuilder.insert(
-      new vscode.Position(0, 0),
-      '@' + 'task from inline command',
-    )
+    // If the task is coming from a sibling extension, use that
+    if (taskFromSiblingExtension !== undefined) {
+      editBuilder.insert(new vscode.Position(0, 0), taskFromSiblingExtension)
+    } else {
+      editBuilder.insert(
+        new vscode.Position(0, 0),
+        '@' + 'task was provided in a comment in one of the submitted files',
+      )
+    }
   })
 
   // Execute the cell
@@ -177,11 +187,15 @@ export async function completeInlineTasksCommand(
   execution: vscode.NotebookCellExecution,
 ) {
   /*
-   * TODO: Refactor to pass this in as an argument / sessionContext? Not sure,
-   * but at least extract the logic, its now repeated in two places
+   * REFACTOR: Extract the logic, its now repeated in two places. This is the
+   * preffered implementation
    */
-  const chatHistory = [...execution.cell.notebook.getCells().entries()].flatMap(
-    ([index, cell]) => {
+  const chatHistory = execution.cell.notebook
+    .getCells()
+    // Get all cells up to the current one
+    .slice(0, execution.cell.index + 1)
+    // Skip first cell, skip last cell's output (re-running)
+    .flatMap((cell, index, array) => {
       if (index === 0 && cell.kind === vscode.NotebookCellKind.Markup) {
         // First documentation cell - skip
         return []
@@ -195,7 +209,14 @@ export async function completeInlineTasksCommand(
       ]
 
       const output = cell.outputs.at(-1)
-      if (output && output.items.length !== 0) {
+      if (
+        output &&
+        output.items.length !== 0 &&
+        /*
+         * Dont include last cell's output as this means we are re-running it
+         */
+        index !== array.length - 1
+      ) {
         messages.push({
           role: 'assistant',
           content: output.items.at(-1)!.data.toString(),
@@ -203,12 +224,12 @@ export async function completeInlineTasksCommand(
       }
 
       return messages
-    },
-  )
+    })
 
   if (sessionRegistry.size !== 0) {
-    console.log(`Existing session running, most likely a bug with @run + enter`)
-    return
+    throw new Error(
+      `Existing session running, please report bug in our discord, to workaroudn reload the VSCode window (ctrl+shift+p -> reload window)`,
+    )
   }
 
   const sessionContext = await startSession(extensionContext, execution)
@@ -249,13 +270,22 @@ async function throwingCompleteInlineTasksCommand(
     openTabsFileUris,
   )
 
-  // Add chat history to blobs
+  /*
+   * Add chat history to blobs
+   * We should not add these to the blobs, instead we should use standard user
+   * / assistant message array. Still need to think about how to approach this
+   * for file editing tasks. Keep in mind when designing that we might want to
+   * split multi-file editing into 2 step process - one that generates the
+   * changes and the second one that actually applies them
+   */
   const messageHistoryBlob: string = chatHistory.reduce(
-    (acc, message): string => `${acc}
+    (acc, message): string => {
+      return `${acc}
 ${message.role === 'user' ? '<user>' : '<assistant>'}
 ${message.content}
-${message.role === 'user' ? '</user>' : '</assistant>'}`,
-    `Here is the chat history. The last message is likely to contain the task you need to accomplish. PAY ATTENTION TO IT!`,
+${message.role === 'user' ? '</user>' : '</assistant>'}`
+    },
+    `Here is the history of user requests and assistant responses. This might give more context to the task. This is for context only, you should focus on the last task only:`,
   )
 
   sessionContext.contextManager.addBlobContexts([messageHistoryBlob])
@@ -289,7 +319,8 @@ ${message.role === 'user' ? '</user>' : '</assistant>'}`,
   if (
     fileUrisWithBreadMentions.length === 0 &&
     // The task is expected to come from inline (as a file comment)
-    (lastUserMessage === '@' + 'task from inline command' ||
+    (lastUserMessage ===
+      '@' + 'task was provided in a comment in one of the submitted files' ||
       lastUserMessage === '')
   ) {
     void vscode.window.showErrorMessage(

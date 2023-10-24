@@ -103,11 +103,6 @@
     },
     "keybindings": [
       {
-        "command": "ai-task.completeInlineTasks",
-        "key": "ctrl+y",
-        "mac": "cmd+y"
-      },
-      {
         "command": "ai-task.newTaskNotebook",
         "key": "ctrl+u",
         "mac": "cmd+u"

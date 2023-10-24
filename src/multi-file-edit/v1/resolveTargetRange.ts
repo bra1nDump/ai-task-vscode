@@ -203,13 +203,34 @@ export function findTargetRangeInFileWithContent(
    * the only match
    */
   const searchLine = (lines: string[], line: string) => {
-    const trimmedLine = line.trim()
+    /*
+     * line and lines are in the format of <line number>:<line content>
+     * Sometimes the model messes up the line content (especially indentation)
+     * Workarounds:
+     * 1. Remove line contents, only look at line numbers
+     * 2. Remove indentation from line contents
+     *    [Picked because its faster to implement]
+     */
 
-    const firstMatchIndex = lines.findIndex((l) => l.trim() === trimmedLine)
+    /*
+     * Remove all whitespace from line and lines to avoid failing to find range
+     * due to indentation
+     */
+    const [searchLineNumber, ...availableLineNumbers] = [line, ...lines].map(
+      (l) => l.replace(/\s/g, ''),
+    )
+
+    /*
+     * We might go back to content as a proxy to find matching lines again,
+     * so not simplifying this code
+     */
+    const firstMatchIndex = availableLineNumbers.findIndex(
+      (l) => l.trim() === searchLineNumber,
+    )
 
     // Make sure its the only match
-    const secondMatchIndex = lines.findIndex(
-      (l, i) => i !== firstMatchIndex && l.trim() === trimmedLine,
+    const secondMatchIndex = availableLineNumbers.findIndex(
+      (l, i) => i !== firstMatchIndex && l.trim() === searchLineNumber,
     )
     if (secondMatchIndex !== -1) {
       return -1

@@ -145,3 +145,6 @@ And re-apply to the current code base
 
 # Show recent edits and figure out what the fuck was i doing ...
 Seems like a good plugin feature contributed by users?
+
+# People have their linters not configured on autosave - thats a crazy productivity sink!
+Helpful script to improve project state

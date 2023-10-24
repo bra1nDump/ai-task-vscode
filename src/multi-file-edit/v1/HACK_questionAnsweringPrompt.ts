@@ -40,7 +40,7 @@ export function createQuestionAnsweringWithContext(
   const messages = [
     {
       content:
-        'You might get files, and some other relevant information. You will also get a history of the conversation so far. Reply with markdown. You might not have all the information provided to you, try to reply to the best of your abilities. You are a coding assistant.',
+        'You are a coding assistant. You might get files, and some other relevant information. You will also get a history of the conversation so far, parts of the history can be ommited or not relevant. Reply with markdown. You might not have all the information, try to reply to the best of your abilities or request more information.',
       role: 'system',
     } as OpenAiMessage,
     inputWithFiles,

@@ -52,12 +52,21 @@ stack trace: Error: Cannot modify cell output after calling resolve
 
 - Keep on the lookout for "Document closed error" - it keeps popping up during editing :D
 
+- review how chat history is submitted and improve it. Currently the model gets super confused
+  - Probably want to split into separate messages
+  - Imrpove the "from inline command"
+  - Don't submit last assistant output if its last - we are re-running the last command
+
 ## Later
 - When context is large its a good idea to give the cursor as input so the model is grounded on the right task more likely
 - make a @task-inline mode that simply prints to the cursor without the multi file complex prompt
+- Maybe we should only give line number for ambigous things like empty lines or lines with duplicates in the file? Or just tough lines like { etc? We can add a comment to the line that will tell what the line roughly is // start of anonymous function?
+- This will also make the input closer to what the model is used to
+- Ask for confirmation before overriding files - for example I forgot to add @ tabs and overriden the current package.json
 
 # Bugs
 
+- No task found" hangs the cell execution and you cant stop it
 - Existing session running is flaky (repro when too many files found for instance)
 - [Might be resolved] bug with task not stopping even after the task is finished, cancel still running?? This is probably outdated local version
   - Nope, just saw it not terminate again even though it prints Done in feedback doc. Seems to be triggered with racy "Document has been closed" error

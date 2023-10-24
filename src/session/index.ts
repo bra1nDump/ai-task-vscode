@@ -305,9 +305,10 @@ export async function findMostRecentSessionLogIndexPrefix(
 
   const sessionLogFiles =
     await vscode.workspace.fs.readDirectory(sessionsDirectory)
-  const sessionLogIndexPrefixes = sessionLogFiles.map(([fileName, _]) =>
-    Number(fileName.split('-')[0]),
-  )
+  const sessionLogIndexPrefixes = sessionLogFiles.flatMap(([fileName, _]) => {
+    const maybeNumber = Number(fileName.split('-')[0])
+    return isNaN(maybeNumber) ? [] : [maybeNumber]
+  })
   const mostRecentSessionLogIndexPrefix = Math.max(
     ...sessionLogIndexPrefixes,
     0,

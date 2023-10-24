@@ -16,3 +16,6 @@ documents/
 testing-sandbox/
 prompt-engineering/
 scripts/
+
+# Include assets (referenced in walkthroughs)
+!documents/assets/walkthrough-notebook.jpg
