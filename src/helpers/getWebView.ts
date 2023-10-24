@@ -24,7 +24,7 @@ export function getWebView() {
             background-color: var(--vscode-button-hoverBackground);
         }
       </style>
-      <p>Start changing your files using AI by creating a Task Notebook</p>
+      <p>Start changing your files using AI by creating a Task Notebook, you can also use the shortcut ctrl+u</p>
       <button class="vscode-button" onclick="runCommand()">Create Task Notebook</button>
       <script>
         const tsvscode = acquireVsCodeApi();
