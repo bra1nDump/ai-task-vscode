@@ -47,6 +47,9 @@ export class TaskController {
     execution.executionOrder = ++this._executionOrder
     execution.start(Date.now())
 
+    await vscode.commands.executeCommand('notebook.focusBottom')
+    await vscode.commands.executeCommand('notebook.cell.insertCodeCellBelow')
+
     /*
      * Check if cell has @ task mention and kick off task if yes,
      * passing execution
