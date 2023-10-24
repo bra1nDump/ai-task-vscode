@@ -41,7 +41,7 @@ Leave a breaded comment and had entered twice to invoke completion.
 
 # Context providers
 
-- @tabs
+- @ tabs
 - @url Fetch contents over euro
   - Ideally should provide away too only include part of the page for example between the next #
   - Limiting to only part of the page is useful for referencing big documentation websites like VSCode extension api https://code.visualstudio.com/api/references/vscode-api#Tab
@@ -62,7 +62,7 @@ Notebooks, or other bread files focused on user friendly autocomplete context ta
 
 ## Primitives required
 
-- Parsing context providers within @bread, for example other files @src/server.ts, @tabs
+- Parsing context providers within @bread, for example other files @src/server.ts, @ tabs
 - Bread files that can include other files
 - Language server that can provide autocomplete for bread files
   - File names

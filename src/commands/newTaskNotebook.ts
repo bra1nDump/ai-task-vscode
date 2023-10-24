@@ -56,10 +56,10 @@ export async function newTaskNotebook() {
 
 #### How to add file information:
 - The currently visible files in the editor will be included by default
-- Include open tabs by including \`@tabs\` in your question
+- Include open tabs by including \`@${'tabs'}\` in your question
 
 #### [Beta] To edit code directly in your files:
-- Open the file you want to edit and create a comment with \`@task\` in it
+- Open the file you want to edit and create a comment with \`@${'task'}\` in it
 - Add details about what you want to do in the comment
 - Hit 'Run @task' right above the comment to start editing
 

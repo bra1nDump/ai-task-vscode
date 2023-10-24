@@ -147,7 +147,7 @@ Maybe we should call this prompt bundling or preprocessing?
 
 The compile step will resolve @ expressions to a context providers that successfully matches this @ pattern.
 Let's say this bread includes more files as context. They also need to be compiled.
-Let's say one of those other files references @tabs, now all files that are opened as tabs we'll get pulled in as well.
+Let's say one of those other files references @ tabs, now all files that are opened as tabs we'll get pulled in as well.
 By default every file that gets pulled in either from top level script or
 
 There's also atomic context providers, for example @bread. It does not in itself pull in any additional context
