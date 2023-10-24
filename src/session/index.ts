@@ -24,14 +24,6 @@ export interface SessionContext {
   extensionContext: vscode.ExtensionContext
   configuration: SessionConfiguration
 
-  /**
-   * DEPRECATED - now using high level logger to append to the output
-   *
-   * This will be open to the side to show real time feedback of what is
-   * happening in the session.
-   */
-  // highLevelFeedbackDocument: vscode.TextDocument
-
   lowLevelLogger: (text: string) => Promise<void>
 
   highLevelLogger: (text: string) => Promise<void>
@@ -85,68 +77,17 @@ export async function startSession(
     )
   }
 
-  const markdownOrNotebook = vscode.workspace
-    .getConfiguration('ai-task')
-    .get<string>('markdownOrNotebook')!
-
-  const {
-    // sessionHighLevelFeedbackDocument,
-    sessionMarkdownLowLevelFeedbackDocument,
-  } = await createSessionLogDocuments(markdownOrNotebook)
+  const { sessionMarkdownLowLevelFeedbackDocument } =
+    await createSessionLogDocuments()
 
   const lowLevelLogger = (text: string) =>
     queueAnAppendToDocument(sessionMarkdownLowLevelFeedbackDocument, text)
 
   const highLevelLogger = async (text: string) => {
-    /*
-     * Always append to exeuction output
-     * taskAppendWithoutErasing(execution, text)
-     */
     void queueAnAppendToExecutionOutput(execution, text)
-
-    /*
-     * return markdownOrNotebook === 'markdown'
-     *   ? queueAnAppendToDocument(sessionHighLevelFeedbackDocument, text)
-     *   : queueAnAppendToMarkdownValue(sessionHighLevelFeedbackDocument, text)
-     */
   }
 
   const cachedActiveEditor = vscode.window.activeTextEditor
-
-  /*
-   * Since we're opening to the side the focus is not taken.
-   * Remove for recording simple demo
-   */
-
-  /*
-   * We are only supporting notebooks!!!! We are also opening notebooks outside
-   * of the session creation - session is created per cell execution, implying
-   * the notebook is already active.
-   *
-   *
-   * if (markdownOrNotebook === 'markdown') {
-   *   await vscode.commands.executeCommand(
-   *     'markdown.showPreviewToSide',
-   *     sessionHighLevelFeedbackDocument.uri,
-   *   )
-   * } else {
-   *   await vscode.commands.executeCommand(
-   *     'vscode.open',
-   *     sessionHighLevelFeedbackDocument.uri,
-   *     vscode.ViewColumn.Beside,
-   *   )
-   * }
-   */
-
-  /*
-   * Restore the focus
-   * if (cachedActiveEditor) {
-   *   await vscode.window.showTextDocument(
-   *     cachedActiveEditor.document,
-   *     cachedActiveEditor.viewColumn,
-   *   )
-   * }
-   */
 
   /*
    * Create document manager that will help us backdate edits throughout this
@@ -236,7 +177,6 @@ export async function startSession(
     },
     lowLevelLogger: lowLevelLogger,
     highLevelLogger: highLevelLogger,
-    // highLevelFeedbackDocument: sessionHighLevelFeedbackDocument,
     markdownLowLevelFeedbackDocument: sessionMarkdownLowLevelFeedbackDocument,
     contextManager: documentManager,
     sessionAbortedEventEmitter,
@@ -315,7 +255,7 @@ export async function findMostRecentSessionLogIndexPrefix(
   return mostRecentSessionLogIndexPrefix
 }
 
-async function createSessionLogDocuments(markdownOrNotebook: string) {
+async function createSessionLogDocuments() {
   const taskMagicIdentifier = getBreadIdentifier()
   const sessionsDirectory = vscode.Uri.joinPath(
     vscode.workspace.workspaceFolders![0].uri,
@@ -330,20 +270,6 @@ async function createSessionLogDocuments(markdownOrNotebook: string) {
   })
   const sessionNameBeforeAddingTopicSuffix = `${nextIndex}-${shortWeekday}`
 
-  /*
-   * High level feedback
-   * const sessionHighLevelFeedbackDocument =
-   *   markdownOrNotebook === 'markdown'
-   *     ? await createAndOpenEmptyDocument(
-   *         sessionsDirectory,
-   *         `${sessionNameBeforeAddingTopicSuffix}.md`,
-   *       )
-   *     : await createAndOpenEmptyDocument(
-   *         sessionsDirectory,
-   *         `${sessionNameBeforeAddingTopicSuffix}.task`,
-   *       )
-   * Low level feedback
-   */
   const sessionMarkdownLowLevelFeedbackDocument =
     await createAndOpenEmptyDocument(
       sessionsDirectory,
@@ -351,7 +277,6 @@ async function createSessionLogDocuments(markdownOrNotebook: string) {
     )
 
   return {
-    // sessionHighLevelFeedbackDocument,
     sessionMarkdownLowLevelFeedbackDocument,
   }
 }

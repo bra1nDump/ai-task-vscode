@@ -103,19 +103,6 @@
         "ai-task.userId": {
           "type": "string",
           "description": "User ID to use for by default anonymous analytics"
-        },
-        "ai-task.markdownOrNotebook": {
-          "type": "string",
-          "default": "notebook",
-          "enum": [
-            "notebook",
-            "markdown"
-          ],
-          "enumDescriptions": [
-            "notebook output",
-            "markdown output"
-          ],
-          "description": "Output of the main logs to a markdown document or notebook"
         }
       }
     },
