@@ -45,6 +45,24 @@
         ]
       }
     ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "taskSidebar",
+          "title": "AI Task",
+          "icon": "./icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "taskSidebar": [
+        {
+          "type": "webview",
+          "id": "taskView",
+          "name": "AI Task"
+        }
+      ]
+    },
     "languages": [
       {
         "id": "task-notebook",

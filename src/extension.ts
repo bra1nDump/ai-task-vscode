@@ -7,6 +7,7 @@ import * as vscode from 'vscode'
 import { TaskController } from 'notebook/taskController'
 import { TaskSerializer } from 'notebook/taskSerializer'
 import { newTaskNotebook } from 'commands/newTaskNotebook'
+import { WebViewMessage, getWebView } from 'helpers/getWebView'
 
 export async function activate(context: vscode.ExtensionContext) {
   console.log('activating bread extension')
@@ -107,6 +108,30 @@ export async function activate(context: vscode.ExtensionContext) {
       }
     }),
   )
+
+  vscode.window.registerWebviewViewProvider('taskView', {
+    resolveWebviewView(webviewView) {
+      webviewView.webview.html = getWebView()
+      webviewView.webview.onDidReceiveMessage(
+        (message: WebViewMessage) => {
+          switch (message.command) {
+            case 'createTaskNotebook':
+              void createTaskNotebook()
+              return
+          }
+        },
+        undefined,
+        context.subscriptions,
+      )
+      webviewView.webview.options = {
+        enableScripts: true,
+      }
+    },
+  })
+
+  async function createTaskNotebook() {
+    await newTaskNotebook()
+  }
 
   const allLanguages = await vscode.languages.getLanguages()
   const languageForFiles = allLanguages.map((language) => ({
