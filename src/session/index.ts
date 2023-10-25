@@ -1,11 +1,5 @@
 import { SessionContextManager } from 'context/manager'
 import { queueAnAppendToDocument } from 'helpers/fileSystem'
-import {
-  currentCellOutputContentMap,
-  documentContents,
-  pendingEdits,
-  queueAnAppendToExecutionOutput,
-} from 'notebook/addToTask'
 import * as vscode from 'vscode'
 
 export interface SessionConfiguration {
@@ -82,6 +76,61 @@ export async function startSession(
 
   const lowLevelLogger = (text: string) =>
     queueAnAppendToDocument(sessionMarkdownLowLevelFeedbackDocument, text)
+
+  const pendingEdits = new Map<string, Promise<void>>()
+
+  const currentCellOutputContentMap = new Map<string, string>()
+  const cellEditQueue: Record<string, string[]> = {}
+
+  async function queueAnAppendToExecutionOutput(
+    execution: vscode.NotebookCellExecution,
+    text: string,
+  ) {
+    if (execution.token.isCancellationRequested) {
+      return
+    }
+    const cellId = execution.cell.document.uri.toString()
+
+    if (!cellEditQueue[cellId]) {
+      cellEditQueue[cellId] = []
+    }
+
+    cellEditQueue[cellId].push(text)
+
+    const processQueue = async () => {
+      while (cellEditQueue[cellId] && cellEditQueue[cellId].length > 0) {
+        const currentText = cellEditQueue[cellId].shift()
+
+        let currentCellOutput = currentCellOutputContentMap.get(cellId) ?? ''
+        currentCellOutput += currentText
+        currentCellOutputContentMap.set(cellId, currentCellOutput)
+        if (execution.token.isCancellationRequested) {
+          return
+        }
+        await execution.replaceOutput(
+          new vscode.NotebookCellOutput([
+            vscode.NotebookCellOutputItem.text(
+              currentCellOutput,
+              'text/markdown',
+            ),
+          ]),
+        )
+      }
+    }
+
+    if (!pendingEdits.has(cellId)) {
+      if (execution.token.isCancellationRequested) {
+        return
+      }
+      const editPromise = processQueue()
+      pendingEdits.set(cellId, editPromise)
+      if (execution.token.isCancellationRequested) {
+        return
+      }
+      await editPromise
+      pendingEdits.delete(cellId)
+    }
+  }
 
   const highLevelLogger = async (text: string) => {
     void queueAnAppendToExecutionOutput(execution, text)
@@ -222,11 +271,6 @@ export async function closeSession(
 
   sessionContext.sessionEndedEventEmitter.fire()
   sessionContext.sessionEndedEventEmitter.dispose()
-
-  ///// HACCCCCCCCKs HACK:
-  currentCellOutputContentMap.clear()
-  documentContents.clear()
-  pendingEdits.clear()
 }
 
 export async function findMostRecentSessionLogIndexPrefix(
