@@ -32,12 +32,19 @@ async function main() {
     // Use cp.spawn / cp.exec for custom setup
     cp.spawnSync(
       cliPath,
-      [...args, '--install-extension', 'marxism.ai-error-search-assistant'],
+      [
+        ...args,
+        '--install-extension',
+        'marxism.ai-error-search-assistant',
+        '--force',
+      ],
       {
         encoding: 'utf-8',
         stdio: 'inherit',
       },
     )
+
+    console.log('installed error lookup extension')
 
     /*
      * Used for CI,
@@ -61,7 +68,10 @@ async function main() {
       extensionTestsPath,
       launchArgs: [
         'testing-sandbox',
-        '--disable-extensions', // Disables other extensions, wont work once we add a dependency, trying to figure out if tests fail because of this
+        /*
+         * WARNING: Don't disable extensions because this extension depends on error lookup extension!!
+         * '--disable-extensions', // Disables other extensions, wont work once we add a dependency, trying to figure out if tests fail because of this
+         */
       ],
     })
   } catch (err) {

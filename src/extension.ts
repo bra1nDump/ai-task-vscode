@@ -35,8 +35,19 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.unshift(
     vscode.commands.registerCommand(
       'ai-task.completeInlineTasks',
-      async () => {
-        await newCompleteInlineTasksCommandFromVSCodeCommand()
+      async (taskFromSiblingExtension?: unknown) => {
+        if (
+          taskFromSiblingExtension !== undefined &&
+          (typeof taskFromSiblingExtension !== 'string' ||
+            taskFromSiblingExtension.length === 0)
+        ) {
+          throw new Error(
+            'ai-task was invoked programmatically with a task argument without a string value',
+          )
+        }
+        await newCompleteInlineTasksCommandFromVSCodeCommand(
+          taskFromSiblingExtension,
+        )
       },
       /*
        * TODO: this acctually accepts this as a third argument,

@@ -50,21 +50,20 @@ export async function newTaskNotebook() {
   await cellDocumentEditorMaybe.edit((editBuilder) => {
     editBuilder.insert(
       new vscode.Position(0, 0),
-      `#### How to ask questions:
-- Try typing a question, for example how to write a function in python?
-- Hit plan or \`Shift+Enter\` to get an answer from GPT-4
+      `Ask questions<br>
+<font size="1">- Try typing a question, for example how to write a function in python?</font><br>
+<font size="1">- Hit run or \`Shift+Enter\`</font><br>
 
-#### How to add file information:
-- The currently visible files in the editor will be included by default
-- Include open tabs by including \`@tabs\` in your question
+Add file information<br>
+<font size="1">- Visible files are included by default</font><br>
+<font size="1">- Include all open tabs by including \`@${'tabs'}\` in your question</font><br>
 
-#### [Beta] To edit code directly in your files:
-- Open the file you want to edit and create a comment with \`@task\` in it
-- Add details about what you want to do in the comment
-- Hit 'Run @task' right above the comment to start editing
+[Beta] Edit code directly in your files<br>
+<font size="1">- Open the file you want to edit and create a comment with \`@${'task'}\` in it</font><br>
+<font size="1">- Explain how you want to modify your code</font><br>
+<font size="1">- Hit 'Run @task' button above the comment to start editing</font><br>
 
-  [Join Discord to support the project and get help!](https://discord.gg/D8V6Rc63wQ)
-`,
+<font size="2">[Join Discord to support the project and get help!](https://discord.gg/D8V6Rc63wQ)</font>`,
     )
   })
 

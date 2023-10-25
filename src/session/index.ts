@@ -289,9 +289,10 @@ export async function findMostRecentSessionLogIndexPrefix(
 
   const sessionLogFiles =
     await vscode.workspace.fs.readDirectory(sessionsDirectory)
-  const sessionLogIndexPrefixes = sessionLogFiles.map(([fileName, _]) =>
-    Number(fileName.split('-')[0]),
-  )
+  const sessionLogIndexPrefixes = sessionLogFiles.flatMap(([fileName, _]) => {
+    const maybeNumber = Number(fileName.split('-')[0])
+    return isNaN(maybeNumber) ? [] : [maybeNumber]
+  })
   const mostRecentSessionLogIndexPrefix = Math.max(
     ...sessionLogIndexPrefixes,
     0,
@@ -301,10 +302,23 @@ export async function findMostRecentSessionLogIndexPrefix(
 
 async function createSessionLogDocuments() {
   const taskMagicIdentifier = getBreadIdentifier()
+
   const sessionsDirectory = vscode.Uri.joinPath(
     vscode.workspace.workspaceFolders![0].uri,
     `.${taskMagicIdentifier}/sessions`,
   )
+
+  // No need to wait for this to finish
+  void (async () => {
+    const gitignorePath = vscode.Uri.joinPath(sessionsDirectory, '.gitignore')
+    const gitignoreExists = await vscode.workspace.fs.stat(gitignorePath).then(
+      () => true,
+      () => false,
+    )
+    if (!gitignoreExists) {
+      await vscode.workspace.fs.writeFile(gitignorePath, Buffer.from('*\n'))
+    }
+  })()
 
   const nextIndex =
     (await findMostRecentSessionLogIndexPrefix(sessionsDirectory)) + 1
