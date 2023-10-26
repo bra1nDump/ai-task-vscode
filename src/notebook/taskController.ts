@@ -84,7 +84,7 @@ export function extractChatHistory(
     execution.cell.notebook
       .getCells()
       // Get all cells up to the current one
-      .slice(0, execution.cell.index)
+      .slice(0, execution.cell.index + 1)
       // Skip first cell, skip last cell's output (re-running)
       .flatMap((cell, index, array) => {
         if (index === 0 && cell.kind === vscode.NotebookCellKind.Markup) {
