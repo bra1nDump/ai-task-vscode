@@ -144,6 +144,7 @@ export async function newCompleteInlineTasksCommandFromVSCodeCommand(
   }
 
   // Get the last cell in the notebook
+  await new Promise((resolve) => setTimeout(resolve, 100))
   const lastCell = notebook.getCells().slice(-1)[0]
 
   /*
@@ -251,7 +252,9 @@ ${message.role === 'user' ? '</user>' : '</assistant>'}`
     `Here is the history of user requests and assistant responses. This might give more context to the task. This is for context only, you should focus on the last task only:`,
   )
 
-  sessionContext.contextManager.addBlobContexts([messageHistoryBlob])
+  if (messageHistoryBlob.length) {
+    sessionContext.contextManager.addBlobContexts([messageHistoryBlob])
+  }
 
   /*
    * Always include active text editor as the questions are likely to be

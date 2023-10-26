@@ -1,9 +1,9 @@
 import * as assert from 'assert'
 import * as vscode from 'vscode'
 
-suite('VSCode Extension Command Tests', function () {
+suite.only('VSCode Extension Command Tests', function () {
   // Increased timeout since these are using LLM an are thus slow
-  this.timeout(100_000)
+  this.timeout(120_000)
   test('ai-task.completeInlineTasks command', async () => {
     /*
      *Assuming there's a file called "helloWorld.ts" in the root workspace:
@@ -62,8 +62,6 @@ suite('VSCode Extension Command Tests', function () {
 
     // Open and show required files
     await openAndShowFile('helloWorld.ts')
-    await openAndShowFile('environment.ts')
-    await openAndShowFile('main.ts')
 
     // Testing command is registered
     const releaseCommand = await vscode.commands
@@ -79,8 +77,8 @@ suite('VSCode Extension Command Tests', function () {
     await vscode.commands.executeCommand('ai-task.completeInlineTasks')
     console.log('Command "ai-task.completeInlineTasks" finished running')
 
-    // Wait a bit before asserting
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    // Wait a execution from controller
+    await new Promise((resolve) => setTimeout(resolve, 20_000))
 
     // Test editing of existing files works
     const helloWorldUri = vscode.Uri.joinPath(

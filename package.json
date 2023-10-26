@@ -45,6 +45,24 @@
         ]
       }
     ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "taskSidebar",
+          "title": "AI Task",
+          "icon": "./icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "taskSidebar": [
+        {
+          "type": "webview",
+          "id": "taskView",
+          "name": "AI Task"
+        }
+      ]
+    },
     "languages": [
       {
         "id": "task-notebook",
@@ -85,19 +103,6 @@
         "ai-task.userId": {
           "type": "string",
           "description": "User ID to use for by default anonymous analytics"
-        },
-        "ai-task.markdownOrNotebook": {
-          "type": "string",
-          "default": "notebook",
-          "enum": [
-            "notebook",
-            "markdown"
-          ],
-          "enumDescriptions": [
-            "notebook output",
-            "markdown output"
-          ],
-          "description": "Output of the main logs to a markdown document or notebook"
         }
       }
     },
@@ -116,11 +121,20 @@
         "steps": [
           {
             "id": "shortcutStep",
-            "title": "Create new AI Task Chat",
+            "title": "Create new AI Task Chat by using shortcut",
             "description": "To create a new notebook quickly:\n- Focus on the editor.\n- Press `Cmd+U` on Mac or `Ctrl+U` on Windows.\nA new notebook will be created!",
             "media": {
-              "image": "./documents/assets/walkthrough-notebook.jpg",
+              "image": "./documents/assets/walkthrough1.jpg",
               "altText": "Demonstration of using the shortcut"
+            }
+          },
+          {
+            "id": "iconStep",
+            "title": "Create new AI Task Chat by using side bar",
+            "description": "To create a new notebook you can use icon on side bar",
+            "media": {
+              "image": "./documents/assets/walkthrough2.jpg",
+              "altText": "Demonstration of using the side bar"
             }
           }
         ]
