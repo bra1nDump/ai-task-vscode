@@ -25,4 +25,3 @@ node_modules
 # Ignored directory with super long file names - prevents people from running those on windows
 # [Proper fix]  use some gpt base script to make file names shorter
 prompt-engineering/worthy-responses/
-configurations/.eslintrc.js

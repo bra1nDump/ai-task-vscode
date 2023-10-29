@@ -61,7 +61,7 @@ module.exports = {
         importOrder: [],
         importOrderSeparation: true,
         importOrderSortSpecifiers: true,
-        endOfLine: 'crlf',
+        endOfLine: 'lf',
       },
     ],
   },
@@ -72,6 +72,6 @@ module.exports = {
     "**/*.d.ts",
     "**/*.js",
     "**/*.mjs",
-    "testing-sandbox",
+    "example-projects/",
   ],
 };

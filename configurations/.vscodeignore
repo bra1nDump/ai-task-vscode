@@ -6,16 +6,17 @@ out/
 node_modules/
 src/
 .gitignore
-webpack.config.js
 tsconfig.json
 configurations/
 
 # Project specific folders
 .task/
 documents/
-testing-sandbox/
+example-projects/
 prompt-engineering/
 scripts/
 
 # Include assets (referenced in walkthroughs)
 !documents/assets/walkthrough-notebook.jpg
+# Include tutorial project, it has also used part of the walkthroughs
+!example-projects/walkthrough-error-apollo
