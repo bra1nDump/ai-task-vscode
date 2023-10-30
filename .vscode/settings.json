@@ -3,7 +3,7 @@
     // Ignore these paths when considering files to be added as context to the llm prompt
     "ai-task.ignorePatterns": [
         "prompt-engineering",
-        "testing-sandbox",
+        "example-projects",
         "documents",
         "README.md",
         "package.json",

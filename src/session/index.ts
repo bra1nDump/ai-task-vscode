@@ -1,5 +1,6 @@
 import { SessionContextManager } from 'context/manager'
 import { queueAnAppendToDocument } from 'helpers/fileSystem'
+import { getUserOverrideOpenAiKey, heliconeKey } from 'helpers/keyManager'
 import * as vscode from 'vscode'
 
 export interface SessionConfiguration {
@@ -8,9 +9,22 @@ export interface SessionConfiguration {
   enableNewFilesAndShellCommands: boolean
 }
 
+export type LlmCredentials =
+  | {
+      type: 'openai'
+      key: string
+    }
+  | {
+      type: 'helicone'
+      key: string
+    }
+
+// Thoughts: is this more like a single llm call context?
 export interface SessionContext {
   id: string
   userId: string
+
+  llmCredentials: LlmCredentials
 
   /**
    * Necessary for access to secrets to store API key the user enters
@@ -18,17 +32,28 @@ export interface SessionContext {
   extensionContext: vscode.ExtensionContext
   configuration: SessionConfiguration
 
+  /// Used to log what exactly was submitted to the LLM
   lowLevelLogger: (text: string) => Promise<void>
 
+  /**
+   * Used to log high level feedback to the user,
+   * currently writes to sell output in the notebook
+   */
   highLevelLogger: (text: string) => Promise<void>
+
+  contextManager: SessionContextManager
 
   /**
    * This is the document where raw LLM request is logged. This is mostly for
    * development.
    */
   markdownLowLevelFeedbackDocument: vscode.TextDocument
+  notebookCellExecutionThatStartedThisSession: vscode.NotebookCellExecution
 
-  contextManager: SessionContextManager
+  /*
+   * Refactor: We should merge the two event emitters into one with a union
+   * type of different session end reasons
+   */
 
   /**
    * When the user closes the editor with high level feedback this is our
@@ -47,12 +72,6 @@ export interface SessionContext {
    * after.
    */
   sessionEndedEventEmitter: vscode.EventEmitter<void>
-
-  /**
-   * This is a list of subscriptions that will be disposed when the session is
-   * closed.
-   */
-  subscriptions: vscode.Disposable[]
 }
 
 export async function startSession(
@@ -136,8 +155,6 @@ export async function startSession(
     void queueAnAppendToExecutionOutput(execution, text)
   }
 
-  const cachedActiveEditor = vscode.window.activeTextEditor
-
   /*
    * Create document manager that will help us backdate edits throughout this
    * sessiong
@@ -151,32 +168,6 @@ export async function startSession(
    * has run its course
    */
   const sessionEndedEventEmitter = new vscode.EventEmitter<void>()
-
-  // / NOTE: We used to stop the session when the user closed the high level
-  // feedback document, but i got feedback that tahts unexpected behavior + we
-  // are moving to notebooks :D
-  //
-  // const textDocumentCloseSubscription = vscode.window.tabGroups.onDidChangeTabs(
-  //   ({ closed: closedTabs }) => {
-  //     /*
-  //      * input contains viewType key: 'mainThreadWebview-markdown.preview'
-  //      * Label has the format 'Preview <name of the file>'
-  //      */
-  //     if (
-  //       closedTabs.find((tab) => {
-  //         /*
-  //          * Trying to be mindful of potential internationalization of the word
-  //          * 'Preview'
-  //          */
-  //         const abortSignalDocumentName =
-  //           sessionHighLevelFeedbackDocument.uri.path.split('/').at(-1)!
-  //         return tab.label.includes(abortSignalDocumentName)
-  //       })
-  //     ) {
-  //       sessionAbortedEventEmitter.fire()
-  //     }
-  //   },
-  // )
 
   void vscode.window.withProgress(
     {
@@ -215,22 +206,41 @@ export async function startSession(
     }
   }
 
+  let llmCredentials: LlmCredentials
+  const overrideOpenAiKey = await getUserOverrideOpenAiKey(context.secrets)
+  if (overrideOpenAiKey) {
+    llmCredentials = {
+      type: 'openai',
+      key: overrideOpenAiKey,
+    }
+  } else {
+    llmCredentials = {
+      type: 'helicone',
+      key: heliconeKey,
+    }
+  }
+
   return {
     id: new Date().toISOString(),
     userId,
+    llmCredentials,
     extensionContext: context,
     configuration: {
       taskIdentifier: getBreadIdentifier(),
       includeLineNumbers: true,
       enableNewFilesAndShellCommands: true,
     },
+
+    contextManager: documentManager,
+
     lowLevelLogger: lowLevelLogger,
     highLevelLogger: highLevelLogger,
+
     markdownLowLevelFeedbackDocument: sessionMarkdownLowLevelFeedbackDocument,
-    contextManager: documentManager,
+    notebookCellExecutionThatStartedThisSession: execution,
+
     sessionAbortedEventEmitter,
     sessionEndedEventEmitter,
-    subscriptions: [],
   }
 }
 
@@ -238,32 +248,13 @@ export async function startSession(
 export async function closeSession(
   sessionContext: SessionContext,
 ): Promise<void> {
-  // await sessionContext.highLevelFeedbackDocument.save()
   await sessionContext.markdownLowLevelFeedbackDocument.save()
-
   /*
-   * Schedule closing the editors matching the documents
-   * Communicate to the user that the editors will be closed
-   *
-   * We can also try closing the tab https://code.visualstudio.com/api/references/vscode-api#TabGroups
-   * I'm wondering if hide is not available only within code insiders
-   *
-   * Either way not sure if we should be closing the feedback preview, copilot
-   * or continue don't really close their sidebar once they're don
+   * Saving is important to prevent user from being prompted to save when they
+   * try closing it
    */
-  /*
-   * setTimeout(() => {
-   * hide is deprecated and the method suggested instead is to close active
-   * editor - not what I want :(
-   *   vscode.window.visibleTextEditors[0].hide()
-   *
-   * }, 2000)
-   */
+  await sessionContext.notebookCellExecutionThatStartedThisSession.cell.notebook.save()
 
-  // Dispose all subscriptions
-  sessionContext.subscriptions.forEach(
-    (subscription) => void subscription.dispose(),
-  )
   void sessionContext.contextManager.dispose()
 
   // Dispose event emitters

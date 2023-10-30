@@ -11,11 +11,13 @@
       "type": "extensionHost",
       "request": "launch",
       "args": [
-        "${workspaceFolder}/testing-sandbox",
-        "${workspaceFolder}/testing-sandbox/helloWorld.ts",
+        "${workspaceFolder}/example-projects/testing-sandbox",
+        "${workspaceFolder}/example-projects/testing-sandbox/helloWorld.ts",
         "--extensionDevelopmentPath=${workspaceFolder}"
       ],
-      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "outFiles": [
+        "${workspaceFolder}/dist/**/*.js"
+      ],
       "preLaunchTask": "${defaultBuildTask}"
     },
     /////////////////////// Testing the extension on other real projects (specific to Kirill) ///////////////////////
@@ -32,7 +34,9 @@
         "--disable-extension",
         "pokey.cursorless"
       ],
-      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "outFiles": [
+        "${workspaceFolder}/dist/**/*.js"
+      ],
       "preLaunchTask": "${defaultBuildTask}"
     },
     {
@@ -48,7 +52,9 @@
         "--disable-extension",
         "pokey.cursorless"
       ],
-      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "outFiles": [
+        "${workspaceFolder}/dist/**/*.js"
+      ],
       "preLaunchTask": "${defaultBuildTask}"
     },
     {
@@ -62,7 +68,9 @@
         "--disable-extension",
         "dbaeumer.vscode-eslint"
       ],
-      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "outFiles": [
+        "${workspaceFolder}/dist/**/*.js"
+      ],
       "preLaunchTask": "${defaultBuildTask}"
     },
     {
@@ -73,7 +81,9 @@
         "${workspaceFolder}/../git-history-to-blog",
         "--extensionDevelopmentPath=${workspaceFolder}"
       ],
-      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "outFiles": [
+        "${workspaceFolder}/dist/**/*.js"
+      ],
       "preLaunchTask": "${defaultBuildTask}"
     },
     {
@@ -84,7 +94,9 @@
         "${workspaceFolder}/../show-me-chatgpt-plugin",
         "--extensionDevelopmentPath=${workspaceFolder}"
       ],
-      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "outFiles": [
+        "${workspaceFolder}/dist/**/*.js"
+      ],
       "preLaunchTask": "${defaultBuildTask}"
     },
     {
@@ -95,7 +107,9 @@
         "${workspaceFolder}/../mermaid-laid-out-graph",
         "--extensionDevelopmentPath=${workspaceFolder}"
       ],
-      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "outFiles": [
+        "${workspaceFolder}/dist/**/*.js"
+      ],
       "preLaunchTask": "${defaultBuildTask}"
     },
     /////////////////////// Unit tests ///////////////////////
@@ -106,7 +120,7 @@
       "type": "extensionHost",
       "request": "launch",
       "args": [
-        "${workspaceFolder}/testing-sandbox",
+        "${workspaceFolder}/example-projects/testing-sandbox",
         "--extensionDevelopmentPath=${workspaceFolder}",
         "--extensionTestsPath=${workspaceFolder}/out/test/mochaTestRunner.js"
       ],
@@ -114,7 +128,10 @@
       "env": {
         "MOCHA_IGNORE_TIMEOUT": "true"
       },
-      "outFiles": ["${workspaceFolder}/out/**/*.js", "${workspaceFolder}/dist/**/*.js"],
+      "outFiles": [
+        "${workspaceFolder}/out/**/*.js",
+        "${workspaceFolder}/dist/**/*.js"
+      ],
       "preLaunchTask": "${defaultBuildTask}"
       // Because the test compilation tasks or watch tasks they will not rebuild unless content changes
       // So if we just clean the out directory it will not trigger a re-run
@@ -125,9 +142,15 @@
       "name": "Prompt codegen",
       "type": "node",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run-script", "codegen:prompt-checkpoints"],
+      "runtimeArgs": [
+        "run-script",
+        "codegen:prompt-checkpoints"
+      ],
       "request": "launch",
-      "outFiles": ["${workspaceFolder}/out/**/*.js", "${workspaceFolder}/dist/**/*.js"],
+      "outFiles": [
+        "${workspaceFolder}/out/**/*.js",
+        "${workspaceFolder}/dist/**/*.js"
+      ],
       "preLaunchTask": "${defaultBuildTask}"
     }
   ]

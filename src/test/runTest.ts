@@ -46,15 +46,6 @@ async function main() {
 
     console.log('installed error lookup extension')
 
-    /*
-     * Used for CI,
-     * Duplicates setup in .vscode/launch.json > Tests:
-     * "${workspaceFolder}/testing-sandbox",
-     * "--disable-extensions", // Disables other extensions
-     * "--extensionDevelopmentPath=${workspaceFolder}",
-     * "--extensionTestsPath=${workspaceFolder}/out/test/mochaTestRunner.js"
-     */
-
     // Load .env file - API keys and other secrets
     const env = config({
       path: path.resolve(process.cwd(), '.env'),
@@ -67,7 +58,7 @@ async function main() {
       extensionDevelopmentPath,
       extensionTestsPath,
       launchArgs: [
-        'testing-sandbox',
+        'example-projects/testing-sandbox',
         /*
          * WARNING: Don't disable extensions because this extension depends on error lookup extension!!
          * '--disable-extensions', // Disables other extensions, wont work once we add a dependency, trying to figure out if tests fail because of this

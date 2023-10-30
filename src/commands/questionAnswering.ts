@@ -8,6 +8,7 @@ import dedent from 'dedent'
 import { openedTabs } from 'context/atTabs'
 import { OpenAiMessage } from 'helpers/openai'
 import { startQuestionAnsweringStreamWIthContext } from 'multi-file-edit/v1/HACK_questionMessageCreation'
+import { explainErrorToUserAndOfferSolutions } from 'session/errorHandling'
 
 //////////////////// THIS ENTIRE FILE IS A HACK - COPIED OVER FROM comleteInlineTasks ////////////////////
 
@@ -37,52 +38,59 @@ export async function answerQuestionCommand(
   const sessionContext = await startSession(extensionContext, execution)
   sessionRegistry.set(sessionContext.id, sessionContext)
 
-  try {
-    /*
-     * This works differently from the completeInlineTasksCommand because it
-     * returns before we are done with the stream - it returns the stream
-     * itself
-     */
-    const stream = await throwingQuestionAnswering(
-      sessionContext,
-      previousMessages,
-    )
-
-    if (stream === undefined) {
-      throw new Error('Stream is undefined')
-    }
-
-    /*
-     * This is a hack to keep the first output (what files were submitted etc)
-     * if it exists before we start replying
-     */
-    const firstOutputWithContext = execution.cell.outputs.at(0)
-
-    for await (const answerString of stream) {
-      if (execution.token.isCancellationRequested) {
-        break
-      }
-      void execution.replaceOutput([
-        ...(firstOutputWithContext ? [firstOutputWithContext] : []),
-        new vscode.NotebookCellOutput([
-          vscode.NotebookCellOutputItem.text(answerString, 'text/markdown'),
-        ]),
-      ])
-    }
-
-    // For last output write
-    await new Promise((resolve) => setTimeout(resolve, 100))
-  } catch (error) {
-    console.error(error)
-    if (error instanceof Error) {
-      await sessionContext.highLevelLogger(`\n\n> Error: ${error.message}`)
-    }
-  } finally {
-    // await sessionContext.highLevelLogger('\n\n> Done\n')
-
+  const cleanupSession = async () => {
     await closeSession(sessionContext)
     sessionRegistry.delete(sessionContext.id)
   }
+
+  /*
+   * This works differently from the completeInlineTasksCommand because it
+   * returns before we are done with the stream - it returns the stream
+   * itself
+   */
+  const streamResult = await throwingQuestionAnswering(
+    sessionContext,
+    previousMessages,
+  )
+
+  if (streamResult.type === 'error') {
+    await explainErrorToUserAndOfferSolutions(
+      sessionContext,
+      streamResult.error,
+    )
+    await cleanupSession()
+    return
+  }
+
+  const [rawLlmResponseStream, abortController] = streamResult.value
+
+  // Only aboard on user requested session termination
+  sessionContext.sessionAbortedEventEmitter.event(() => {
+    if (abortController.signal.aborted) {
+      return
+    }
+    return abortController.abort()
+  })
+
+  for await (const answerString of rawLlmResponseStream) {
+    switch (answerString.type) {
+      case 'chunk':
+        void sessionContext.highLevelLogger(answerString.delta)
+        break
+      case 'streamEndedAbonormally':
+        void sessionContext.highLevelLogger(
+          answerString.errorMessageForUser ?? 'Unknown error',
+        )
+        break
+      case 'streamEndedNormally':
+        break
+    }
+  }
+
+  // For last output write
+  await new Promise((resolve) => setTimeout(resolve, 100))
+
+  await cleanupSession()
 }
 
 async function throwingQuestionAnswering(
