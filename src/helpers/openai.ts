@@ -1,5 +1,4 @@
 import OpenAI from 'openai'
-import * as vscode from 'vscode'
 
 import { AsyncIterableX, from, last } from 'ix/asynciterable'
 import { filter, map as mapAsync } from 'ix/asynciterable/operators'
@@ -7,19 +6,24 @@ import { multicast } from './ixMulticast'
 import { throwingPromiseToResult } from './catchAsync'
 import { ChatCompletionChunk } from 'openai/resources/chat'
 import { Result, resultError, resultSuccess } from './result'
-import { SessionContext } from 'session'
-import { undefinedIfStringEmpty } from './optional'
 import { Stream } from 'openai/streaming'
 import { APIError } from 'openai/error'
-import { hell } from './constants'
 
 export type OpenAiMessage = OpenAI.Chat.Completions.ChatCompletionMessageParam
-
-let isStreamRunning = false
 
 export interface LlmPartialResponse {
   cumulativeResponse: string
   delta: string
+}
+
+export interface LlmError {
+  kind:
+    | 'invalid_api_key'
+    | 'insufficient_quota'
+    | 'invalid_request_error'
+    | 'token_count_limit_reached'
+    | 'unknown'
+  messageForUser: string
 }
 
 /**
@@ -44,83 +48,37 @@ export async function streamLlm(
    * method
    */
   logger: (text: string) => Promise<void>,
-  session: SessionContext,
+  userIdentifierForLoggingAndAbuseDetection: string,
+  credentials:
+    | { type: 'openai'; key: string }
+    | { type: 'helicone'; key: string },
 ): Promise<
-  Result<[AsyncIterableX<LlmPartialResponse>, AbortController], Error>
+  Result<[AsyncIterableX<LlmPartialResponse>, AbortController], LlmError>
 > {
-  // Ensure the key is provided
-  const key: string | undefined =
-    process.env.OPENAI_API_KEY ??
-    undefinedIfStringEmpty(
-      vscode.workspace.getConfiguration('ai-task').get('openaiApiKey'),
-    ) ??
-    undefinedIfStringEmpty(
-      await session.extensionContext.secrets.get('openaiApiKey'),
-    )
-  /*
-   * Stop collecting the key from the user during beta
-   * if (typeof key !== 'string' || key.length === 0) {
-   *   // Give the user a chance to enter the key
-   *   key = await vscode.window.showInputBox({
-   *     prompt: 'Please enter your OpenAI API key',
-   *     ignoreFocusOut: true,
-   *   })
-   *   if (key) {
-   *     await session.extensionContext.secrets.store('openaiApiKey', key)
-   *   }
-   * }
-   */
-
-  /*
-   * Ensure we are not already running a stream,
-   * we want to avoid large bills if there's a bug and we start too many
-   * streams at once
-   */
-  if (isStreamRunning) {
-    return resultError(new Error('Stream is already running'))
-  }
-  isStreamRunning = true
-
   // If key is found, use the official API, otherwise use the proxy
-  const openai =
-    key === undefined
-      ? new OpenAI({
-          apiKey: `sk-helicone-proxy-${hell}`,
-          baseURL: 'https://oai.hconeai.com/v1',
-
-          defaultHeaders: {
-            /*
-             * Analytics, this header is kind of redundant but is still needed
-             * to have requests logged in the dashboard, discouraging simple
-             * scraping, this key is not important though
-             */
-            'Helicone-Auth':
-              `Bearer ` +
-              `s` +
-              `k` +
-              '-helicone' +
-              '-nw' +
-              '5' +
-              'a' +
-              '63' +
-              'y' +
-              '-333' +
-              'utiq' +
-              '-qs' +
-              '62' +
-              'fma' +
-              '-grnofmi',
-
-            'Helicone-User-Id': session.userId,
-            // Do not store user's data
-            'Helicone-Omit-Request': 'true',
-            'Helicone-Omit-Response': 'true',
-          },
-        })
-      : new OpenAI({
-          apiKey: key,
-          baseURL: 'https://api.openai.com/v1',
-        })
+  let openai: OpenAI
+  switch (credentials.type) {
+    case 'openai':
+      openai = new OpenAI({
+        apiKey: credentials.key,
+        baseURL: 'https://api.openai.com/v1',
+      })
+      break
+    case 'helicone':
+      openai = new OpenAI({
+        apiKey: credentials.key,
+        baseURL: 'https://oai.hconeai.com/v1',
+        defaultHeaders: {
+          'Helicone-User-Id': userIdentifierForLoggingAndAbuseDetection,
+          // Do not store user's data
+          'Helicone-Omit-Request': 'true',
+          'Helicone-Omit-Response': 'true',
+        },
+      })
+      break
+    default:
+      throw new Error('Invalid credential type')
+  }
 
   /*
    * Compare AsyncGenerators / AsyncIterators: https://javascript.info/async-iterators-generators
@@ -133,18 +91,64 @@ export async function streamLlm(
     APIError
   >(
     openai.chat.completions.create({
-      model: process.env.OPENAI_DEFAULT_MODEL ?? 'gpt-4',
+      model: 'gpt-4',
       temperature: 0.4,
       messages,
       stream: true,
+      user: userIdentifierForLoggingAndAbuseDetection,
     }),
   )
 
+  /**
+   * Check for known errors invalid_api_key, spending limit..., token count...,
+   * other Move termination of the session outside of this function
+   *
+   * Other scenarios to test: Disable network midway through the stream
+   *
+   * Once the request fails promt the user to enter their own key - have a
+   * command for this Maybe add a button after certain error message types?
+   * We should classify the error type here
+   *
+   * MAKE SURE NOT TO FORGET: session.sessionEndedEventEmitter.fire()
+   */
   if (streamResult.type === 'error') {
-    console.log(JSON.stringify(streamResult.error, null, 2))
-    isStreamRunning = false
-    session.sessionEndedEventEmitter.fire()
-    return resultError(new Error(streamResult.error.message))
+    const error = streamResult.error
+    console.log(JSON.stringify(error, null, 2))
+
+    let llmError: LlmError
+    switch (error.code) {
+      case 'invalid_api_key':
+        llmError = {
+          kind: 'invalid_api_key',
+          messageForUser: error.message,
+        }
+        break
+      case 'insufficient_quota':
+        llmError = {
+          kind: 'insufficient_quota',
+          messageForUser: error.message,
+        }
+        break
+      case 'invalid_request_error':
+        llmError = {
+          kind: 'invalid_request_error',
+          messageForUser: error.message,
+        }
+        break
+      case 'token_count_limit_reached':
+        llmError = {
+          kind: 'token_count_limit_reached',
+          messageForUser: error.message,
+        }
+        break
+      default:
+        llmError = {
+          kind: 'unknown',
+          messageForUser: error.message,
+        }
+        break
+    }
+    return resultError(llmError)
   }
   const stream = streamResult.value
 
@@ -197,19 +201,20 @@ export async function streamLlm(
   void logger(`\n# [assistant, latest response]:\n\`\`\`md\n`)
 
   // Detect end of stream and free up the llm resource
-  void last(multicastStream)
-    .catch((error: Error) => {
-      console.error(error)
-      void logger(
-        `\n# [error occurred in stream]:\n\`\`\`md\n${
-          error as unknown as any
-        }\`\`\`\n`,
-      )
-      return undefined
-    })
-    .then(() => {
-      isStreamRunning = false
-    })
+  void last(multicastStream).catch((error: Error) => {
+    console.error(error)
+    void logger(
+      `\n# [error occurred in stream]:\n\`\`\`md\n${
+        error as unknown as any
+      }\`\`\`\n`,
+    )
+    return undefined
+  })
+  /*
+   * .then(() => {
+   *   isStreamRunning = false
+   * })
+   */
 
   return resultSuccess([multicastStream, stream.controller])
 }

@@ -1,7 +1,7 @@
 import * as assert from 'assert'
 import * as vscode from 'vscode'
 
-suite.only('VSCode Extension Command Tests', function () {
+suite('VSCode Extension Command Tests', function () {
   // Increased timeout since these are using LLM an are thus slow
   this.timeout(120_000)
   test('ai-task.completeInlineTasks command', async () => {
@@ -60,7 +60,13 @@ suite.only('VSCode Extension Command Tests', function () {
       await new Promise((resolve) => setTimeout(resolve, 100))
     }
 
-    // Open and show required files
+    /*
+     * Open and show required files
+     * All files need to be open to be considered for modification were only
+     * searching four tasks within open tabs
+     */
+    await openAndShowFile('main.ts')
+    await openAndShowFile('environment.ts')
     await openAndShowFile('helloWorld.ts')
 
     // Testing command is registered

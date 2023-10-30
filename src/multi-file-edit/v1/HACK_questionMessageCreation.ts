@@ -8,6 +8,7 @@ import { SessionContext } from 'session'
 
 import { map as mapAsync } from 'ix/asynciterable/operators'
 import { createQuestionAnsweringWithContext } from './HACK_questionAnsweringPrompt'
+import { explainErrorToUserAndOfferSolutions } from 'session/errorHandling'
 
 export async function startQuestionAnsweringStreamWIthContext(
   sessionContext: SessionContext,
@@ -60,12 +61,15 @@ export async function startQuestionAnsweringStreamWIthContext(
   const streamResult = await streamLlm(
     messages,
     sessionContext.lowLevelLogger,
-    sessionContext,
+    sessionContext.userId,
+    sessionContext.llmCredentials,
   )
   if (streamResult.type === 'error') {
-    void sessionContext.highLevelLogger(`\n\n${streamResult.error.message}\n`)
-    sessionContext.sessionAbortedEventEmitter.fire()
-    throw streamResult.error
+    await explainErrorToUserAndOfferSolutions(
+      sessionContext,
+      streamResult.error,
+    )
+    return
   }
 
   const [rawLlmResponseStream, abortController] = streamResult.value

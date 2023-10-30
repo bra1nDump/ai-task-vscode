@@ -11,6 +11,7 @@ import { SessionContext } from 'session'
 
 import { map as mapAsync } from 'ix/asynciterable/operators'
 import { createMultiFileEditingMessages } from './prompt'
+import { explainErrorToUserAndOfferSolutions } from 'session/errorHandling'
 
 export async function startMultiFileEditing(sessionContext: SessionContext) {
   /*
@@ -60,17 +61,20 @@ export async function startMultiFileEditing(sessionContext: SessionContext) {
   const streamResult = await streamLlm(
     messages,
     sessionContext.lowLevelLogger,
-    sessionContext,
+    sessionContext.userId,
+    sessionContext.llmCredentials,
   )
   if (streamResult.type === 'error') {
-    void sessionContext.highLevelLogger(`\n\n${streamResult.error.message}\n`)
-    sessionContext.sessionAbortedEventEmitter.fire()
+    await explainErrorToUserAndOfferSolutions(
+      sessionContext,
+      streamResult.error,
+    )
     return
   }
 
   const [rawLlmResponseStream, abortController] = streamResult.value
 
-  // Abort if requested
+  // Abort if
   sessionContext.sessionAbortedEventEmitter.event(() => abortController.abort())
 
   /*

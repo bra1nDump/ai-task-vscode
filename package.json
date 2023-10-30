@@ -82,6 +82,10 @@
       {
         "command": "ai-task.newTaskNotebook",
         "title": "AI Task: Create a new task notebook"
+      },
+      {
+        "command": "ai-task.setOpenAiKey",
+        "title": "AI Task: Set OpenAI Key"
       }
     ],
     "configuration": {
@@ -90,10 +94,6 @@
           "type": "string",
           "default": "task",
           "description": "Override the keyword the LLM uses when searching for its task"
-        },
-        "ai-task.openaiApiKey": {
-          "type": "string",
-          "description": "OpenAI API key"
         },
         "ai-task.ignorePatterns": {
           "type": "array",
@@ -109,8 +109,8 @@
     "keybindings": [
       {
         "command": "ai-task.newTaskNotebook",
-        "key": "ctrl+u",
-        "mac": "cmd+u"
+        "key": "ctrl+y",
+        "mac": "cmd+y"
       }
     ],
     "walkthroughs": [

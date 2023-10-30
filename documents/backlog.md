@@ -5,46 +5,29 @@
 
 # Next milestones
 
-- Found a single demo user
-- Reached out to 5 potential collaborators
-- Replaced continue on the current project
-
-# Before our demos
-
-## New control flow
-
-When user hits run (or runs command from command palette)
-  - we create a new notebook
-  - open it
-  - do gynmnastics to add a new cell to it using commands (so if its already opend we append to the end)
-  - start executing the cell
-
-Now all actual file editing is kicked off from the notebook execution
-  - We create a new session, given the cell execution to append high level results to
-  - If the cell does not have a task in it
-    - Similar to how we do this in completeInlineTasks, parse the cell content for @ mentions and modify context
-    - use a simplified prompt to simply generate markdown reponse - no edits
-    - dump context manager + previous cell contents into the messages
+- Deliver a good demo for the Hecker news crowd
 
 ## Next up:
 
-- Fix tests!!!!! Not sure at what point we broke them
-- Document the new control flow in architecture.md roughly (don't spend too much time on it)
-- Fix error that is currently popping up (again, not critical)
-Error: 
-rejected promise not handled within 1 second: Error: Cannot modify cell output after calling resolve
-extensionHostProcess.js:131
-stack trace: Error: Cannot modify cell output after calling resolve
-	at h.t (/Applications/Visual Studio Code - Insiders.app/Contents/Resources/app/out/vs/workbench/api/node/extensionHostProcess.js:127:105565)
-	at Object.replaceOutput (/Applications/Visual Studio Code - Insiders.app/Contents/Resources/app/out/vs/workbench/api/node/extensionHostProcess.js:127:107002)
-	at applyEdit (/Users/kirilldubovitskiy/projects/bread/dist/extension.js:1247:25)
+- Stabilized error research functionality
+- Improve error handling when keys are wrong or limit is reached
+  - getting the next chunk from the stream fails: I anticipate this will be difficult because of using async a troubles
+  - When .next() fails we can either return in err1r to avoid throwing in the fore loop. But then we will need to handle the errors in every single for loop iteration. 
+  - I think it's a good idea to do this on the top level, where we would communicate the error to the user. We can then simply not run the lower level for loops if there is an error.
+    - The upside of passing the stream to the lower level is that we can create local state for these lower level functions. For example highlighting a range.
+    - Still what we can do is it transformed the stream to simply terminate once an error during streaming is encountered.
+    - Let's write some tests to see how it would work
+
+- Old multi file editing is too broken so let's just focus on question answering with context for now
+  - But it is required for the demo to work and to end so let's keep it for now
+
+- Create a custom language that will extend markdown so it can be used in notebook cells to create runnable markdown cells. Currently if you have a markdown cell it it is not runnable.
+  - Alternatively create a new editor based chat interface
 
 - Show walkthrough after installing the extension (implement, but don't enable yet, so if (false) hack to disable it)
 - Add a dedicated activity bar icon for the extension so it has an easy place to access
   - Add a button to create a new notebook
-- If user runs task by hitting play button - add cell programmatically. Should be the same experience as if they hit shift enter
 
-- cleanup old high level document stuff - probably not going back to that ever so lets just kill it. Kill everything related to that (keep the abstraction for logging though)
 - think how things can be better scoped to a session - see some hacks I added to clean up the maps of edits / cell outputs in closing session
 - ... clenup hacks produced while getting notebooks to work. Lets plan this one out before we do it. For now lets just document some ideas on how to improve the situation
 
@@ -130,6 +113,9 @@ Will function calling help me getter faster? I would not need to deal with Xml p
 - Only provide certain lines as potential starts and finishes for the range
 
 # Done
+- If user runs task by hitting play button - add cell programmatically. Should be the same experience as if they hit shift enter
+
+- cleanup old high level document stuff - probably not going back to that ever so lets just kill it. Kill everything related to that (keep the abstraction for logging though)
 
 
 - Don't open new tabs for files that are already open, don't open tabs in the same group with the preview / notebook

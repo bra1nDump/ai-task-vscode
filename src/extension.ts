@@ -8,6 +8,7 @@ import { TaskController } from 'notebook/taskController'
 import { TaskSerializer } from 'notebook/taskSerializer'
 import { newTaskNotebook } from 'commands/newTaskNotebook'
 import { WebViewMessage, getWebView } from 'helpers/getWebView'
+import { updateOpenAiKey } from 'commands/updateOpenAIKey'
 
 export async function activate(context: vscode.ExtensionContext) {
   console.log('activating bread extension')
@@ -31,8 +32,14 @@ export async function activate(context: vscode.ExtensionContext) {
     ),
   )
 
-  // Commands also need to be defined in package.json
+  /*
+   * Register commands
+   * Commands also need to be added in package.json
+   */
   context.subscriptions.unshift(
+    vscode.commands.registerCommand('ai-task.newTaskNotebook', async () => {
+      await newTaskNotebook()
+    }),
     vscode.commands.registerCommand(
       'ai-task.completeInlineTasks',
       async (taskFromSiblingExtension?: unknown) => {
@@ -49,16 +56,11 @@ export async function activate(context: vscode.ExtensionContext) {
           taskFromSiblingExtension,
         )
       },
-      /*
-       * TODO: this acctually accepts this as a third argument,
-       * so bind above can be removed and this can be passed here insted
-       */
     ),
-  )
 
-  context.subscriptions.unshift(
-    vscode.commands.registerCommand('ai-task.newTaskNotebook', async () => {
-      await newTaskNotebook()
+    // Configuration commands
+    vscode.commands.registerCommand('ai-task.setOpenAiKey', async () => {
+      await updateOpenAiKey(context)
     }),
   )
 
@@ -70,27 +72,23 @@ export async function activate(context: vscode.ExtensionContext) {
     /*
      * Not sure how to register a command on enter,
      * markdown formatter extension I believe does have this key binding and it
-     * inserts - if the previous line was a list item
+     * inserts - if the previous line was a list item.
+     *
+     * Might be specificity issue, I haven't tried adding a when statement in
+     * package.json
      */
-    /*
-     * vscode.commands.registerCommand(
-     *   'ai-task.onEnterKey',
-     *   (textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) => {
-     *     // Insert a line of text at the current cursor position
-     *     const position = textEditor.selection.active
-     *     edit.insert(position, 'You pressed the enter key!')
-     *   },
-     * ),
-     */
+
     // Kickoff on @run mention
     vscode.workspace.onDidChangeTextDocument((event) => {
-      /*
-       * Ideally will want to make sure we are within a comment,
-       * could also be multiline and bread mention can be anywhere
-       */
-      const isRunInLine = (document: vscode.TextDocument, line: number) => {
-        const lineText = document.lineAt(line).text
-        return lineText.includes('@run')
+      const isRunMentionedRightBeforeRangeThatGotReplaced = (
+        document: vscode.TextDocument,
+        changeRange: vscode.Range,
+      ) => {
+        const line = changeRange.start.line
+        const lineTextLeadingUpToSpaceOrEnter = document.getText(
+          new vscode.Range(line, 0, line, changeRange.end.character),
+        )
+        return lineTextLeadingUpToSpaceOrEnter.endsWith('@run')
       }
 
       if (isTaskFile(event.document)) {
@@ -107,8 +105,11 @@ export async function activate(context: vscode.ExtensionContext) {
          */
         (event.contentChanges[0].text.startsWith('\n') ||
           event.contentChanges[0].text === ' ') &&
-        // only trigger if @run is in the line
-        isRunInLine(event.document, event.contentChanges[0].range.start.line)
+        // only trigger if @ run is
+        isRunMentionedRightBeforeRangeThatGotReplaced(
+          event.document,
+          event.contentChanges[0].range,
+        )
       ) {
         console.log('triggering command trough @ run mention')
         /*

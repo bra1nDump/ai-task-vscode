@@ -5,6 +5,45 @@ const debugLog: typeof console.log = () => {
   /* */
 }
 
+/**
+ * Use this to create a stream that can be iterated over multiple times.
+ * **SEE GOTCHAS BELOW**
+ *
+ * POSSIBLY REIMPLEMENTED whats already available in the library. Haven't tried it https://github.com/ReactiveX/IxJS/blob/f07b7ef4095120f1ef21a4023030c75b36335cd1/src/asynciterable/operators/share.ts#L6
+ *
+ * Example:
+ * ```typescript
+ * const original = from(1, 2, 3)
+ * const allowsRepeatedConsumption = multicast(original)
+ *
+ * const doubled = map(
+ *   (x) => {
+ *     console.log(`mapping ${x}`)
+ *     return x * 2
+ *   },
+ *   allowsRepeatedConsumption
+ * )
+ *
+ * // Will print 2, 4, 6
+ * for await (const value of doubled) {
+ *  console.log(value)
+ * }
+ *
+ * // Will also print 2, 4, 6 (without multicasting this would print nothing)
+ * for await (const value of doubled) {
+ *   console.log(value)
+ * }
+ * ```
+ *
+ * Gotchas:
+ * Caching happens at the point of multicasting, ALL OPERATIONS AFTER WILL
+ * POTENTIALLY RUN MANY TIMES.
+ *
+ * From the example above the map function will run twice for each element in
+ * the original stream. This is because the map function is called once for each
+ * consumer of the stream.
+ * To avoid this you can use the `share` operator from ixjs.
+ */
 export function multicast<T>(source: AsyncIterable<T>): AsyncIterableX<T> {
   const cache: T[] = []
   let sourceExhausted = false
@@ -108,24 +147,3 @@ export function multicast<T>(source: AsyncIterable<T>): AsyncIterableX<T> {
     },
   })
 }
-
-/*
- *Debugging ....
- *Multiplex function
- *id:  5
- *called generate consumer 0
- *id:  0
- *called generate consumer 1
- *
- *id: 5 pulled an async element: 1, cache state: [], cacheIndexYielded: -1
- *id: 5 yielding own value: 1, cacheIndex: 0
- *id: 0 pulled an async element: 2, cache state: [1], cacheIndexYielded: -1
- *id: 0 yielding from cache, value: 1, cacheIndexYielded: 0
- * id: 5 pulled an async element: undefined, cache state: [1],
- * cacheIndexYielded: 0 id: 0 yielding own value: 2, cacheIndex: 1
- * id: 0 pulled an async element: undefined, cache state: [1,2],
- * cacheIndexYielded: 1
- *
- *(1) [1]
- *(2) [1, 2]
- */
