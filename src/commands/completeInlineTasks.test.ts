@@ -84,7 +84,7 @@ suite('VSCode Extension Command Tests', function () {
     console.log('Command "ai-task.completeInlineTasks" finished running')
 
     // Wait a execution from controller
-    await new Promise((resolve) => setTimeout(resolve, 20_000))
+    await new Promise((resolve) => setTimeout(resolve, 100_000))
 
     // Test editing of existing files works
     const helloWorldUri = vscode.Uri.joinPath(

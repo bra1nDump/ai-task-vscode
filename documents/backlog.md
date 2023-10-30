@@ -5,49 +5,28 @@
 
 # Next milestones
 
-- Deliver a good demo for the Hecker news crowd
+- Deliver a good demo for the Hecker news crowd (Tuesday morning is the deadline)
 
 ## Next up:
 
-- Stabilized error research functionality
-- Improve error handling when keys are wrong or limit is reached
-  - getting the next chunk from the stream fails: I anticipate this will be difficult because of using async a troubles
-  - When .next() fails we can either return in err1r to avoid throwing in the fore loop. But then we will need to handle the errors in every single for loop iteration. 
-  - I think it's a good idea to do this on the top level, where we would communicate the error to the user. We can then simply not run the lower level for loops if there is an error.
-    - The upside of passing the stream to the lower level is that we can create local state for these lower level functions. For example highlighting a range.
-    - Still what we can do is it transformed the stream to simply terminate once an error during streaming is encountered.
-    - Let's write some tests to see how it would work
-
-- Old multi file editing is too broken so let's just focus on question answering with context for now
-  - But it is required for the demo to work and to end so let's keep it for now
-
-- Currently we handle stream creation airs and airs within the stream separately
-  - This is good because those errors are generally different, and we expect majority of the time the air will happen on stream creation
-  - We still need to handle stream ending correctly or incorrectly, and having separate air handling for that
-  - I'm wondering if we can merge the two together and have a single error handling mechanism for both cases
-    - For example when the stream creation fails, we can return a single item in the stream which would be of type 'failedToStartStream' or something like that
-    - This actually seems hacky, as for example we will not have an aboard controller from the stream, so do we need to create a fake one? Merging to failure modes that are different seems like a bad idea
-
-- Create a custom language that will extend markdown so it can be used in notebook cells to create runnable markdown cells. Currently if you have a markdown cell it it is not runnable.
-  - Alternatively create a new editor based chat interface
+- Return OpenAI from activate so error extension can use it
 
 - Show walkthrough after installing the extension (implement, but don't enable yet, so if (false) hack to disable it)
-- Add a dedicated activity bar icon for the extension so it has an easy place to access
-  - Add a button to create a new notebook
 
-- think how things can be better scoped to a session - see some hacks I added to clean up the maps of edits / cell outputs in closing session
 - ... clenup hacks produced while getting notebooks to work. Lets plan this one out before we do it. For now lets just document some ideas on how to improve the situation
+  - Extract common context enrichment pieces into a separate function
+  - Extract a single user message creation based on context manager contents
 
-- Explore during the walkthrough creating a sample project in system temp folder and opening it in vscode as a way to show the users how to use the extension's full power
-
-- Keep on the lookout for "Document closed error" - it keeps popping up during editing :D
+# Later
+- think how things can be better scoped to a session - see some hacks I added to clean up the maps of edits / cell outputs in closing session
+- Create a custom language that will extend markdown so it can be used in notebook cells to create runnable markdown cells. Currently if you have a markdown cell it it is not runnable.
+  - Alternatively create a new editor based chat interface
 
 - review how chat history is submitted and improve it. Currently the model gets super confused
   - Probably want to split into separate messages
   - Imrpove the "from inline command"
   - Don't submit last assistant output if its last - we are re-running the last command
 
-## Later
 - When context is large its a good idea to give the cursor as input so the model is grounded on the right task more likely
 - make a @task-inline mode that simply prints to the cursor without the multi file complex prompt
 - Maybe we should only give line number for ambigous things like empty lines or lines with duplicates in the file? Or just tough lines like { etc? We can add a comment to the line that will tell what the line roughly is // start of anonymous function?
@@ -56,6 +35,7 @@
 
 # Bugs
 
+- Keep on the lookout for "Document closed error" - it keeps popping up during editing :D
 - No task found" hangs the cell execution and you cant stop it
 - Existing session running is flaky (repro when too many files found for instance)
 - [Might be resolved] bug with task not stopping even after the task is finished, cancel still running?? This is probably outdated local version
@@ -120,6 +100,23 @@ Will function calling help me getter faster? I would not need to deal with Xml p
 - Only provide certain lines as potential starts and finishes for the range
 
 # Done
+- Add a dedicated activity bar icon for the extension so it has an easy place to access
+  - Add a button to create a new notebook
+   
+- Improve error handling when keys are wrong or limit is reached
+  - getting the next chunk from the stream fails: I anticipate this will be difficult because of using async a troubles
+  - When .next() fails we can either return in err1r to avoid throwing in the fore loop. But then we will need to handle the errors in every single for loop iteration. 
+  - I think it's a good idea to do this on the top level, where we would communicate the error to the user. We can then simply not run the lower level for loops if there is an error.
+    - The upside of passing the stream to the lower level is that we can create local state for these lower level functions. For example highlighting a range.
+    - Still what we can do is it transformed the stream to simply terminate once an error during streaming is encountered.
+    - Let's write some tests to see how it would work
+- Currently we handle stream creation airs and airs within the stream separately
+  - This is good because those errors are generally different, and we expect majority of the time the air will happen on stream creation
+  - We still need to handle stream ending correctly or incorrectly, and having separate air handling for that
+  - I'm wondering if we can merge the two together and have a single error handling mechanism for both cases
+    - For example when the stream creation fails, we can return a single item in the stream which would be of type 'failedToStartStream' or something like that
+    - This actually seems hacky, as for example we will not have an aboard controller from the stream, so do we need to create a fake one? Merging to failure modes that are different seems like a bad idea
+
 - If user runs task by hitting play button - add cell programmatically. Should be the same experience as if they hit shift enter
 
 - cleanup old high level document stuff - probably not going back to that ever so lets just kill it. Kill everything related to that (keep the abstraction for logging though)

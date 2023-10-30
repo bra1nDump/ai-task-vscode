@@ -252,7 +252,7 @@ ${message.role === 'user' ? '</user>' : '</assistant>'}`
     `Here is the history of user requests and assistant responses. This might give more context to the task. This is for context only, you should focus on the last task only:`,
   )
 
-  if (messageHistoryBlob.length) {
+  if (chatHistory.length) {
     sessionContext.contextManager.addBlobContexts([messageHistoryBlob])
   }
 
