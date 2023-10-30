@@ -1,10 +1,10 @@
-import { LlmError } from 'helpers/openai'
+import { OpenAIStreamCreationError } from 'helpers/openai'
 import { SessionContext } from 'session'
 import * as vscode from 'vscode'
 
 export async function explainErrorToUserAndOfferSolutions(
   sessionContext: SessionContext,
-  error: LlmError,
+  error: OpenAIStreamCreationError,
 ) {
   void sessionContext.highLevelLogger(`\n\n${error.messageForUser}\n`)
   sessionContext.sessionAbortedEventEmitter.fire()

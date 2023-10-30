@@ -9,7 +9,7 @@ import { parsePartialMultiFileEdit } from './parse'
 import { makeToResolvedChangesTransformer } from './resolveTargetRange'
 import { SessionContext } from 'session'
 
-import { map as mapAsync } from 'ix/asynciterable/operators'
+import { flatMap, map as mapAsync } from 'ix/asynciterable/operators'
 import { createMultiFileEditingMessages } from './prompt'
 import { explainErrorToUserAndOfferSolutions } from 'session/errorHandling'
 
@@ -83,12 +83,16 @@ export async function startMultiFileEditing(sessionContext: SessionContext) {
    * see openai.ts
    */
   const parsedPatchStream = from(rawLlmResponseStream).pipe(
-    mapAsync(({ cumulativeResponse, delta }) => {
-      /*
-       * Try parsing the xml, even if it's complete it should still be able to
-       * apply the diffs
-       */
-      return parsePartialMultiFileEdit(cumulativeResponse)
+    flatMap((item) => {
+      if (item.type === 'chunk') {
+        /*
+         * Try parsing the xml, even if it's complete it should still be able to
+         * apply the diffs
+         */
+        return [parsePartialMultiFileEdit(item.cumulativeResponse)]
+      } else {
+        return []
+      }
     }),
   )
 

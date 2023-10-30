@@ -2,27 +2,19 @@ import * as vscode from 'vscode'
 
 import { FileContext } from 'context/types'
 import { OpenAiMessage, streamLlm } from 'helpers/openai'
-import { from } from 'ix/asynciterable'
 
 import { SessionContext } from 'session'
 
-import { map as mapAsync } from 'ix/asynciterable/operators'
 import { createQuestionAnsweringWithContext } from './HACK_questionAnsweringPrompt'
-import { explainErrorToUserAndOfferSolutions } from 'session/errorHandling'
 
+/**
+ * Refactor: Largely duplicated from completeInlineTasks
+ * Don't really know what a good abstraction is here
+ */
 export async function startQuestionAnsweringStreamWIthContext(
   sessionContext: SessionContext,
   messagesInput: OpenAiMessage[],
 ) {
-  /*
-   * WARNING - dependin on plaform line separators might be different!!!
-   * \n, on windows we want to convert to that at some point??
-   *
-   * Figure out how to write some tests to trigger the current bugs more
-   * locally?
-   * Tests for context manager to make sure it normalizes line endings
-   * Tests for find ranges
-   */
   const fileContexts = sessionContext.contextManager.getEditableFileContexts()
   const blobContexts = sessionContext.contextManager.getBlobContexts()
 
@@ -58,39 +50,10 @@ export async function startQuestionAnsweringStreamWIthContext(
     `\n\n[Raw LLM input + response](../../${relativePath}) [Debug]\n`,
   )
 
-  const streamResult = await streamLlm(
+  return await streamLlm(
     messages,
     sessionContext.lowLevelLogger,
     sessionContext.userId,
     sessionContext.llmCredentials,
   )
-  if (streamResult.type === 'error') {
-    await explainErrorToUserAndOfferSolutions(
-      sessionContext,
-      streamResult.error,
-    )
-    return
-  }
-
-  const [rawLlmResponseStream, abortController] = streamResult.value
-
-  // Abort if requested
-  sessionContext.sessionAbortedEventEmitter.event(() => abortController.abort())
-
-  /*
-   * Design Shortcoming due to multi casting
-   * Parsing will be performed multiple times for the same payload,
-   * see openai.ts
-   */
-  const partialResultsStream = from(rawLlmResponseStream).pipe(
-    mapAsync(({ cumulativeResponse, delta }) => {
-      /*
-       * Try parsing the xml, even if it's complete it should still be able to
-       * apply the diffs
-       */
-      return cumulativeResponse
-    }),
-  )
-
-  return partialResultsStream
 }

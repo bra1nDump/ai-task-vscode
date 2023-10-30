@@ -21,6 +21,13 @@
 - Old multi file editing is too broken so let's just focus on question answering with context for now
   - But it is required for the demo to work and to end so let's keep it for now
 
+- Currently we handle stream creation airs and airs within the stream separately
+  - This is good because those errors are generally different, and we expect majority of the time the air will happen on stream creation
+  - We still need to handle stream ending correctly or incorrectly, and having separate air handling for that
+  - I'm wondering if we can merge the two together and have a single error handling mechanism for both cases
+    - For example when the stream creation fails, we can return a single item in the stream which would be of type 'failedToStartStream' or something like that
+    - This actually seems hacky, as for example we will not have an aboard controller from the stream, so do we need to create a fake one? Merging to failure modes that are different seems like a bad idea
+
 - Create a custom language that will extend markdown so it can be used in notebook cells to create runnable markdown cells. Currently if you have a markdown cell it it is not runnable.
   - Alternatively create a new editor based chat interface
 

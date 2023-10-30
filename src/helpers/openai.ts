@@ -1,7 +1,7 @@
 import OpenAI from 'openai'
 
 import { AsyncIterableX, from, last } from 'ix/asynciterable'
-import { filter, map as mapAsync } from 'ix/asynciterable/operators'
+import { catchError, flatMap, map } from 'ix/asynciterable/operators'
 import { multicast } from './ixMulticast'
 import { throwingPromiseToResult } from './catchAsync'
 import { ChatCompletionChunk } from 'openai/resources/chat'
@@ -11,12 +11,28 @@ import { APIError } from 'openai/error'
 
 export type OpenAiMessage = OpenAI.Chat.Completions.ChatCompletionMessageParam
 
-export interface LlmPartialResponse {
+export interface OpenAIStreamChunk {
+  type: 'chunk'
   cumulativeResponse: string
   delta: string
 }
 
-export interface LlmError {
+export interface OpenAIStreamEndedNormally {
+  type: 'streamEndedNormally'
+}
+
+export interface OpenAIStreamEndedAbonormally {
+  type: 'streamEndedAbonormally'
+  endReason: 'tokenLimitReached' | 'emptyDelta' | 'errorDuringStream'
+  errorMessageForUser?: string
+}
+
+export type OpenAIStreamItem =
+  | OpenAIStreamChunk
+  | OpenAIStreamEndedNormally
+  | OpenAIStreamEndedAbonormally
+
+export interface OpenAIStreamCreationError {
   kind:
     | 'invalid_api_key'
     | 'insufficient_quota'
@@ -53,7 +69,10 @@ export async function streamLlm(
     | { type: 'openai'; key: string }
     | { type: 'helicone'; key: string },
 ): Promise<
-  Result<[AsyncIterableX<LlmPartialResponse>, AbortController], LlmError>
+  Result<
+    [AsyncIterableX<OpenAIStreamItem>, AbortController],
+    OpenAIStreamCreationError
+  >
 > {
   // If key is found, use the official API, otherwise use the proxy
   let openai: OpenAI
@@ -115,7 +134,7 @@ export async function streamLlm(
     const error = streamResult.error
     console.log(JSON.stringify(error, null, 2))
 
-    let llmError: LlmError
+    let llmError: OpenAIStreamCreationError
     switch (error.code) {
       case 'invalid_api_key':
         llmError = {
@@ -154,7 +173,7 @@ export async function streamLlm(
 
   let currentContent = ''
   const simplifiedStream = from(stream).pipe(
-    mapAsync((part: ChatCompletionChunk) => {
+    flatMap((part: ChatCompletionChunk): OpenAIStreamItem[] => {
       if (part.choices[0]?.finish_reason) {
         /*
          * We are done
@@ -162,33 +181,74 @@ export async function streamLlm(
          * stream terminations.
          */
         console.log(part.choices[0]?.finish_reason)
+        if (part.choices[0]?.finish_reason === 'length') {
+          const message = `Token limit reached for this request, try again with less context or a task that requires less tokens in the response`
+          console.error(message)
+          return [
+            {
+              type: 'streamEndedAbonormally',
+              endReason: 'tokenLimitReached',
+              errorMessageForUser: message,
+            },
+          ]
+        } else {
+          return [
+            {
+              type: 'streamEndedNormally',
+            },
+          ]
+        }
       }
 
       // Refactor: These details should have stayed in openai.ts
       const delta = part.choices[0]?.delta?.content
       if (!delta) {
-        return undefined
+        // It seems the first delta is always empty, ignore it
+        return []
       }
-
-      /*
-       * Design Shortcoming: Async iterable multi casting
-       * Due to multiplexing and iterating over the stream multiple times all
-       * the mappings are performed however many times there are for await
-       * loops This is 1. not performant 2.
-       * breaks stateful things like logging A potential solution is to
-       * multiplex the stream only after basic mapping is done But it is also
-       * nice to multiplex the stream early to for example catch errors and
-       * detect stream ending For now I will simply log the delta here
-       */
-      void logger(delta)
 
       currentContent += delta
-      return {
-        cumulativeResponse: currentContent,
-        delta,
-      }
+      return [
+        {
+          type: 'chunk',
+          cumulativeResponse: currentContent,
+          delta,
+        },
+      ]
     }),
-    filter((part): part is LlmPartialResponse => !!part),
+    map((item: OpenAIStreamItem): OpenAIStreamItem => {
+      /*
+       * Gotcha:
+       * Due to multicast and iterating over the stream multiple times all
+       * the mappings are performed however many times there are for await
+       * loops.
+       *
+       * Thus logging happens before multicasting.
+       *
+       * This is
+       * 1. not performant
+       * 2. breaks stateful things like logging
+       */
+      if (item.type === 'chunk') {
+        void logger(item.delta)
+      }
+      return item
+    }),
+    catchError((error: any): AsyncIterableX<OpenAIStreamEndedAbonormally> => {
+      console.error(error)
+      let message = 'Unknown error occurred'
+      if (error instanceof Error) {
+        message = error.message
+      }
+
+      return from([
+        {
+          type: 'streamEndedAbonormally',
+          endReason: 'errorDuringStream',
+          errorMessageForUser: message,
+        },
+      ])
+    }),
   )
 
   // Multiplex the stream, so that we can iterate over it multiple times
@@ -210,11 +270,6 @@ export async function streamLlm(
     )
     return undefined
   })
-  /*
-   * .then(() => {
-   *   isStreamRunning = false
-   * })
-   */
 
   return resultSuccess([multicastStream, stream.controller])
 }

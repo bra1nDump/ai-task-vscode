@@ -47,8 +47,11 @@ export class TaskController {
     execution.executionOrder = ++this._executionOrder
     execution.start(Date.now())
 
-    await vscode.commands.executeCommand('notebook.focusBottom')
-    await vscode.commands.executeCommand('notebook.cell.insertCodeCellBelow')
+    // Only append and new cell if the current one is the last one
+    if (cell.index === cell.notebook.cellCount - 1) {
+      await vscode.commands.executeCommand('notebook.focusBottom')
+      await vscode.commands.executeCommand('notebook.cell.insertCodeCellBelow')
+    }
 
     /*
      * Check if cell has @ task mention and kick off task if yes,
