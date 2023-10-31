@@ -33,7 +33,7 @@ export async function explainErrorToUserAndOfferSolutions(
         `\n\nMost likely a bug, please let us know what happened on [Discord](https://discord.gg/D8V6Rc63wQ)\n`,
       )
       break
-    case 'token_count_limit_reached':
+    case 'context_length_exceeded':
       void sessionContext.highLevelLogger(
         `\n\nPlease reduce the context submitted to the LLM\n`,
       )

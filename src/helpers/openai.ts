@@ -37,7 +37,7 @@ export interface OpenAIStreamCreationError {
     | 'invalid_api_key'
     | 'insufficient_quota'
     | 'invalid_request_error'
-    | 'token_count_limit_reached'
+    | 'context_length_exceeded'
     | 'unknown'
   messageForUser: string
 }
@@ -154,9 +154,9 @@ export async function streamLlm(
           messageForUser: error.message,
         }
         break
-      case 'token_count_limit_reached':
+      case 'context_length_exceeded':
         llmError = {
-          kind: 'token_count_limit_reached',
+          kind: 'context_length_exceeded',
           messageForUser: error.message,
         }
         break
