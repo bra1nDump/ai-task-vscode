@@ -14,6 +14,19 @@
 			},
 			"group": "build"
 		},
+		// Same but with a production build
+		{
+			"type": "npm",
+			"script": "webpack:watch:prod",
+			"problemMatcher": "$ts-webpack-watch",
+			"isBackground": true,
+			"presentation": {
+				"reveal": "never",
+				"group": "watchers"
+			},
+			"group": "build"
+		},
+		// This is for the problems tab to be populated
 		{
 			"type": "npm",
 			"script": "watch-tsc",
@@ -37,6 +50,14 @@
 				"isDefault": true,
 				"kind": "build",
 			}
+		},
+		{
+			"label": "sameAsDefaultBuildButForProduction",
+			"dependsOn": [
+				"npm: webpack:watch:prod",
+				"npm: watch-tsc",
+			],
+			"problemMatcher": [],
 		},
 		///// Helpers /////
 		{

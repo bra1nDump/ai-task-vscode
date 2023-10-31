@@ -42,39 +42,14 @@ export interface OpenAIStreamCreationError {
   messageForUser: string
 }
 
-/**
- * Returns AsyncIterableX to support nifty features like mapping.
- *
- * IMPORTANT: The iterable returned is multiplexed, meaning every time you get
- * an iterator usually using await for of loop, it will start iterating from
- * the very beginning.
- *
- * This is a desired behavior, since oftentimes we want to run different
- * stateful operations on the stream. This is similar to an observer / listener
- * model of RxJS, accept we can use await for loops :D
- *
- * The reason why the LLM stream is multiplexed is because is the stream that
- * kicks off most of the processes.
- */
-export async function streamLlm(
-  messages: OpenAiMessage[],
-  /*
-   * I don't need the logger if I will be passing the entire session,
-   * Probably the session itself should contain the logger as a property /
-   * method
-   */
-  logger: (text: string) => Promise<void>,
+type Credentials =
+  | { type: 'openai'; key: string }
+  | { type: 'helicone'; key: string }
+
+export function makeOpenAiInstance(
+  credentials: Credentials,
   userIdentifierForLoggingAndAbuseDetection: string,
-  credentials:
-    | { type: 'openai'; key: string }
-    | { type: 'helicone'; key: string },
-): Promise<
-  Result<
-    [AsyncIterableX<OpenAIStreamItem>, AbortController],
-    OpenAIStreamCreationError
-  >
-> {
-  // If key is found, use the official API, otherwise use the proxy
+): OpenAI {
   let openai: OpenAI
   switch (credentials.type) {
     case 'openai':
@@ -98,7 +73,39 @@ export async function streamLlm(
     default:
       throw new Error('Invalid credential type')
   }
+  return openai
+}
 
+/**
+ * Returns AsyncIterableX to support nifty features like mapping.
+ *
+ * IMPORTANT: The iterable returned is multiplexed, meaning every time you get
+ * an iterator usually using await for of loop, it will start iterating from
+ * the very beginning.
+ *
+ * This is a desired behavior, since oftentimes we want to run different
+ * stateful operations on the stream. This is similar to an observer / listener
+ * model of RxJS, accept we can use await for loops :D
+ *
+ * The reason why the LLM stream is multiplexed is because is the stream that
+ * kicks off most of the processes.
+ */
+export async function streamLlm(
+  messages: OpenAiMessage[],
+  /*
+   * I don't need the logger if I will be passing the entire session,
+   * Probably the session itself should contain the logger as a property /
+   * method
+   */
+  logger: (text: string) => Promise<void>,
+  userIdentifierForLoggingAndAbuseDetection: string,
+  openai: OpenAI,
+): Promise<
+  Result<
+    [AsyncIterableX<OpenAIStreamItem>, AbortController],
+    OpenAIStreamCreationError
+  >
+> {
   /*
    * Compare AsyncGenerators / AsyncIterators: https://javascript.info/async-iterators-generators
    * Basically openai decided to not return AsyncGenerator,

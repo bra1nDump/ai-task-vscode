@@ -20,6 +20,21 @@
       ],
       "preLaunchTask": "${defaultBuildTask}"
     },
+    // Same but with a production build
+    {
+      "name": "Sandbox (Production build)",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "${workspaceFolder}/example-projects/testing-sandbox",
+        "${workspaceFolder}/example-projects/testing-sandbox/helloWorld.ts",
+        "--extensionDevelopmentPath=${workspaceFolder}"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/dist/**/*.js"
+      ],
+      "preLaunchTask": "sameAsDefaultBuildButForProduction"
+    },
     /////////////////////// Testing the extension on other real projects (specific to Kirill) ///////////////////////
     {
       "name": "GitHub JOINs",

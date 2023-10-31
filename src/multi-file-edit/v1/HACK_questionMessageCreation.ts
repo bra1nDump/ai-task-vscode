@@ -1,7 +1,7 @@
 import * as vscode from 'vscode'
 
 import { FileContext } from 'context/types'
-import { OpenAiMessage, streamLlm } from 'helpers/openai'
+import { OpenAiMessage, makeOpenAiInstance, streamLlm } from 'helpers/openai'
 
 import { SessionContext } from 'session'
 
@@ -50,10 +50,17 @@ export async function startQuestionAnsweringStreamWIthContext(
     `\n\n[Raw LLM input + response](../../${relativePath}) [Debug]\n\n`,
   )
 
-  return await streamLlm(
+  const openai = makeOpenAiInstance(
+    sessionContext.llmCredentials,
+    sessionContext.userId,
+  )
+
+  const streamResult = await streamLlm(
     messages,
     sessionContext.lowLevelLogger,
     sessionContext.userId,
-    sessionContext.llmCredentials,
+    openai,
   )
+
+  return streamResult
 }

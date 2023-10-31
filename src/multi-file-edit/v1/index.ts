@@ -1,7 +1,7 @@
 import * as vscode from 'vscode'
 
 import { FileContext } from 'context/types'
-import { streamLlm } from 'helpers/openai'
+import { makeOpenAiInstance, streamLlm } from 'helpers/openai'
 import { from, last } from 'ix/asynciterable'
 
 import { startInteractiveMultiFileApplication } from 'multi-file-edit/applyResolvedChange'
@@ -58,11 +58,16 @@ export async function startMultiFileEditing(sessionContext: SessionContext) {
     `\n\n[Raw LLM input + response](../../${relativePath}) [Debug]\n`,
   )
 
+  const openai = makeOpenAiInstance(
+    sessionContext.llmCredentials,
+    sessionContext.userId,
+  )
+
   const streamResult = await streamLlm(
     messages,
     sessionContext.lowLevelLogger,
     sessionContext.userId,
-    sessionContext.llmCredentials,
+    openai,
   )
   if (streamResult.type === 'error') {
     await explainErrorToUserAndOfferSolutions(

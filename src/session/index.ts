@@ -1,4 +1,5 @@
 import { SessionContextManager } from 'context/manager'
+import { ExtensionStateAPI } from 'helpers/extensionState'
 import { queueAnAppendToDocument } from 'helpers/fileSystem'
 import { getUserOverrideOpenAiKey, heliconeKey } from 'helpers/keyManager'
 import * as vscode from 'vscode'
@@ -77,6 +78,7 @@ export interface SessionContext {
 export async function startSession(
   context: vscode.ExtensionContext,
   execution: vscode.NotebookCellExecution,
+  extensionStateAPI: ExtensionStateAPI,
 ): Promise<SessionContext> {
   /*
    * There's a hard assumption across the code base that there's at least one
@@ -188,41 +190,12 @@ export async function startSession(
     },
   )
 
-  /**
-   * We first try to get the user id from the settings. This is useful in case
-   * I want to override it for my user to distinguish from real users. If not
-   * found in the settings, we then try to get it from the global state. If
-   * still not found, we generate a new user id, store it in the global state,
-   * and use it. The user id is used for anonymous usage tracking.
-   */
-  let userId = vscode.workspace
-    .getConfiguration('ai-task')
-    .get<string>('userId')
-  if (typeof userId !== 'string' || userId.length === 0) {
-    userId = context.globalState.get<string>('userId')
-    if (typeof userId !== 'string' || userId.length === 0) {
-      userId = Math.random().toString(36).substring(7)
-      await context.globalState.update('userId', userId)
-    }
-  }
-
-  let llmCredentials: LlmCredentials
-  const overrideOpenAiKey = await getUserOverrideOpenAiKey(context.secrets)
-  if (overrideOpenAiKey) {
-    llmCredentials = {
-      type: 'openai',
-      key: overrideOpenAiKey,
-    }
-  } else {
-    llmCredentials = {
-      type: 'helicone',
-      key: heliconeKey,
-    }
-  }
+  const { userIdentifier } = await extensionStateAPI.getCurrentState()
+  const llmCredentials = await getLlmCredentials(context)
 
   return {
     id: new Date().toISOString(),
-    userId,
+    userId: userIdentifier,
     llmCredentials,
     extensionContext: context,
     configuration: {
@@ -367,4 +340,21 @@ export function getBreadIdentifier(): string {
       : '@' + 'task' // Avoiding the magic string by splitting into half
 
   return safeAtBreadIdentifierOverride
+}
+
+export async function getLlmCredentials(
+  context: vscode.ExtensionContext,
+): Promise<LlmCredentials> {
+  const userOverrideOpenAiKey = await getUserOverrideOpenAiKey(context.secrets)
+  if (userOverrideOpenAiKey) {
+    return {
+      type: 'openai',
+      key: userOverrideOpenAiKey,
+    }
+  }
+
+  return {
+    type: 'helicone',
+    key: heliconeKey,
+  }
 }

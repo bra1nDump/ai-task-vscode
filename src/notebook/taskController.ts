@@ -1,5 +1,6 @@
 import { completeInlineTasksCommand } from 'commands/completeInlineTasks'
 import { answerQuestionCommand } from 'commands/questionAnswering'
+import { ExtensionStateAPI } from 'helpers/extensionState'
 import { OpenAiMessage } from 'helpers/openai'
 import { SessionContext } from 'session'
 import * as vscode from 'vscode'
@@ -16,6 +17,7 @@ export class TaskController {
   constructor(
     private extensionContext: vscode.ExtensionContext,
     private sessionRegistry: Map<string, SessionContext>,
+    private extensionStateAPI: ExtensionStateAPI,
   ) {
     this._controller = vscode.notebooks.createNotebookController(
       this.controllerId,
@@ -65,13 +67,16 @@ export class TaskController {
       await completeInlineTasksCommand(
         this.extensionContext,
         this.sessionRegistry,
+        this.extensionStateAPI,
         execution,
       )
     } else {
       await answerQuestionCommand(
         this.extensionContext,
         this.sessionRegistry,
+        this.extensionStateAPI,
         execution,
+
         extractChatHistory(execution),
       )
     }

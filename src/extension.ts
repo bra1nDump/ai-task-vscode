@@ -2,7 +2,7 @@ import { newCompleteInlineTasksCommandFromVSCodeCommand } from 'commands/complet
 import { TaskExpressionCompletionItemProvider } from 'context/language-features/completionItemProvider'
 import { TaskCodeLensProvider } from 'context/language-features/codeLensProvider'
 import { TaskSemanticTokensProvider } from 'context/language-features/semanticTokensProvider'
-import { SessionContext } from 'session'
+import { SessionContext, getLlmCredentials } from 'session'
 import * as vscode from 'vscode'
 import { TaskController } from 'notebook/taskController'
 import { TaskSerializer } from 'notebook/taskSerializer'
@@ -11,6 +11,7 @@ import { WebViewMessage, getWebView } from 'helpers/getWebView'
 import { updateOpenAiKey } from 'commands/updateOpenAIKey'
 import { openTutorialProject } from 'commands/openTutorialProject'
 import { ExtensionStateAPI } from 'helpers/extensionState'
+import { makeOpenAiInstance } from 'helpers/openai'
 
 declare global {
   // eslint-disable-next-line no-var
@@ -24,8 +25,13 @@ export async function activate(context: vscode.ExtensionContext) {
   const extensionStateAPI = new ExtensionStateAPI(context)
   const sessionRegistry = new Map<string, SessionContext>()
 
+  const { lastPromptedTutorialVersion, userIdentifier } =
+    await extensionStateAPI.getCurrentState()
+
   //////////// Notebook support
-  context.subscriptions.push(new TaskController(context, sessionRegistry))
+  context.subscriptions.push(
+    new TaskController(context, sessionRegistry, extensionStateAPI),
+  )
   context.subscriptions.push(
     vscode.workspace.registerNotebookSerializer(
       'task-notebook',
@@ -42,9 +48,11 @@ export async function activate(context: vscode.ExtensionContext) {
 
   //////////// Register commands
   context.subscriptions.unshift(
+    // Open chat interface as a notebook
     vscode.commands.registerCommand('ai-task.newTaskNotebook', async () => {
       await newTaskNotebook()
     }),
+    // Kick off code editing task specified within a currently visible file
     vscode.commands.registerCommand(
       'ai-task.completeInlineTasks',
       async (taskFromSiblingExtension?: unknown) => {
@@ -62,18 +70,29 @@ export async function activate(context: vscode.ExtensionContext) {
         )
       },
     ),
+    /*
+     * Override the OpenAI key from the default helicone key - useful if we
+     * revoke a key and the user still wants to continue using the extension
+     * with their own.
+     */
     vscode.commands.registerCommand('ai-task.setOpenAiKey', async () => {
       await updateOpenAiKey(context)
     }),
+    // Open tutorial project
     vscode.commands.registerCommand('ai-task.startTutorial', async () => {
       const isProduction = false
       await openTutorialProject(context, isProduction)
+    }),
+    // Get authenticated OpenAI class for the research extension
+    vscode.commands.registerCommand('ai-task.getOpenAiClass', async () => {
+      const llmCredentials = await getLlmCredentials(context)
+      const openAi = makeOpenAiInstance(llmCredentials, userIdentifier)
+      return openAi
     }),
   )
 
   //////////// Tutorial
   void (async () => {
-    const { lastPromptedTutorialVersion } = extensionStateAPI.getCurrentState()
     const currentTutorialVersion = 1
 
     /*
@@ -81,8 +100,10 @@ export async function activate(context: vscode.ExtensionContext) {
      * user.
      * Asynchronous because we wait for the user input.
      */
-    // if (lastPromptedTutorialVersion < currentTutorialVersion) { NOCOMMIT
-    if (global.isTutorialNotificationEnabled) {
+    if (
+      global.isTutorialNotificationEnabled
+      // lastPromptedTutorialVersion < currentTutorialVersion
+    ) {
       const shouldStartTutorial = await vscode.window.showInformationMessage(
         'AI Task had a major update, would you like to start the tutorial?',
         'Yes',
@@ -93,7 +114,7 @@ export async function activate(context: vscode.ExtensionContext) {
         await vscode.commands.executeCommand('ai-task.startTutorial')
       }
 
-      await extensionStateAPI.updateState(
+      await extensionStateAPI.updateKeyValue(
         'lastPromptedTutorialVersion',
         currentTutorialVersion,
       )

@@ -9,6 +9,7 @@ import { openedTabs } from 'context/atTabs'
 import { OpenAiMessage } from 'helpers/openai'
 import { startQuestionAnsweringStreamWIthContext } from 'multi-file-edit/v1/HACK_questionMessageCreation'
 import { explainErrorToUserAndOfferSolutions } from 'session/errorHandling'
+import { ExtensionStateAPI } from 'helpers/extensionState'
 
 //////////////////// THIS ENTIRE FILE IS A HACK - COPIED OVER FROM comleteInlineTasks ////////////////////
 
@@ -23,10 +24,20 @@ import { explainErrorToUserAndOfferSolutions } from 'session/errorHandling'
  * Call openai api (through langchain)
  * Parse the diffs
  * Apply them to the current file in place
+ *
+ *
+ * Refactor: I should not be passing extension context session registry here.
+ * All these things are passed because I need to create a session, which is
+ * really a single execution from the standpoint of the user. We can call it
+ * step or inquiry, a session is really a set of steps
+ *
+ * Creating and closing the session should be done in a more declarative way,
+ * similar to how produce works in emmer and how python has with statement
  */
 export async function answerQuestionCommand(
   extensionContext: vscode.ExtensionContext,
   sessionRegistry: Map<string, SessionContext>,
+  extensionStateAPI: ExtensionStateAPI,
   execution: vscode.NotebookCellExecution,
   previousMessages: OpenAiMessage[],
 ) {
@@ -35,7 +46,11 @@ export async function answerQuestionCommand(
     return
   }
 
-  const sessionContext = await startSession(extensionContext, execution)
+  const sessionContext = await startSession(
+    extensionContext,
+    execution,
+    extensionStateAPI,
+  )
   sessionRegistry.set(sessionContext.id, sessionContext)
 
   const cleanupSession = async () => {

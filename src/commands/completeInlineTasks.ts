@@ -13,6 +13,7 @@ import { openedTabs } from 'context/atTabs'
 import { newTaskNotebook } from './newTaskNotebook'
 import { OpenAiMessage } from 'helpers/openai'
 import { extractChatHistory } from '../notebook/taskController'
+import { ExtensionStateAPI } from 'helpers/extensionState'
 
 /*
  * This is a new entry point for the command,
@@ -96,6 +97,7 @@ export async function newCompleteInlineTasksCommandFromVSCodeCommand(
 export async function completeInlineTasksCommand(
   extensionContext: vscode.ExtensionContext,
   sessionRegistry: Map<string, SessionContext>,
+  extensionStateAPI: ExtensionStateAPI,
   execution: vscode.NotebookCellExecution,
 ) {
   const chatHistory = extractChatHistory(execution)
@@ -106,7 +108,11 @@ export async function completeInlineTasksCommand(
     )
   }
 
-  const sessionContext = await startSession(extensionContext, execution)
+  const sessionContext = await startSession(
+    extensionContext,
+    execution,
+    extensionStateAPI,
+  )
   sessionRegistry.set(sessionContext.id, sessionContext)
 
   // If the user cancels the execution, we should cancel the session

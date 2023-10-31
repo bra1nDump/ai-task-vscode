@@ -155,6 +155,7 @@
     "------------section-build------------": "",
     "webpack:base": "webpack --config configurations/webpack.config.js",
     "webpack:watch": "npm run webpack:base -- --mode development --watch",
+    "webpack:watch:prod": "npm run webpack:base -- --mode production --watch",
     "bundle:prod": "npm run webpack:base -- --mode production --devtool false",
     "/// --build is needed for composite projects to work ///": "https://www.typescriptlang.org/docs/handbook/project-references.html#build-mode-for-typescript",
     "watch-tsc": "tsc --build --watch",
