@@ -86,6 +86,10 @@
       {
         "command": "ai-task.setOpenAiKey",
         "title": "AI Task: Set OpenAI Key"
+      },
+      {
+        "command": "ai-task.startTutorial",
+        "title": "AI Task: Start Tutorial"
       }
     ],
     "configuration": {
@@ -109,14 +113,20 @@
     "keybindings": [
       {
         "command": "ai-task.newTaskNotebook",
-        "key": "ctrl+y",
-        "mac": "cmd+y"
+        "key": "ctrl+u",
+        "mac": "cmd+u"
+      },
+      {
+        "key": "shift+enter",
+        "command": "editor.action.insertLineAfter",
+        "when": "'Dummy currently does nothing because it it appears above the no book override keybinding, search backlog for more info for keys'"
       }
     ],
     "walkthroughs": [
       {
         "id": "createNotebookWalkthrough",
         "title": "Use AI Task",
+        "when": "true",
         "description": "Learn how to create a notebook using our shortcut.",
         "steps": [
           {
@@ -144,7 +154,7 @@
   "scripts": {
     "------------section-build------------": "",
     "webpack:base": "webpack --config configurations/webpack.config.js",
-    "webpack:watch": "npm run webpack:base -- --watch",
+    "webpack:watch": "npm run webpack:base -- --mode development --watch",
     "bundle:prod": "npm run webpack:base -- --mode production --devtool false",
     "/// --build is needed for composite projects to work ///": "https://www.typescriptlang.org/docs/handbook/project-references.html#build-mode-for-typescript",
     "watch-tsc": "tsc --build --watch",
@@ -189,6 +199,7 @@
   "dependencies": {
     "dedent": "^1.5.1",
     "ix": "^5.0.0",
-    "openai": "^4.0.0"
+    "openai": "^4.0.0",
+    "zod": "^3.22.4"
   }
 }

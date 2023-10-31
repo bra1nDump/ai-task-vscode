@@ -9,15 +9,23 @@ import { TaskSerializer } from 'notebook/taskSerializer'
 import { newTaskNotebook } from 'commands/newTaskNotebook'
 import { WebViewMessage, getWebView } from 'helpers/getWebView'
 import { updateOpenAiKey } from 'commands/updateOpenAIKey'
+import { openTutorialProject } from 'commands/openTutorialProject'
+import { ExtensionStateAPI } from 'helpers/extensionState'
+
+declare global {
+  // eslint-disable-next-line no-var
+  var isTutorialNotificationEnabled: boolean
+}
 
 export async function activate(context: vscode.ExtensionContext) {
   console.log('activating bread extension')
 
-  // Poor men's dependency injection
+  //////////// Poor men's dependency injection
+  const extensionStateAPI = new ExtensionStateAPI(context)
   const sessionRegistry = new Map<string, SessionContext>()
 
+  //////////// Notebook support
   context.subscriptions.push(new TaskController(context, sessionRegistry))
-
   context.subscriptions.push(
     vscode.workspace.registerNotebookSerializer(
       'task-notebook',
@@ -32,10 +40,7 @@ export async function activate(context: vscode.ExtensionContext) {
     ),
   )
 
-  /*
-   * Register commands
-   * Commands also need to be added in package.json
-   */
+  //////////// Register commands
   context.subscriptions.unshift(
     vscode.commands.registerCommand('ai-task.newTaskNotebook', async () => {
       await newTaskNotebook()
@@ -57,17 +62,63 @@ export async function activate(context: vscode.ExtensionContext) {
         )
       },
     ),
-
-    // Configuration commands
     vscode.commands.registerCommand('ai-task.setOpenAiKey', async () => {
       await updateOpenAiKey(context)
     }),
+    vscode.commands.registerCommand('ai-task.startTutorial', async () => {
+      const isProduction = false
+      await openTutorialProject(context, isProduction)
+    }),
   )
 
-  const isTaskFile = (document: vscode.TextDocument) => {
-    return document.uri.path.endsWith('.task')
+  //////////// Tutorial
+  void (async () => {
+    const { lastPromptedTutorialVersion } = extensionStateAPI.getCurrentState()
+    const currentTutorialVersion = 1
+
+    /*
+     * If a new version of the tutorial is now available show a message to the
+     * user.
+     * Asynchronous because we wait for the user input.
+     */
+    // if (lastPromptedTutorialVersion < currentTutorialVersion) { NOCOMMIT
+    if (global.isTutorialNotificationEnabled) {
+      const shouldStartTutorial = await vscode.window.showInformationMessage(
+        'AI Task had a major update, would you like to start the tutorial?',
+        'Yes',
+        'No',
+      )
+
+      if (shouldStartTutorial === 'Yes') {
+        await vscode.commands.executeCommand('ai-task.startTutorial')
+      }
+
+      await extensionStateAPI.updateState(
+        'lastPromptedTutorialVersion',
+        currentTutorialVersion,
+      )
+    }
+  })()
+
+  /*
+   * Detect if we're in tutorial project
+   * (activate will be called once we open a new window with the tutorial
+   * project)
+   */
+  const tutorialProjectPath = vscode.workspace.workspaceFolders?.find(
+    (folder) => folder.name === 'apollo-server-bigint-issue-main',
+  )
+  if (tutorialProjectPath) {
+    // Open read me, it has the tutorial walk through
+    const readme = vscode.Uri.joinPath(tutorialProjectPath.uri, 'README.md')
+    const readmeDocument = await vscode.workspace.openTextDocument(readme)
+    await vscode.window.showTextDocument(readmeDocument)
+
+    // Open run and debug panel
+    await vscode.commands.executeCommand('workbench.view.debug')
   }
 
+  //////////// Watch for run mentions, currently pretty hacky
   context.subscriptions.unshift(
     /*
      * Not sure how to register a command on enter,
@@ -91,7 +142,7 @@ export async function activate(context: vscode.ExtensionContext) {
         return lineTextLeadingUpToSpaceOrEnter.endsWith('@run')
       }
 
-      if (isTaskFile(event.document)) {
+      if (event.document.uri.path.endsWith('.task')) {
         return
       }
 
@@ -121,6 +172,7 @@ export async function activate(context: vscode.ExtensionContext) {
     }),
   )
 
+  //////////// Register our activity bar item
   vscode.window.registerWebviewViewProvider('taskView', {
     resolveWebviewView(webviewView) {
       webviewView.webview.html = getWebView()
@@ -128,7 +180,7 @@ export async function activate(context: vscode.ExtensionContext) {
         (message: WebViewMessage) => {
           switch (message.command) {
             case 'createTaskNotebook':
-              void createTaskNotebook()
+              void newTaskNotebook()
               return
           }
         },
@@ -141,10 +193,7 @@ export async function activate(context: vscode.ExtensionContext) {
     },
   })
 
-  async function createTaskNotebook() {
-    await newTaskNotebook()
-  }
-
+  //////////// Register language features
   const allLanguages = await vscode.languages.getLanguages()
   const languageForFiles = allLanguages.map((language) => ({
     language,
