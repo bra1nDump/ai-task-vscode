@@ -140,7 +140,12 @@ async function throwingQuestionAnswering(
              * Don't return files with .task in them,
              * they are probably a notebook
              */
-            !editor.document.uri.path.includes('.task'),
+            !editor.document.uri.path.includes('.task') &&
+            /*
+             * Things like terminal and output in debug console also show up as
+             * visible editors. Ignore them
+             */
+            editor.document.uri.scheme === 'file',
         )
         .map((editor) => editor.document.uri),
     )
