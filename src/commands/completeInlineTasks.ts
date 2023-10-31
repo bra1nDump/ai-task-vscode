@@ -30,73 +30,6 @@ export async function newCompleteInlineTasksCommandFromVSCodeCommand(
 
   if (notebook === undefined) {
     notebook = await newTaskNotebook()
-    /*
-     * COPIED OVER FROM session/index
-     * const taskMagicIdentifier = getBreadIdentifier()
-     * const sessionsDirectory = vscode.Uri.joinPath(
-     *   vscode.workspace.workspaceFolders![0].uri,
-     *   `.${taskMagicIdentifier}/sessions`,
-     * )
-     * const nextIndex =
-     *   (await findMostRecentSessionLogIndexPrefix(sessionsDirectory)) + 1
-     */
-
-    /*
-     * const shortWeekday = new Date().toLocaleString('en-US', {
-     *   weekday: 'short',
-     * })
-     * const sessionNameBeforeAddingTopicSuffix =
-     * `${nextIndex}-${shortWeekday}.task` const newNotebookDocument = await
-     * createAndOpenEmptyDocument(
-     *   sessionsDirectory,
-     *   sessionNameBeforeAddingTopicSuffix,
-     * )
-     */
-
-    /*
-     * notebook = await vscode.workspace.openNotebookDocument(
-     *   newNotebookDocument.uri,
-     * )
-     * await vscode.window.showNotebookDocument(notebook, {
-     *   viewColumn: vscode.ViewColumn.Two,
-     * })
-     */
-
-    /*
-     * insert markdown cell with discord
-     * await vscode.commands.executeCommand('notebook.focusBottom')
-     * await vscode.commands.executeCommand(
-     *   'notebook.cell.insertMarkdownCellBelow',
-     * )
-     */
-
-    /*
-     * if (notebook.cellCount === 0) {
-     *   void vscode.window.showErrorMessage(
-     *     `No cells in the notebook, most likely a bug`,
-     *   )
-     *   return
-     * }
-     */
-
-    // const lastCell = notebook.getCells().slice(-1)[0]
-
-    /*
-     * const cellDocumentEditorMaybe = await vscode.window.showTextDocument(
-     *   lastCell.document,
-     * )
-     */
-
-    /*
-     * await cellDocumentEditorMaybe.edit((editBuilder) => {
-     *   editBuilder.insert(
-     *     new vscode.Position(0, 0),
-     *     `[Join Discord to submit feedback](https://discord.gg/D8V6Rc63wQ)`,
-     *   )
-     * })
-     */
-
-    // await vscode.commands.executeCommand('notebook.cell.quitEdit')
   } else {
     /*
      * Hoping this will simply focus the notebook
@@ -112,29 +45,6 @@ export async function newCompleteInlineTasksCommandFromVSCodeCommand(
     await vscode.commands.executeCommand('notebook.focusBottom')
     await vscode.commands.executeCommand('notebook.cell.insertCodeCellBelow')
   }
-
-  /*
-   * Inserting cells looks difficult ...
-   * Ivan found a way to work around it by writing to the file directly
-   * Easiest seems to run commands
-   * first focus notebook (by reopning it??)
-   * @command:notebook.focusBottom
-   * @command:notebook.cell.insertCodeCellBelow
-   *
-   * Do we event need to insert a cell here? Maybe just create a new notebook
-   * with a cell? If its already created we still need to append a cell though
-   * ...
-   */
-
-  /*
-   * TODO: This is likely to create mutliple cells
-   * Insert a new cell at the bottom of the notebook
-   */
-
-  /*
-   * Type Running "@ task was provided in a comment in one of the submitted
-   * files" into the cell Execute it
-   */
 
   if (notebook.cellCount === 0) {
     void vscode.window.showErrorMessage(
@@ -270,7 +180,12 @@ ${message.role === 'user' ? '</user>' : '</assistant>'}`
              * Don't return files with .task in them,
              * they are probably a notebook
              */
-            !editor.document.uri.path.includes('.task'),
+            !editor.document.uri.path.includes('.task') &&
+            /*
+             * Things like terminal and output in debug console also show up as
+             * visible editors. Ignore them
+             */
+            editor.document.uri.scheme === 'file',
         )
         .map((editor) => editor.document.uri),
     )

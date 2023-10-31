@@ -10,8 +10,11 @@
 ## Next up:
 
 - Return OpenAI from activate so error extension can use it
+- Tutorial - disable for now!
 
 - Show walkthrough after installing the extension (implement, but don't enable yet, so if (false) hack to disable it)
+  - workbench.action.newWindow, it doesn't seem to accept a parameter, but the hell with it let's try it
+   
 
 - ... clenup hacks produced while getting notebooks to work. Lets plan this one out before we do it. For now lets just document some ideas on how to improve the situation
   - Extract common context enrichment pieces into a separate function
@@ -62,6 +65,21 @@ Oftentimes it misses up with the line numbers, for instance oftentimes it wants 
 I think a better way is to use something like function calling with an option to create a top level symbol in file. We can take care of actually inserting it into the file 
 
 ## UX - Product
+
+- Fix key bindings
+  - Within the notebook shift enter should create a new line
+  - Within the notebook command enter should execute the cell
+- documentations https://code.visualstudio.com/docs/getstarted/keybindings
+- It seems like adding key bindings in the extension does not override the default ones (see the full list "Developer: Open Default Keyboard Shortcuts (JSON)"). 
+- We can fix shortcuts by overriding shift enter in the user keymap.JSON
+- Can be inspected by running command "Developer: Open Keyboard Shortcuts (JSON)"
+```json
+{
+    "key": "shift+enter",
+    "command": "-notebook.cell.executeAndSelectBelow",
+},
+```
+
 
 - Follow up task to fix errors after making changes - should be a button in the markdown
 - There should be stop and stop and undo buttons 

@@ -47,7 +47,7 @@ export async function startQuestionAnsweringStreamWIthContext(
     sessionContext.markdownLowLevelFeedbackDocument.uri.path,
   )
   void sessionContext.highLevelLogger(
-    `\n\n[Raw LLM input + response](../../${relativePath}) [Debug]\n`,
+    `\n\n[Raw LLM input + response](../../${relativePath}) [Debug]\n\n`,
   )
 
   return await streamLlm(
