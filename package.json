@@ -3,7 +3,7 @@
   "displayName": " AI Task: Proactive Coding Assistant, automatically search errors, perform multi-file edits and more!",
   "publisher": "bra1nDump",
   "description": "Use comments with @task to perform multi-file changes, automatically get your errors in console searched on the web and more!",
-  "version": "0.0.36",
+  "version": "0.0.37",
   "license": "Business Source License 1.1",
   "icon": "icon.png",
   "repository": {

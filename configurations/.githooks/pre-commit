@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# Reject commit if it contains NOCOMMIT, suite.only or test.only
+if git diff --cached --unified=0 | grep -E '^\+.*NOCOMMIT|^\+.*suite\.only|^\+.*test\.only'; then
+  echo "Commit rejected. Please remove 'NOCOMMIT', 'suite.only' or 'test.only' from your changes."
+  exit 1
+fi

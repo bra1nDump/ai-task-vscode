@@ -45,7 +45,10 @@ suite('VSCode Extension Command Tests', function () {
      * Make sure all the files are opened as tabs as they would be in a real
      * scenario.
      */
-    async function openAndShowFile(fileName: string) {
+    async function openAndShowFile(
+      fileName: string,
+      column: vscode.ViewColumn = vscode.ViewColumn.Beside,
+    ) {
       const fileUri = vscode.Uri.joinPath(
         vscode.workspace.workspaceFolders![0].uri,
         fileName,
@@ -54,8 +57,9 @@ suite('VSCode Extension Command Tests', function () {
       const editor = await vscode.window.showTextDocument(
         document,
         // To ensure all tabs remain open
-        vscode.ViewColumn.Beside,
+        column,
       )
+      await document.save()
       // Sleep a bit to make sure the file is opened
       await new Promise((resolve) => setTimeout(resolve, 100))
     }
@@ -65,7 +69,19 @@ suite('VSCode Extension Command Tests', function () {
      * All files need to be open to be considered for modification were only
      * searching four tasks within open tabs
      */
-    await openAndShowFile('main.ts')
+
+    /*
+     * Gotcha: We only consider open tabs as potential task sources.
+     * If we open in the same view column, the previous editor in that:
+     * will be closed as it is not 'persisted',
+     * this is the default behavior in vscode that prevents tabs from polluting
+     * the editor area. You can try this by opening a new tab,
+     * notice the title of the tab is italic.
+     * The reason we are starting out from third column is to avoid the task
+     * notebook that is opened always in the second column from overriding the
+     * editor in the second column.
+     */
+    await openAndShowFile('main.ts', vscode.ViewColumn.Three)
     await openAndShowFile('environment.ts')
     await openAndShowFile('helloWorld.ts')
 
