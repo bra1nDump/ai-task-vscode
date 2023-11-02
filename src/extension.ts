@@ -12,6 +12,7 @@ import { updateOpenAiKey } from 'commands/updateOpenAIKey'
 import { openTutorialProject } from 'commands/openTutorialProject'
 import { ExtensionStateAPI } from 'helpers/extensionState'
 import { makeOpenAiInstance } from 'helpers/openai'
+import { startWebSocketServer } from 'chrome-extension/server'
 
 declare global {
   // eslint-disable-next-line no-var
@@ -20,6 +21,8 @@ declare global {
 
 export async function activate(context: vscode.ExtensionContext) {
   console.log('activating bread extension')
+
+  startWebSocketServer()
 
   //////////// Poor men's dependency injection
   const extensionStateAPI = new ExtensionStateAPI(context)
