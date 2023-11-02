@@ -9,7 +9,9 @@ export function startWebSocketServer() {
   server.on('connection', (ws: WebSocket) => {
     ws.on('message', (message: string) => {
       console.log(`Message received: ${message}`)
-      ws.send('lulik' + String(Math.random()))
+      const num = Math.random()
+      ws.send('как думаешь что это? lulik' + String(num))
+      console.log(num)
     })
 
     ws.on('error', (error: Error) => {
