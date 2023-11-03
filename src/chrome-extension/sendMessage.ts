@@ -2,12 +2,23 @@ import * as WebSocket from 'ws'
 import * as vscode from 'vscode'
 import { webSocket } from './server'
 
-let currentText: string[] = []
+let currentTextArr: string[] = []
 
 export function sendMessageToChrome() {
   if (webSocket && webSocket.readyState === WebSocket.OPEN) {
-    const text = getSelectedText() + currentText.join('\n')
-    currentText = []
+    const selectedText = getSelectedText()
+    let text = ''
+    if (selectedText) {
+      text = selectedText + currentTextArr.join('\n')
+    } else {
+      if (currentTextArr.length) {
+        text = currentTextArr.join('\n')
+      } else {
+        void vscode.window.showErrorMessage('Select at least some text')
+        return
+      }
+    }
+    currentTextArr = []
     webSocket.send(`vscodeText:${text}`)
     void vscode.window.showInformationMessage(
       'The message was sent to the gpt chat',
@@ -22,7 +33,7 @@ export function sendMessageToChrome() {
 export function addToMessage() {
   const text = getSelectedText()
   if (text) {
-    currentText.push(text)
+    currentTextArr.push(text)
   }
 }
 
