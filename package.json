@@ -94,6 +94,10 @@
       {
         "command": "ai-task.sendMessageToChrome",
         "title" : "AI Task: send message to Chrome extension"
+      },
+      {
+        "command": "ai-task.addTextToMessage",
+        "title" : "AI Task: add text to message"
       }
     ],
     "configuration": {
@@ -124,6 +128,11 @@
         "command": "ai-task.sendMessageToChrome",
         "key": "ctrl+k",
         "mac": "cmd+k"
+      },
+      {
+        "command": "ai-task.addTextToMessage",
+        "key": "ctrl+alt+k",
+        "mac": "cmd+option+k"
       },
       {
         "key": "shift+enter",

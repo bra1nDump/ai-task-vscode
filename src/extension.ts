@@ -13,7 +13,7 @@ import { openTutorialProject } from 'commands/openTutorialProject'
 import { ExtensionStateAPI } from 'helpers/extensionState'
 import { makeOpenAiInstance } from 'helpers/openai'
 import { startWebSocketServer } from 'chrome-extension/server'
-import { sendMessageToChrome } from 'chrome-extension/sendMessage'
+import { addToMessage, sendMessageToChrome } from 'chrome-extension/sendMessage'
 
 declare global {
   // eslint-disable-next-line no-var
@@ -55,6 +55,9 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.unshift(
     vscode.commands.registerCommand('ai-task.sendMessageToChrome', () => {
       sendMessageToChrome()
+    }),
+    vscode.commands.registerCommand('ai-task.addTextToMessage', () => {
+      addToMessage()
     }),
     // Open chat interface as a notebook
     vscode.commands.registerCommand('ai-task.newTaskNotebook', async () => {

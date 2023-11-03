@@ -2,9 +2,12 @@ import * as WebSocket from 'ws'
 import * as vscode from 'vscode'
 import { webSocket } from './server'
 
+let currentText: string[] = []
+
 export function sendMessageToChrome() {
-  const text = getSelectedText()
   if (webSocket && webSocket.readyState === WebSocket.OPEN) {
+    const text = getSelectedText() + currentText.join('\n')
+    currentText = []
     webSocket.send(`vscodeText:${text}`)
     void vscode.window.showInformationMessage(
       'The message was sent to the gpt chat',
@@ -13,6 +16,13 @@ export function sendMessageToChrome() {
     void vscode.window.showErrorMessage(
       'There is no working browser extension to send the message',
     )
+  }
+}
+
+export function addToMessage() {
+  const text = getSelectedText()
+  if (text) {
+    currentText.push(text)
   }
 }
 
