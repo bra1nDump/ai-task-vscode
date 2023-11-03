@@ -13,6 +13,7 @@ import { openTutorialProject } from 'commands/openTutorialProject'
 import { ExtensionStateAPI } from 'helpers/extensionState'
 import { makeOpenAiInstance } from 'helpers/openai'
 import { startWebSocketServer } from 'chrome-extension/server'
+import { sendMessageToChrome } from 'chrome-extension/sendMessage'
 
 declare global {
   // eslint-disable-next-line no-var
@@ -22,6 +23,7 @@ declare global {
 export async function activate(context: vscode.ExtensionContext) {
   console.log('activating bread extension')
 
+  // websocket for interacting with the chrome extension
   startWebSocketServer()
 
   //////////// Poor men's dependency injection
@@ -51,6 +53,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
   //////////// Register commands
   context.subscriptions.unshift(
+    vscode.commands.registerCommand('ai-task.sendMessageToChrome', () => {
+      sendMessageToChrome()
+    }),
     // Open chat interface as a notebook
     vscode.commands.registerCommand('ai-task.newTaskNotebook', async () => {
       await newTaskNotebook()

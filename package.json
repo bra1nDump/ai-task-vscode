@@ -90,6 +90,10 @@
       {
         "command": "ai-task.startTutorial",
         "title": "AI Task: Start Tutorial"
+      },
+      {
+        "command": "ai-task.sendMessageToChrome",
+        "title" : "AI Task: send message to Chrome extension"
       }
     ],
     "configuration": {
@@ -115,6 +119,11 @@
         "command": "ai-task.newTaskNotebook",
         "key": "ctrl+u",
         "mac": "cmd+u"
+      },
+      {
+        "command": "ai-task.sendMessageToChrome",
+        "key": "ctrl+k",
+        "mac": "cmd+k"
       },
       {
         "key": "shift+enter",

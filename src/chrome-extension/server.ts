@@ -1,5 +1,7 @@
 import * as WebSocket from 'ws'
 
+export let webSocket: WebSocket | null = null
+
 export function startWebSocketServer() {
   const port = 3228
   const server = new WebSocket.Server({ port }, () => {
@@ -7,11 +9,9 @@ export function startWebSocketServer() {
   })
 
   server.on('connection', (ws: WebSocket) => {
+    webSocket = ws
     ws.on('message', (message: string) => {
       console.log(`Message received: ${message}`)
-      const num = Math.random()
-      ws.send('как думаешь что это? lulik' + String(num))
-      console.log(num)
     })
 
     ws.on('error', (error: Error) => {
