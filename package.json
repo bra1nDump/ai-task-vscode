@@ -92,6 +92,13 @@
         "title": "AI Task: Start Tutorial"
       }
     ],
+    "editor/title": [
+      {
+        "when": "editorHasSelection",
+        "command": "ai-task.completeInlineTasks",
+        "group": "myGroup@1"
+      }
+    ],
     "configuration": {
       "properties": {
         "ai-task.taskMentionIdentifier": {

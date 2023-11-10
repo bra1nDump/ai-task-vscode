@@ -61,7 +61,7 @@ module.exports = {
         importOrder: [],
         importOrderSeparation: true,
         importOrderSortSpecifiers: true,
-        endOfLine: 'lf',
+        endOfLine: 'auto',
       },
     ],
   },
