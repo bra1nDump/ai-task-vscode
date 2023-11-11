@@ -34,6 +34,18 @@
   ],
   "main": "./dist/extension.js",
   "contributes": {
+    "menus": {
+      "editor/context": [
+        {
+          "command": "ai-task.completeInlineTasks",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "ai-task.sendMessageToChrome",
+          "when": "editorHasSelection"
+        }
+      ]
+    },
     "notebooks": [
       {
         "type": "task-notebook",
@@ -136,8 +148,8 @@
       },
       {
         "key": "shift+enter",
-        "command": "editor.action.insertLineAfter",
-        "when": "'Dummy currently does nothing because it it appears above the no book override keybinding, search backlog for more info for keys'"
+        "command": "editor.action.insertLineAfter"
+        
       }
     ],
     "walkthroughs": [
