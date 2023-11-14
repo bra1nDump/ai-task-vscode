@@ -105,11 +105,11 @@
       },
       {
         "command": "ai-task.sendMessageToChrome",
-        "title" : "AI Task: send message to Chrome extension"
+        "title": "AI Task: send message to Chrome extension"
       },
       {
         "command": "ai-task.addTextToMessage",
-        "title" : "AI Task: add text to message"
+        "title": "AI Task: add text to message"
       }
     ],
     "configuration": {
@@ -149,7 +149,6 @@
       {
         "key": "shift+enter",
         "command": "editor.action.insertLineAfter"
-        
       }
     ],
     "walkthroughs": [
@@ -230,6 +229,7 @@
   },
   "dependencies": {
     "dedent": "^1.5.1",
+    "get-port": "^7.0.0",
     "ix": "^5.0.0",
     "openai": "^4.0.0",
     "ws": "^8.14.2",
