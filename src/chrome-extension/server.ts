@@ -1,9 +1,13 @@
 import * as WebSocket from 'ws'
+import getPort from 'get-port'
 
 export let webSocket: WebSocket | null = null
 
-export function startWebSocketServer() {
-  const port = 3228
+export async function startWebSocketServer() {
+  const portsRange = [3228, 3229, 3230, 3231, 3232]
+
+  const port = await getPort({ port: portsRange })
+
   const server = new WebSocket.Server({ port }, () => {
     console.log(`WebSocket started at port ${port}`)
   })

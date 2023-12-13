@@ -7,22 +7,24 @@ let currentTextArr: string[] = []
 export function sendMessageToChrome() {
   if (webSocket && webSocket.readyState === WebSocket.OPEN) {
     const selectedText = getSelectedText()
-    let text = ''
+
+    if (!selectedText && !currentTextArr.length) {
+      void vscode.window.showErrorMessage('Select at least some text')
+      return
+    }
+
     if (selectedText) {
-      text = selectedText + currentTextArr.join('\n')
+      webSocket.send(`vscodeSendMessage:${selectedText}`)
+      void vscode.window.showInformationMessage(
+        'The message was sent to the gpt chat',
+      )
     } else {
-      if (currentTextArr.length) {
-        text = currentTextArr.join('\n')
-      } else {
-        void vscode.window.showErrorMessage('Select at least some text')
-        return
-      }
+      webSocket.send(`vscodeSendMessage:`)
+      void vscode.window.showInformationMessage(
+        'The message was sent to the gpt chat',
+      )
     }
     currentTextArr = []
-    webSocket.send(`vscodeText:${text}`)
-    void vscode.window.showInformationMessage(
-      'The message was sent to the gpt chat',
-    )
   } else {
     void vscode.window.showErrorMessage(
       'There is no working browser extension to send the message',
@@ -34,6 +36,14 @@ export function addToMessage() {
   const text = getSelectedText()
   if (text) {
     currentTextArr.push(text)
+    if (webSocket && webSocket.readyState === WebSocket.OPEN) {
+      webSocket.send(`vscodeAddText:${text}`)
+      void vscode.window.showInformationMessage(
+        'The message added to ChatGPT query',
+      )
+    }
+  } else {
+    void vscode.window.showInformationMessage('Select some text')
   }
 }
 
